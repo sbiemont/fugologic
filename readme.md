@@ -59,8 +59,8 @@ rule = A1 and B1    then          C1, D1
 ```
 
 * `expression` : connect several fuzzy sets together
-* `implication` : define a implication method
-* `conseqence` : defines several fuzzy sets as the outputs
+* `implication` : define an implication method
+* `consequence` : defines several fuzzy sets as the outputs
 
 #### Describe an input expression
 
