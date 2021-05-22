@@ -53,26 +53,35 @@ Create other inputs and outputs the same way.
 
 To define the rules system:
 
-* connect several fuzzy sets as an input expressions
-* defines several fuzzy sets as the outputs
-
 ```raw
 rule = <expression> <implication> <consequence>
-rule = A1 and B1    then          C1
+rule = A1 and B1    then          C1, D1
 ```
+
+* `expression` : connect several fuzzy sets together
+* `implication` : define a implication method
+* `conseqence` : defines several fuzzy sets as the outputs
 
 #### Describe an input expression
 
 Choose the input fuzzy sets and link them using a connector.
 
-For example : `A1 and B1`
+Simplest case : the expression has only one premise (directly use the fuzzy set)
 
 ```go
-// A1 and B1
-exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorAnd)
+// A1
+exp := fsA1
 ```
 
-You can write more complex expressions like `(A1 and B1 and C1) or (D1 and E1)` this way:
+An expression can be a flat list of several fuzzy sets linked with the same connector.
+For example : `A1 and B1 and C1`
+
+```go
+// A1 and B1 and C1
+exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorAnd)
+```
+
+At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
 
 ```go
 // A1 and B1 and C1
@@ -94,7 +103,7 @@ Several methods can be chosen like:
 * `ImplicationMin`
 * ...
 
-#### Describe an input consequence
+#### Describe an output consequence
 
 A consequence is just a list of fuzzy sets.
 
@@ -110,7 +119,10 @@ rules := []fuzzy.Rule{
     fuzzy.ImplicationProd,                                                // mamdani implication product
     []fuzzy.IDSet{fsC1},                                                  // consequence
   ),
-  // Describe other rules
+  // Describe other rules, for example:
+  //  * A1 and B2 => C2
+  //  * A2 and B1 => C1
+  //  * A2 and B2 => C2
 }
 ```
 

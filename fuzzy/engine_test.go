@@ -104,9 +104,9 @@ func TestEngineCheck(t *testing.T) {
 			// a => c
 			// c => d
 			rules := []Rule{
-				NewRule(NewExpression([]Premise{fsA1}, ConnectorNone), ImplicationProd, []IDSet{fsB1}),
-				NewRule(NewExpression([]Premise{fsA1}, ConnectorNone), ImplicationProd, []IDSet{fsC1}),
-				NewRule(NewExpression([]Premise{fsC1}, ConnectorNone), ImplicationProd, []IDSet{fsD1}),
+				NewRule(fsA1, ImplicationProd, []IDSet{fsB1}),
+				NewRule(fsA1, ImplicationProd, []IDSet{fsC1}),
+				NewRule(fsC1, ImplicationProd, []IDSet{fsD1}),
 			}
 			defuzzer := NewDefuzzer(DefuzzificationCentroid)
 			_, err := NewEngine(rules, defuzzer)
@@ -121,9 +121,9 @@ func TestEngineCheck(t *testing.T) {
 			// a => c' [c and c' have the same id]
 			// c => d
 			rules := []Rule{
-				NewRule(NewExpression([]Premise{fsA1}, ConnectorNone), ImplicationProd, []IDSet{fsB1}),
-				NewRule(NewExpression([]Premise{fsA1}, ConnectorNone), ImplicationProd, []IDSet{fsC1Bis}),
-				NewRule(NewExpression([]Premise{fsC1}, ConnectorNone), ImplicationProd, []IDSet{fsD1}),
+				NewRule(fsA1, ImplicationProd, []IDSet{fsB1}),
+				NewRule(fsA1, ImplicationProd, []IDSet{fsC1Bis}),
+				NewRule(fsC1, ImplicationProd, []IDSet{fsD1}),
 			}
 			defuzzer := NewDefuzzer(DefuzzificationCentroid)
 			_, err := NewEngine(rules, defuzzer)

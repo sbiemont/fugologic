@@ -56,8 +56,7 @@ func TestExpression(t *testing.T) {
 			dataIn := DataInput{
 				fvA.uuid: 1,
 			}
-			exp := NewExpression([]Premise{fsA1}, ConnectorNone)
-			result, err := exp.Evaluate(dataIn)
+			result, err := fsA1.Evaluate(dataIn)
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 1*2) // iso(1)*2
 		})
@@ -102,14 +101,39 @@ func TestExpression(t *testing.T) {
 			So(result, ShouldEqual, 8) // max(min(1, 2, 3)*2, min(4, 5)*2)
 		})
 	})
+}
 
-	Convey("flatten", t, func() {
+func TestFlattenIDSets(t *testing.T) {
+	var timesTwo Set = func(x float64) float64 { return x * 2 }
+
+	fvA := NewIDValCustom("a", crisp.Set{})
+	fsA1 := NewIDSetCustom("a1", timesTwo, &fvA)
+
+	fvB := NewIDValCustom("b", crisp.Set{})
+	fsB1 := NewIDSetCustom("b1", timesTwo, &fvB)
+
+	fvC := NewIDValCustom("c", crisp.Set{})
+	fsC1 := NewIDSetCustom("c1", timesTwo, &fvC)
+
+	fvD := NewIDValCustom("d", crisp.Set{})
+	fsD1 := NewIDSetCustom("d1", timesTwo, &fvD)
+
+	fvE := NewIDValCustom("e", crisp.Set{})
+	fsE1 := NewIDSetCustom("e1", timesTwo, &fvE)
+
+	Convey("when only one set", t, func() {
+		result := flattenIDSets(nil, []Premise{fsA1})
+		So(result, ShouldHaveLength, 1)
+		So(result[0].ID(), ShouldEqual, "a1")
+	})
+
+	Convey("flatten id sets", t, func() {
 		expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorAnd)       // A and B
 		expCD := NewExpression([]Premise{fsC1, fsD1}, ConnectorAnd)       // C and D
 		expABCD := NewExpression([]Premise{expAB, expCD}, ConnectorOr)    // (A and B) or (C and D)
 		expABCDE := NewExpression([]Premise{expABCD, fsE1}, ConnectorAnd) // ((A and B) or (C and D)) and E
 
-		result := expABCDE.flatten()
+		result := flattenIDSets(nil, []Premise{expABCDE})
 		So(result, ShouldHaveLength, 5)
 
 		// Extract data
@@ -125,6 +149,15 @@ func TestExpression(t *testing.T) {
 }
 
 func TestRule(t *testing.T) {
+	// helper: extract ids
+	ids := func(idSets []IDSet) []id.ID {
+		var result []id.ID
+		for _, idSet := range idSets {
+			result = append(result, idSet.uuid)
+		}
+		return result
+	}
+
 	Convey("evaluate", t, func() {
 		var setA Set = func(x float64) float64 { return x }
 		var setB Set = func(x float64) float64 { return x }
@@ -136,7 +169,7 @@ func TestRule(t *testing.T) {
 		fsB1 := NewIDSetCustom("b1", setB, &fvB)
 
 		// A => B
-		rule := NewRule(NewExpression([]Premise{fsA1}, ConnectorNone), ImplicationProd, []IDSet{fsB1})
+		rule := NewRule(fsA1, ImplicationProd, []IDSet{fsB1})
 
 		Convey("when empty data", func() {
 			dataIn := DataInput{}
@@ -155,6 +188,36 @@ func TestRule(t *testing.T) {
 			So(output[0].parent, ShouldEqual, &fvB)
 			So(output[0].set, ShouldNotEqual, setB) // Membership function should have been replaced
 			So(output[0].uuid, ShouldEqual, "b1")
+		})
+	})
+
+	Convey("inputs", t, func() {
+		var set Set = func(x float64) float64 { return x }
+
+		fvA := NewIDValCustom("a", crisp.Set{})
+		fsA1 := NewIDSetCustom("a1", set, &fvA)
+
+		fvB := NewIDValCustom("b", crisp.Set{})
+		fsB1 := NewIDSetCustom("b1", set, &fvB)
+
+		fvC := NewIDValCustom("c", crisp.Set{})
+		fsC1 := NewIDSetCustom("c1", set, &fvC)
+
+		fvD := NewIDValCustom("d", crisp.Set{})
+		fsD1 := NewIDSetCustom("d1", set, &fvD)
+
+		Convey("when one input", func() {
+			// A => B
+			rule := NewRule(fsA1, ImplicationProd, []IDSet{fsB1})
+			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID()})
+		})
+
+		Convey("when several inputs", func() {
+			// (A and B) or C => D
+			expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorAnd)
+			expABC := NewExpression([]Premise{expAB, fsC1}, ConnectorAnd)
+			rule := NewRule(expABC, ImplicationProd, []IDSet{fsD1})
+			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID(), fsB1.ID(), fsC1.ID()})
 		})
 	})
 }
