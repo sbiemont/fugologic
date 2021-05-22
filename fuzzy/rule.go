@@ -9,14 +9,27 @@ import (
 type Connector func(a, b float64) float64
 
 var (
-	ConnectorNone Connector = nil
-	ConnectorAnd  Connector = math.Min
-	ConnectorOr   Connector = math.Max
+	ConnectorAnd Connector = math.Min
+	ConnectorOr  Connector = math.Max
 )
 
 // Premise can be evaluated (like a fuzzy set or an expression)
+// A premise can be an Expression or an IDSet
 type Premise interface {
 	Evaluate(input DataInput) (float64, error)
+}
+
+// flattenIDSets extracts the IDSets from a list of premises
+func flattenIDSets(init []IDSet, premises []Premise) []IDSet {
+	for _, premise := range premises {
+		switch p := premise.(type) {
+		case IDSet:
+			init = append(init, p)
+		case Expression:
+			init = flattenIDSets(init, p.premises)
+		}
+	}
+	return init
 }
 
 // Expression describes "connect(premises)". Eg.: A or B or C
@@ -66,28 +79,11 @@ func (exp Expression) Evaluate(input DataInput) (float64, error) {
 	return y, nil
 }
 
-// flatten expression into a list of IDSet
-func (exp Expression) flatten() []IDSet {
-	return exp.extractSets(nil, []Premise{exp})
-}
-
-// extractSets extracts the IDSets from a list of premises
-func (exp Expression) extractSets(idSets []IDSet, premises []Premise) []IDSet {
-	for _, premise := range premises {
-		switch p := premise.(type) {
-		case IDSet:
-			idSets = append(idSets, p)
-		case Expression:
-			idSets = exp.extractSets(idSets, p.premises)
-		}
-	}
-	return idSets
-}
-
+// Implication links an expression and produces a single fuzzy Set
 type Implication func(set Set, y float64) Set
 
 var (
-	// ImplicationProd returns the product of a Set
+	// ImplicationProd returns the product of a Set with a constant factor
 	ImplicationProd Implication = func(set Set, y float64) Set { return set.Multiply(y) }
 
 	// ImplicationMin sets the max upper bound
@@ -96,13 +92,15 @@ var (
 
 // Rule evaluates the input expression + implication + fuzzy output
 type Rule struct {
-	inputs      Expression
+	inputs      Premise
 	implication Implication
 	outputs     []IDSet
 }
 
 // NewRule builds a new Rule instance
-func NewRule(inputs Expression, implication Implication, outputs []IDSet) Rule {
+// rule = <premise> <implication> <outputs>
+// rule = A and B   then          C
+func NewRule(inputs Premise, implication Implication, outputs []IDSet) Rule {
 	return Rule{
 		inputs:      inputs,
 		implication: implication,
@@ -112,7 +110,7 @@ func NewRule(inputs Expression, implication Implication, outputs []IDSet) Rule {
 
 // evaluate and return the fuzzy output using crisp input
 // Outputs
-// * One fuzzy Set for each output
+// * One fuzzy IDSet for each output
 // * An error is returned if inputs are missing
 func (rule Rule) evaluate(input DataInput) ([]IDSet, error) {
 	// Evaluate inputs
@@ -136,5 +134,5 @@ func (rule Rule) evaluate(input DataInput) ([]IDSet, error) {
 
 // Inputs gather and flatten all IDSet from rules' expressions
 func (rule Rule) Inputs() []IDSet {
-	return rule.inputs.flatten()
+	return flattenIDSets(nil, []Premise{rule.inputs})
 }
