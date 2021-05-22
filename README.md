@@ -1,2 +1,0 @@
-# fugologic
-fuzzy logic
