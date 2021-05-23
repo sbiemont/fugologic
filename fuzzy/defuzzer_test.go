@@ -35,11 +35,13 @@ func TestDefuzzerAdd(t *testing.T) {
 }
 
 func TestDefuzzerDefuzz(t *testing.T) {
-	fvA := NewIDValCustom("a", crisp.NewSetDx(1, 4, 0.1))
+	setA, _ := crisp.NewSet(1, 4, 0.1)
+	fvA := NewIDValCustom("a", setA)
 	fsA1 := NewIDSetCustom("a1", NewSetTriangular(1, 2, 3).Min(0.25), &fvA)
 	fsA2 := NewIDSetCustom("a2", NewSetTriangular(2, 3, 4).Min(0.75), &fvA)
 
-	fvB := NewIDValCustom("b", crisp.NewSetDx(11, 14, 0.1))
+	setB, _ := crisp.NewSet(11, 14, 0.1)
+	fvB := NewIDValCustom("b", setB)
 	fsB1 := NewIDSetCustom("b1", NewSetTriangular(11, 12, 13).Min(0.1), &fvB)
 	fsB2 := NewIDSetCustom("b2", NewSetTriangular(12, 13, 14).Min(0.9), &fvB)
 
@@ -68,7 +70,7 @@ func TestDefuzzification(t *testing.T) {
 	dx := 0.01
 
 	Convey("centroid", t, func() {
-		universe := crisp.NewSetDx(0, 50, 0.1)
+		universe, _ := crisp.NewSet(0, 50, 0.1)
 
 		fs1 := NewSetTrapezoid(10, 15, 25, 30)
 		fs2 := NewSetTrapezoid(25, 30, 40, 45)
@@ -110,7 +112,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 := NewSetTrapezoid(3, 4, 6, 7).Min(0.5)
 				fs3 := NewSetTrapezoid(5, 6, 7, 8)
 
-				universe := crisp.NewSetDx(0, 8, 0.1)
+				universe, _ := crisp.NewSet(0, 8, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
@@ -124,7 +126,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 := NewSetTrapezoid(3, 4, 6, 7).Multiply(0.5)
 				fs3 := NewSetTrapezoid(5, 6, 7, 8)
 
-				universe := crisp.NewSetDx(0, 8, 0.1)
+				universe, _ := crisp.NewSet(0, 8, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
@@ -139,7 +141,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 := NewSetTrapezoid(5, 7, 12, 14).Min(0.5)
 				fs3 := NewSetTrapezoid(12, 13, 18, 19).Min(0.1)
 
-				universe := crisp.NewSetDx(0, 20, 0.1)
+				universe, _ := crisp.NewSet(0, 20, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
@@ -152,7 +154,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 := NewSetTrapezoid(5, 7, 12, 14).Multiply(0.5)
 				fs3 := NewSetTrapezoid(12, 13, 18, 19).Multiply(0.1)
 
-				universe := crisp.NewSetDx(0, 20, 0.1)
+				universe, _ := crisp.NewSet(0, 20, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)

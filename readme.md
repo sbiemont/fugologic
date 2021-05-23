@@ -40,7 +40,8 @@ Ensure that the crisp interval of the fuzzy value covers the fuzzy sets interval
 
 ```go
 // Fuzzy value "a"
-fvA := fuzzy.NewIDValCustom("a", crisp.NewSetDx(-3, 3, 0.1))
+setA, _ := crisp.NewSetDx(-3, 3, 0.1)
+fvA := fuzzy.NewIDValCustom("a", setA)
 
 // Fuzzy sets "a1", "a2"
 fsA1 := fuzzy.NewIDSetCustom("a1", fuzzy.NewSetTriangular(-3, -1, 1), &fvA)
