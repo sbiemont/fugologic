@@ -14,6 +14,14 @@ Defuzzification requires a crisp interval of discrete values.
 
 It is defined as `crisp.Set` (x min, x max, dx)
 
+```go
+// Each values from 0.0 and 0.3 every 0.1 => [0.0, 0.1, 0.2, 0.3, 0.4]
+set, err := crisp.NewSet(0.0, 0.3, 0.1)
+if err != nil{
+  // Error if the crisp set is badly defined
+}
+```
+
 ### Fuzzy values definition
 
 Inputs and outputs are defined as:
@@ -40,7 +48,8 @@ Ensure that the crisp interval of the fuzzy value covers the fuzzy sets interval
 
 ```go
 // Fuzzy value "a"
-fvA := fuzzy.NewIDValCustom("a", crisp.NewSetDx(-3, 3, 0.1))
+setA, _ := crisp.NewSet(-3, 3, 0.1)
+fvA := fuzzy.NewIDValCustom("a", setA)
 
 // Fuzzy sets "a1", "a2"
 fsA1 := fuzzy.NewIDSetCustom("a1", fuzzy.NewSetTriangular(-3, -1, 1), &fvA)
