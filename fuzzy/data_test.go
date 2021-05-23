@@ -7,7 +7,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestProviderGet(t *testing.T) {
+func TestDataInput(t *testing.T) {
 	newSet := func() Set { return func(x float64) float64 { return x } }
 
 	fvA := NewIDValCustom("a", crisp.Set{})
@@ -16,7 +16,7 @@ func TestProviderGet(t *testing.T) {
 	fvMissingParent := NewIDValCustom("b", crisp.Set{})
 	fsMissingParent := NewIDSetCustom("b1", newSet(), &fvMissingParent)
 
-	Convey("data", t, func() {
+	Convey("find", t, func() {
 		Convey("when parent missing", func() {
 			provider := DataInput{}
 			fsMissingParent.parent = nil
@@ -37,6 +37,46 @@ func TestProviderGet(t *testing.T) {
 			y, err := provider.find(fsA1)
 			So(err, ShouldBeNil)
 			So(y, ShouldEqual, 1)
+		})
+	})
+}
+
+func TestMergeData(t *testing.T) {
+	empty := Data{}
+	filled1 := Data{
+		"a": 1,
+		"b": 2,
+	}
+	filled2 := Data{
+		"c": 3,
+		"d": 4,
+	}
+
+	Convey("merge", t, func() {
+		Convey("when empty", func() {
+			So(mergeData(empty, Data{}), ShouldBeEmpty)
+		})
+
+		Convey("when merge with empty", func() {
+			So(mergeData(empty, filled1), ShouldResemble, filled1)
+			So(mergeData(filled1, empty), ShouldResemble, filled1)
+		})
+
+		Convey("when ok", func() {
+			So(mergeData(filled1, filled2), ShouldResemble, Data{
+				"a": 1,
+				"b": 2,
+				"c": 3,
+				"d": 4,
+			})
+			So(filled1, ShouldResemble, Data{ // filled1: unchanged
+				"a": 1,
+				"b": 2,
+			})
+			So(filled2, ShouldResemble, Data{ // filled2: unchanged
+				"c": 3,
+				"d": 4,
+			})
 		})
 	})
 }

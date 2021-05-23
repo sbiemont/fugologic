@@ -8,20 +8,16 @@ import (
 )
 
 // checker controls the Val and Set definition consistency
-type checker struct {
-	idSets []IDSet
-}
+type checker []IDSet
 
 // newChecker builds a new Checker instance
 func newChecker(idSets []IDSet) checker {
-	return checker{
-		idSets: idSets,
-	}
+	return checker(idSets)
 }
 
 // check launches the check operation on idSets
 func (chk checker) check() error {
-	idVals, errPresence := chk.presence(chk.idSets)
+	idVals, errPresence := chk.presence()
 	if errPresence != nil {
 		return errPresence
 	}
@@ -30,7 +26,7 @@ func (chk checker) check() error {
 }
 
 // presence controls that all identifiers have been set
-func (checker) presence(idSets []IDSet) ([]*IDVal, error) {
+func (chk checker) presence() ([]*IDVal, error) {
 	// Helper: check the ID presence
 	identifiable := func(uuid id.ID) error {
 		if uuid == "" {
@@ -43,7 +39,7 @@ func (checker) presence(idSets []IDSet) ([]*IDVal, error) {
 	// Re-build the tree 1 Val => n Sets
 	// Check presence
 	idVals := make(map[*IDVal]interface{})
-	for _, idSet := range idSets {
+	for _, idSet := range chk {
 		// Check parent presence
 		parent := idSet.parent
 		if parent == nil {
