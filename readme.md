@@ -246,7 +246,14 @@ classDiagram
   class DataInput {
     - find()
   }
+  class System {
+    + Evaluate()
+  }
+  class Rule {
+    - evaluate()
+  }
 
+  System --> "*" Engine
   DataInput --> "1" IDSet
   Defuzzer --> "1" IDSet
 
