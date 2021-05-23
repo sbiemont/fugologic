@@ -15,7 +15,7 @@ Defuzzification requires a crisp interval of discrete values.
 It is defined as `crisp.Set` (x min, x max, dx)
 
 ```go
-// Each values from 0.0 and 0.3 every 0.1 => [0.0, 0.1, 0.2, 0.3, 0.4]
+// Each values from 0.0 to 0.3 every 0.1 => [0.0, 0.1, 0.2, 0.3]
 set, err := crisp.NewSet(0.0, 0.3, 0.1)
 if err != nil{
   // Error if the crisp set is badly defined
