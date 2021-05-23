@@ -21,5 +21,10 @@ func TestSet(t *testing.T) {
 		Convey("when values", func() {
 			So(set.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
 		})
+
+		Convey("when empty", func() {
+			So(Set{}.Values(), ShouldBeEmpty)
+			So(Set{}.Values(), ShouldBeEmpty)
+		})
 	})
 }

@@ -20,7 +20,7 @@ Inputs and outputs are defined as:
 
 * `fuzzy.IDVal`: a fuzzy value that contains,
   * an identifier
-  * a list of fuzzy sets (only required for system checks)
+  * a list of fuzzy sets (only required for system and/or engine checks)
   * a crisp interval of values (only required for defuzziing)
 * `fuzzy.IDSet`: fuzzy set that contains,
   * an identifier
@@ -51,7 +51,7 @@ Create other inputs and outputs the same way.
 
 ### Define the rules
 
-To define the rules system:
+A rule is defined with 3 components:
 
 ```raw
 rule = <expression> <implication> <consequence>
@@ -109,7 +109,7 @@ A consequence is just a list of fuzzy sets.
 
 #### Write a rule
 
-Combine the several items previously seen to describe the rules system:
+Combine the several items previously seen to describe the rules:
 
 ```go
 rules := []fuzzy.Rule{
@@ -136,7 +136,7 @@ defuzzer := fuzzy.NewDefuzzer(fuzzy.DefuzzificationCentroid)
 
 ### Create an engine
 
-A fuzzy system engine combines the whole rules system and a defuzzer.
+A fuzzy engine combines some rules and a defuzzer.
 
 #### Engine new instance
 
@@ -152,13 +152,61 @@ if err != nil {
 
 #### Engine evaluation
 
-Then, launch the evaluation process by setting a new input value for each `IDVal` of the system.
+Then, launch the evaluation process by setting a new input value for each `IDVal` of the engine.
 
 The result contains a crisp value for each fuzzy output value defined.
 
 ```go
 // Evaluation of the rule "A1 and B1 => C1"
 result, err := engine.Evaluate(fuzzy.DataInput{
+  "a": 1,
+  "b": 0.05,
+})
+if err != nil {
+  return err
+}
+
+// Result
+// fuzzy.DataOutput{
+//   "c": <crisp result>,
+// }
+```
+
+### Create a system
+
+A system is an ordered list of engines.
+An output of an engine can be linked to the input of another engine.
+
+#### System new instance
+
+When creating a system, some contraints are checked, like:
+
+* all identifiers shall be unique
+* an output shall only be produced once
+* loops are forbidden : an output cannot be linked to a previous engine
+
+```go
+// Create engines
+engine1, _ := fuzzy.NewEngine(rules1, defuzzer1)
+engine2, _ := fuzzy.NewEngine(rules2, defuzzer2)
+
+// Create and evaluate the system
+system, err := NewSystem([]Engine{engine1, engine2})
+if err != nil {
+  // An error occurred, check the rules
+  return err
+}
+```
+
+#### System evaluation
+
+Then, launch the evaluation process by setting a new input value for each `IDVal` of the system.
+
+The result contains a crisp value for each fuzzy output value defined.
+
+```go
+// Evaluation of the rules of each engines
+result, err := system.Evaluate(fuzzy.DataInput{
   "a": 1,
   "b": 0.05,
 })
