@@ -75,7 +75,16 @@ func NewSetGbell(a, b, c float64) Set {
 // _/ \_
 func NewSetTrapezoid(a, b, c, d float64) Set {
 	return func(x float64) float64 {
-		return math.Max(math.Min(math.Min(((x-a)/(b-a)), 1), (d-x)/(d-c)), 0)
+		switch {
+		case a < x && x <= b:
+			return (x - a) / (b - a)
+		case b <= x && x <= c:
+			return 1
+		case c <= x && x < d:
+			return (d - x) / (d - c)
+		default:
+			return 0
+		}
 	}
 }
 
@@ -105,7 +114,14 @@ func NewSetTriangular(a, b, c float64) Set {
 // _/
 func NewSetStepUp(a, b float64) Set {
 	return func(x float64) float64 {
-		return math.Min(math.Max((a-x)/(a-b), 0), 1)
+		switch {
+		case x >= b:
+			return 1
+		case a < x && x <= b:
+			return (a - x) / (a - b)
+		default:
+			return 0
+		}
 	}
 }
 
@@ -116,6 +132,13 @@ func NewSetStepUp(a, b float64) Set {
 //  \_
 func NewSetStepDown(a, b float64) Set {
 	return func(x float64) float64 {
-		return math.Min(math.Max((b-x)/(b-a), 0), 1)
+		switch {
+		case x <= a:
+			return 1
+		case a <= x && x < b:
+			return (b - x) / (b - a)
+		default:
+			return 0
+		}
 	}
 }

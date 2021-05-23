@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"fugologic.git/crisp"
+	"fugologic.git/id"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -58,12 +59,12 @@ func TestMergeData(t *testing.T) {
 		})
 
 		Convey("when merge with empty", func() {
-			So(mergeData(empty, filled1), ShouldResemble, filled1)
-			So(mergeData(filled1, empty), ShouldResemble, filled1)
+			So(mergeData(empty, filled1), ShouldResemble, map[id.ID]float64(filled1))
+			So(mergeData(filled1, empty), ShouldResemble, map[id.ID]float64(filled1))
 		})
 
 		Convey("when ok", func() {
-			So(mergeData(filled1, filled2), ShouldResemble, Data{
+			So(mergeData(filled1, filled2), ShouldResemble, map[id.ID]float64{
 				"a": 1,
 				"b": 2,
 				"c": 3,

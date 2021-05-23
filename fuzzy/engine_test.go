@@ -12,7 +12,8 @@ import (
 // Returns the 2 inputs and the output
 func customEngine() (Engine, [2]IDVal, IDVal) {
 	// Input #1
-	fvDiff := NewIDValCustom("diff/consigne", crisp.NewSetDx(-2, 2, 0.1))
+	setDiff, _ := crisp.NewSet(-2, 2, 0.1)
+	fvDiff := NewIDValCustom("diff/consigne", setDiff)
 	fsDiffM2 := NewIDSetCustom("diff/consigne.--", NewSetStepDown(-2, -0.5), &fvDiff)
 	fsDiffM1 := NewIDSetCustom("diff/consigne.-", NewSetTriangular(-2, -0.5, 0), &fvDiff)
 	fsDiff0 := NewIDSetCustom("diff/consigne.0", NewSetTriangular(-0.5, 0, 0.5), &fvDiff)
@@ -20,7 +21,8 @@ func customEngine() (Engine, [2]IDVal, IDVal) {
 	fsDiffP2 := NewIDSetCustom("diff/consigne.++", NewSetStepUp(0.5, 2), &fvDiff)
 
 	// Input #2
-	fvDt := NewIDValCustom("temp/dt", crisp.NewSetDx(-0.2, 0.2, 0.01))
+	setDt, _ := crisp.NewSet(-0.2, 0.2, 0.01)
+	fvDt := NewIDValCustom("temp/dt", setDt)
 	fsDtM2 := NewIDSetCustom("temp/dt.--", NewSetStepDown(-0.2, -0.1), &fvDt)
 	fsDtM1 := NewIDSetCustom("temp/dt.-", NewSetTriangular(-0.2, -0.1, 0), &fvDt)
 	fsDt0 := NewIDSetCustom("temp/dt.0", NewSetTriangular(-0.1, 0, 0.1), &fvDt)
@@ -28,7 +30,8 @@ func customEngine() (Engine, [2]IDVal, IDVal) {
 	fsDtP2 := NewIDSetCustom("temp/dt.++", NewSetStepUp(0.1, 0.2), &fvDt)
 
 	// Output
-	fvCh := NewIDValCustom("force", crisp.NewSetDx(-4, 4, 0.05))
+	setCh, _ := crisp.NewSet(-4, 4, 0.05)
+	fvCh := NewIDValCustom("force", setCh)
 	fsChM2 := NewIDSetCustom("force.--", NewSetStepDown(-4, -1), &fvCh)
 	fsChM1 := NewIDSetCustom("force.-", NewSetTriangular(-2, -1, 0), &fvCh)
 	fsCh0 := NewIDSetCustom("force.0", NewSetTriangular(-1, 0, 1), &fvCh)
@@ -136,15 +139,18 @@ func TestEngineCheck(t *testing.T) {
 func TestEvaluate(t *testing.T) {
 	Convey("custom minimalistic test", t, func() {
 		// Definitions
-		fvA := NewIDValCustom("a", crisp.NewSetDx(1, 4, 0.1))
+		setA, _ := crisp.NewSet(1, 4, 0.1)
+		fvA := NewIDValCustom("a", setA)
 		fsA1 := NewIDSetCustom("a1", NewSetTriangular(1, 2, 3), &fvA)
 		fsA2 := NewIDSetCustom("a2", NewSetTriangular(2, 3, 4), &fvA)
 
-		fvB := NewIDValCustom("b", crisp.NewSetDx(2, 5, 0.1))
+		setB, _ := crisp.NewSet(2, 5, 0.1)
+		fvB := NewIDValCustom("b", setB)
 		fsB1 := NewIDSetCustom("b1", NewSetTriangular(2, 3, 4), &fvB)
 		fsB2 := NewIDSetCustom("b2", NewSetTriangular(3, 4, 5), &fvB)
 
-		fvC := NewIDValCustom("c", crisp.NewSetDx(11, 14, 0.1))
+		setC, _ := crisp.NewSet(11, 14, 0.1)
+		fvC := NewIDValCustom("c", setC)
 		fsC1 := NewIDSetCustom("c1", NewSetTriangular(11, 12, 13), &fvC)
 		fsC2 := NewIDSetCustom("c2", NewSetTriangular(12, 13, 14), &fvC)
 

@@ -146,8 +146,8 @@ func TestNewSet(t *testing.T) {
 		}
 	}
 
-	Convey("new set", t, func() {
-		Convey("triangular", func() {
+	Convey("triangular", t, func() {
+		Convey("when ok", func() {
 			check(NewSetTriangular(0.0, 0.5, 1.0), map[float64]float64{
 				0.0:  0.0,
 				0.25: 0.5,
@@ -155,7 +155,9 @@ func TestNewSet(t *testing.T) {
 				0.75: 0.5,
 				1.0:  0.0,
 			})
+		})
 
+		Convey("when a=b", func() {
 			check(NewSetTriangular(0.0, 0.0, 1.0), map[float64]float64{
 				0.0:  1.0,
 				0.25: 0.75,
@@ -165,26 +167,79 @@ func TestNewSet(t *testing.T) {
 			})
 		})
 
-		Convey("trapezoid", func() {
+		Convey("when b=c", func() {
+			check(NewSetTriangular(0.0, 1.0, 1.0), map[float64]float64{
+				0.0:  0.0,
+				0.25: 0.25,
+				0.5:  0.5,
+				0.75: 0.75,
+				1.0:  1.0,
+			})
+		})
+	})
+
+	Convey("trapezoid", t, func() {
+		Convey("when ok", func() {
 			check(NewSetTrapezoid(0.0, 0.25, 0.75, 1.0), map[float64]float64{
 				0.0:   0.0,
 				0.125: 0.5,
 				0.25:  1.0,
+				0.5:   1.0,
 				0.75:  1.0,
 				0.875: 0.5,
 				1.0:   0.0,
 			})
 		})
 
-		Convey("gauss", func() {
+		Convey("when a=b", func() {
+			check(NewSetTrapezoid(0.0, 0.0, 0.75, 1.0), map[float64]float64{
+				0.0:   1.0,
+				0.125: 1.0,
+				0.25:  1.0,
+				0.5:   1.0,
+				0.75:  1.0,
+				0.875: 0.5,
+				1.0:   0.0,
+			})
+		})
+
+		Convey("when c=d", func() {
+			check(NewSetTrapezoid(0.0, 0.25, 1.0, 1.0), map[float64]float64{
+				0.0:   0.0,
+				0.125: 0.5,
+				0.25:  1.0,
+				0.5:   1.0,
+				0.75:  1.0,
+				0.875: 1.0,
+				1.0:   1.0,
+			})
+		})
+
+		Convey("when a=b and c=d", func() {
+			check(NewSetTrapezoid(0.0, 0.0, 1.0, 1.0), map[float64]float64{
+				0.0:   1.0,
+				0.125: 1.0,
+				0.25:  1.0,
+				0.5:   1.0,
+				0.75:  1.0,
+				0.875: 1.0,
+				1.0:   1.0,
+			})
+		})
+	})
+
+	Convey("gauss", t, func() {
+		Convey("when ok", func() {
 			check(NewSetGauss(1.0, 5.0), map[float64]float64{
 				1.0: 0.0,
 				5.0: 1.0,
 				9.0: 0.0,
 			})
 		})
+	})
 
-		Convey("g bell", func() {
+	Convey("g bell", t, func() {
+		Convey("when ok", func() {
 			check(NewSetGbell(2.0, 4.0, 6.0), map[float64]float64{
 				1.0:  0.0,
 				5.0:  1.0,
@@ -192,8 +247,10 @@ func TestNewSet(t *testing.T) {
 				10.0: 0.0,
 			})
 		})
+	})
 
-		Convey("step up", func() {
+	Convey("step up", t, func() {
+		Convey("when ok", func() {
 			check(NewSetStepUp(2.0, 4.0), map[float64]float64{
 				1.0: 0.0,
 				2.0: 0.0,
@@ -205,13 +262,39 @@ func TestNewSet(t *testing.T) {
 			})
 		})
 
-		Convey("step down", func() {
+		Convey("when a=b", func() {
+			check(NewSetStepUp(2.0, 2.0), map[float64]float64{
+				1.0: 0.0,
+				2.0: 1.0,
+				2.5: 1.0,
+				3.0: 1.0,
+				3.5: 1.0,
+				4.0: 1.0,
+				5.0: 1.0,
+			})
+		})
+	})
+
+	Convey("step down", t, func() {
+		Convey("when ok", func() {
 			check(NewSetStepDown(2.0, 4.0), map[float64]float64{
 				1.0: 1.0,
 				2.0: 1.0,
 				2.5: 0.75,
 				3.0: 0.5,
 				3.5: 0.25,
+				4.0: 0.0,
+				5.0: 0.0,
+			})
+		})
+
+		Convey("when a=b", func() {
+			check(NewSetStepDown(2.0, 2.0), map[float64]float64{
+				1.0: 1.0,
+				2.0: 1.0,
+				2.5: 0.0,
+				3.0: 0.0,
+				3.5: 0.0,
 				4.0: 0.0,
 				5.0: 0.0,
 			})
