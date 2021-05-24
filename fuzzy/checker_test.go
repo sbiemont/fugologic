@@ -41,7 +41,7 @@ func TestNewChecker(t *testing.T) {
 			err := checker.check()
 			// Values are not sorted, check the beginning of the error
 			So(err, ShouldNotBeNil)
-			So(checker.check().Error(), ShouldContainSubstring, "sets: id `a1` already present (for val id `")
+			So(checker.check().Error(), ShouldContainSubstring, "sets: id `a1` already present (for val id `")
 		})
 
 		Convey("when id val error", func() {
@@ -49,7 +49,7 @@ func TestNewChecker(t *testing.T) {
 			fsC1 := NewIDSetCustom("c1", nil, &fvC)
 
 			checker := newChecker([]IDSet{fsA1, fsC1})
-			So(checker.check(), ShouldBeError, "values: id `a` already present")
+			So(checker.check(), ShouldBeError, "values: id `a` already present")
 		})
 
 		Convey("when id val missing", func() {

@@ -72,7 +72,7 @@ func (checker) unicity(idVals []*IDVal) error {
 	// Helper: checks the ID unicity
 	unique := func(mp map[id.ID]interface{}, uuid id.ID) error {
 		if _, exists := mp[uuid]; exists {
-			return fmt.Errorf("id `%s` already present", uuid)
+			return fmt.Errorf("id `%s` already present", uuid)
 		}
 		mp[uuid] = true
 		return nil
