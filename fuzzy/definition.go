@@ -38,6 +38,25 @@ func (is IDSet) Parent() *IDVal {
 	return is.parent
 }
 
+// Not returns the complement of the current IDSet
+func (is IDSet) Not() IDSet {
+	return IDSet{
+		set:    is.set.Complement(),
+		uuid:   is.uuid,
+		parent: is.parent,
+	}
+}
+
+// And returns the expression IDSet AND Premise
+func (is IDSet) And(premise Premise) Premise {
+	return NewExpression([]Premise{is, premise}, ConnectorZadehAnd)
+}
+
+// Or returns the expression IDSet OR Premise
+func (is IDSet) Or(premise Premise) Premise {
+	return NewExpression([]Premise{is, premise}, ConnectorZadehOr)
+}
+
 // Evaluate fetches the right input and returns the Set value
 func (is IDSet) Evaluate(input DataInput) (float64, error) {
 	x, err := input.find(is)
