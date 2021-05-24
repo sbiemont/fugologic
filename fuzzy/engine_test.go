@@ -28,7 +28,7 @@ func customValues() ([5]IDSet, [5]IDSet, [5]IDSet) {
 	fsDtP2 := NewIDSetCustom("temp/dt.++", NewSetStepUp(0.1, 0.2), &fvDt)
 
 	// Output
-	setCh, _ := crisp.NewSet(-4, 4, 0.05)
+	setCh, _ := crisp.NewSet(-4, 4, 0.1)
 	fvCh := NewIDValCustom("force", setCh)
 	fsChM2 := NewIDSetCustom("force.--", NewSetStepDown(-4, -1), &fvCh)
 	fsChM1 := NewIDSetCustom("force.-", NewSetTriangular(-2, -1, 0), &fvCh)
@@ -269,7 +269,7 @@ func TestEvaluate(t *testing.T) {
 			{
 				inputDiff:   -1,
 				inputDt:     -0.1,
-				outputForce: 2.93,
+				outputForce: 2.94,
 			},
 			{
 				inputDiff:   -1,
@@ -279,7 +279,7 @@ func TestEvaluate(t *testing.T) {
 			{
 				inputDiff:   1,
 				inputDt:     0.1,
-				outputForce: -2.93,
+				outputForce: -2.94,
 			},
 			{
 				inputDiff:   1,
@@ -299,7 +299,7 @@ func TestEvaluate(t *testing.T) {
 			{
 				inputDiff:   20,
 				inputDt:     0.1,
-				outputForce: -3.01,
+				outputForce: -3.03,
 			},
 		}
 
