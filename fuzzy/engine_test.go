@@ -190,7 +190,7 @@ func TestEngineCheck(t *testing.T) {
 			defuzzer := NewDefuzzer(DefuzzificationCentroid)
 			_, err := NewEngine(rules, defuzzer)
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldContainSubstring, "sets: id `c1` already present (for val id `c")
+			So(err.Error(), ShouldContainSubstring, "sets: id `c1` already present (for val id `c")
 		})
 	})
 }

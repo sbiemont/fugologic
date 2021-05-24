@@ -95,7 +95,7 @@ func TestSystem(t *testing.T) {
 					So(err2Bis, ShouldBeNil)
 
 					var system System = []Engine{eng1, eng2Bis, eng3}
-					So(system.checkUnicity(), ShouldBeError, "values: id `a` already present")
+					So(system.checkUnicity(), ShouldBeError, "values: id `a` already present")
 				})
 
 				Convey("when ok", func() {
