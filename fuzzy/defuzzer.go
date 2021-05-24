@@ -26,9 +26,44 @@ var (
 		return mx / m
 	}
 
-	// TODO add more defuzzification method
+	// DefuzzificationSmallestOfMax returns the smallest of maximums
+	DefuzzificationSmallestOfMax Defuzzification = func(fs Set, u crisp.Set) float64 {
+		xSmallestMax, _ := defuzzificationMaximums(fs, u)
+		return xSmallestMax
+	}
 
+	// DefuzzificationSmallestOfMax returns the largest of maximums
+	DefuzzificationLargestOfMax Defuzzification = func(fs Set, u crisp.Set) float64 {
+		_, xLargestMax := defuzzificationMaximums(fs, u)
+		return xLargestMax
+	}
 )
+
+func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
+	var xSmallestMax, xLargestMax float64
+	var ySmallestMax, yLargestMax float64
+	values := u.Values()
+	yValues := make([]float64, len(values))
+	for i, x := range values {
+		yValues[i] = fs(x)
+	}
+
+	l := len(values) - 1
+	for i, x := range values {
+		x2 := values[l-i]
+		y2 := yValues[l-i]
+		y := yValues[i]
+		if y >= yLargestMax {
+			xLargestMax = x
+			yLargestMax = y
+		}
+		if y2 >= ySmallestMax {
+			xSmallestMax = x2
+			ySmallestMax = y2
+		}
+	}
+	return xSmallestMax, xLargestMax
+}
 
 // Defuzzer is responsible for collecting rule's results and to defuzz
 type Defuzzer struct {
