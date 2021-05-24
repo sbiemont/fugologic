@@ -8,9 +8,7 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-// Custom engine for testing
-// Returns the 2 inputs and the output
-func customEngine() (Engine, [2]IDVal, IDVal) {
+func customValues() ([5]IDSet, [5]IDSet, [5]IDSet) {
 	// Input #1
 	setDiff, _ := crisp.NewSet(-2, 2, 0.1)
 	fvDiff := NewIDValCustom("diff/consigne", setDiff)
@@ -38,81 +36,14 @@ func customEngine() (Engine, [2]IDVal, IDVal) {
 	fsChP1 := NewIDSetCustom("force.+", NewSetTriangular(0, 1, 2), &fvCh)
 	fsChP2 := NewIDSetCustom("force.++", NewSetStepUp(1, 4), &fvCh)
 
-	// Rules
-	// a & b -> c
-	//               |    temp/dt             |
-	//               |------------------------|
-	//               | -- |  - |  0 |  + | ++ |
-	// ---------|----|----|----|----|----|----|
-	// diff     | -- | ++ | ++ | ++ |  + |  + |
-	// consigne |  - | ++ | ++ |  + |  0 |  0 |
-	//          |  0 |  + |  + |  0 |  - |  - |
-	//          |  + |  0 |  0 |  - | -- | -- |
-	//          | ++ |  - |  - | -- | -- | -- |
-	rules := []Rule{
-		NewRule(NewExpression([]Premise{fsDiffM2, fsDtM2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP2}),
-		NewRule(NewExpression([]Premise{fsDiffM2, fsDtM1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP2}),
-		NewRule(NewExpression([]Premise{fsDiffM2, fsDt0}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP2}),
-		NewRule(NewExpression([]Premise{fsDiffM2, fsDtP1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP1}),
-		NewRule(NewExpression([]Premise{fsDiffM2, fsDtP2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP1}),
-
-		NewRule(NewExpression([]Premise{fsDiffM1, fsDtM2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP2}),
-		NewRule(NewExpression([]Premise{fsDiffM1, fsDtM1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP2}),
-		NewRule(NewExpression([]Premise{fsDiffM1, fsDt0}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP1}),
-		NewRule(NewExpression([]Premise{fsDiffM1, fsDtP1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh0}),
-		NewRule(NewExpression([]Premise{fsDiffM1, fsDtP2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh0}),
-
-		NewRule(NewExpression([]Premise{fsDiff0, fsDtM2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP1}),
-		NewRule(NewExpression([]Premise{fsDiff0, fsDtM1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChP1}),
-		NewRule(NewExpression([]Premise{fsDiff0, fsDt0}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh0}),
-		NewRule(NewExpression([]Premise{fsDiff0, fsDtP1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM1}),
-		NewRule(NewExpression([]Premise{fsDiff0, fsDtP2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM1}),
-
-		NewRule(NewExpression([]Premise{fsDiffP1, fsDtM2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh0}),
-		NewRule(NewExpression([]Premise{fsDiffP1, fsDtM1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh0}),
-		NewRule(NewExpression([]Premise{fsDiffP1, fsDt0}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM1}),
-		NewRule(NewExpression([]Premise{fsDiffP1, fsDtP1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM2}),
-		NewRule(NewExpression([]Premise{fsDiffP1, fsDtP2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM2}),
-
-		NewRule(NewExpression([]Premise{fsDiffP2, fsDtM2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM1}),
-		NewRule(NewExpression([]Premise{fsDiffP2, fsDtM1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM1}),
-		NewRule(NewExpression([]Premise{fsDiffP2, fsDt0}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM2}),
-		NewRule(NewExpression([]Premise{fsDiffP2, fsDtP1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM2}),
-		NewRule(NewExpression([]Premise{fsDiffP2, fsDtP2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsChM2}),
-	}
-
-	defuzzer := NewDefuzzer(DefuzzificationCentroid)
-	engine, _ := NewEngine(rules, defuzzer)
-	return engine, [2]IDVal{fvDiff, fvDt}, fvCh
+	return [5]IDSet{fsDiffM2, fsDiffM1, fsDiff0, fsDiffP1, fsDiffP2},
+		[5]IDSet{fsDtM2, fsDtM1, fsDt0, fsDtP1, fsDtP2},
+		[5]IDSet{fsChM2, fsChM1, fsCh0, fsChP1, fsChP2}
 }
 
-func compactEngine() (Engine, [2]IDVal, IDVal) {
-	// Input #1
-	setDiff, _ := crisp.NewSet(-2, 2, 0.1)
-	fvDiff := NewIDValCustom("diff/consigne", setDiff)
-	fsDiffM2 := NewIDSetCustom("diff/consigne.--", NewSetStepDown(-2, -0.5), &fvDiff)
-	fsDiffM1 := NewIDSetCustom("diff/consigne.-", NewSetTriangular(-2, -0.5, 0), &fvDiff)
-	fsDiff0 := NewIDSetCustom("diff/consigne.0", NewSetTriangular(-0.5, 0, 0.5), &fvDiff)
-	fsDiffP1 := NewIDSetCustom("diff/consigne.+", NewSetTriangular(0, 0.5, 2), &fvDiff)
-	fsDiffP2 := NewIDSetCustom("diff/consigne.++", NewSetStepUp(0.5, 2), &fvDiff)
-
-	// Input #2
-	setDt, _ := crisp.NewSet(-0.2, 0.2, 0.01)
-	fvDt := NewIDValCustom("temp/dt", setDt)
-	fsDtM2 := NewIDSetCustom("temp/dt.--", NewSetStepDown(-0.2, -0.1), &fvDt)
-	fsDtM1 := NewIDSetCustom("temp/dt.-", NewSetTriangular(-0.2, -0.1, 0), &fvDt)
-	fsDt0 := NewIDSetCustom("temp/dt.0", NewSetTriangular(-0.1, 0, 0.1), &fvDt)
-	fsDtP1 := NewIDSetCustom("temp/dt.+", NewSetTriangular(0, 0.1, 0.2), &fvDt)
-	fsDtP2 := NewIDSetCustom("temp/dt.++", NewSetStepUp(0.1, 0.2), &fvDt)
-
-	// Output
-	setCh, _ := crisp.NewSet(-4, 4, 0.05)
-	fvCh := NewIDValCustom("force", setCh)
-	fsChM2 := NewIDSetCustom("force.--", NewSetStepDown(-4, -1), &fvCh)
-	fsChM1 := NewIDSetCustom("force.-", NewSetTriangular(-2, -1, 0), &fvCh)
-	fsCh0 := NewIDSetCustom("force.0", NewSetTriangular(-1, 0, 1), &fvCh)
-	fsChP1 := NewIDSetCustom("force.+", NewSetTriangular(0, 1, 2), &fvCh)
-	fsChP2 := NewIDSetCustom("force.++", NewSetStepUp(1, 4), &fvCh)
+// Custom engine for testing
+func customEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
+	fsDiff, fsDt, fsCh := customValues()
 
 	// Rules
 	// a & b -> c
@@ -126,40 +57,91 @@ func compactEngine() (Engine, [2]IDVal, IDVal) {
 	//          |  + |  0 |  0 |  - | -- | -- |
 	//          | ++ |  - |  - | -- | -- | -- |
 	rules := []Rule{
-		If(fsDiffM2.And(fsDtM2)).Use(ImplicationMin).Then([]IDSet{fsChP2}),
-		If(fsDiffM2.And(fsDtM1)).Use(ImplicationMin).Then([]IDSet{fsChP2}),
-		If(fsDiffM2.And(fsDt0)).Use(ImplicationMin).Then([]IDSet{fsChP2}),
-		If(fsDiffM2.And(fsDtP1)).Use(ImplicationMin).Then([]IDSet{fsChP1}),
-		If(fsDiffM2.And(fsDtP2)).Use(ImplicationMin).Then([]IDSet{fsChP1}),
+		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
+		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
+		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
+		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
+		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
 
-		If(fsDiffM1.And(fsDtM2)).Use(ImplicationMin).Then([]IDSet{fsChP2}),
-		If(fsDiffM1.And(fsDtM1)).Use(ImplicationMin).Then([]IDSet{fsChP2}),
-		If(fsDiffM1.And(fsDt0)).Use(ImplicationMin).Then([]IDSet{fsChP1}),
-		If(fsDiffM1.And(fsDtP1)).Use(ImplicationMin).Then([]IDSet{fsCh0}),
-		If(fsDiffM1.And(fsDtP2)).Use(ImplicationMin).Then([]IDSet{fsCh0}),
+		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
+		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
+		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
+		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
+		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
 
-		If(fsDiff0.And(fsDtM2)).Use(ImplicationMin).Then([]IDSet{fsChP1}),
-		If(fsDiff0.And(fsDtM1)).Use(ImplicationMin).Then([]IDSet{fsChP1}),
-		If(fsDiff0.And(fsDt0)).Use(ImplicationMin).Then([]IDSet{fsCh0}),
-		If(fsDiff0.And(fsDtP1)).Use(ImplicationMin).Then([]IDSet{fsChM1}),
-		If(fsDiff0.And(fsDtP2)).Use(ImplicationMin).Then([]IDSet{fsChM1}),
+		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
+		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
+		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
+		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
+		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
 
-		If(fsDiffP1.And(fsDtM2)).Use(ImplicationMin).Then([]IDSet{fsCh0}),
-		If(fsDiffP1.And(fsDtM1)).Use(ImplicationMin).Then([]IDSet{fsCh0}),
-		If(fsDiffP1.And(fsDt0)).Use(ImplicationMin).Then([]IDSet{fsChM1}),
-		If(fsDiffP1.And(fsDtP1)).Use(ImplicationMin).Then([]IDSet{fsChM2}),
-		If(fsDiffP1.And(fsDtP2)).Use(ImplicationMin).Then([]IDSet{fsChM2}),
+		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
+		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
+		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
+		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
+		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
 
-		If(fsDiffP2.And(fsDtM2)).Use(ImplicationMin).Then([]IDSet{fsChM1}),
-		If(fsDiffP2.And(fsDtM1)).Use(ImplicationMin).Then([]IDSet{fsChM1}),
-		If(fsDiffP2.And(fsDt0)).Use(ImplicationMin).Then([]IDSet{fsChM2}),
-		If(fsDiffP2.And(fsDtP1)).Use(ImplicationMin).Then([]IDSet{fsChM2}),
-		If(fsDiffP2.And(fsDtP2)).Use(ImplicationMin).Then([]IDSet{fsChM2}),
+		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
+		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
+		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
+		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
+		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
 	}
 
 	defuzzer := NewDefuzzer(DefuzzificationCentroid)
 	engine, _ := NewEngine(rules, defuzzer)
-	return engine, [2]IDVal{fvDiff, fvDt}, fvCh
+	return engine, fsDiff, fsDt, fsCh
+}
+
+func compactEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
+	fsDiff, fsDt, fsCh := customValues()
+
+	// Rules
+	// a & b -> c
+	//               |    temp/dt             |
+	//               |------------------------|
+	//               | -- |  - |  0 |  + | ++ |
+	// ---------|----|----|----|----|----|----|
+	// diff     | -- | ++ | ++ | ++ |  + |  + |
+	// consigne |  - | ++ | ++ |  + |  0 |  0 |
+	//          |  0 |  + |  + |  0 |  - |  - |
+	//          |  + |  0 |  0 |  - | -- | -- |
+	//          | ++ |  - |  - | -- | -- | -- |
+	rules := []Rule{
+		If(fsDiff[0].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[0].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+
+		If(fsDiff[1].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[1].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[1].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[1].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[1].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+
+		If(fsDiff[2].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[2].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[2].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[2].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[2].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+
+		If(fsDiff[3].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[3].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[3].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[3].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[3].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+
+		If(fsDiff[4].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[4].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[4].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[4].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[4].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+	}
+
+	defuzzer := NewDefuzzer(DefuzzificationCentroid)
+	engine, _ := NewEngine(rules, defuzzer)
+	return engine, fsDiff, fsDt, fsCh
 }
 
 func TestEngineCheck(t *testing.T) {
@@ -322,15 +304,15 @@ func TestEvaluate(t *testing.T) {
 		}
 
 		// Check engine method
-		check := func(engine Engine, inputs [2]IDVal, output IDVal) {
+		check := func(engine Engine, fsDiff, fsDt, fsCh [5]IDSet) {
 			for _, tt := range tests {
 				result, errEngine := engine.Evaluate(map[id.ID]float64{
-					inputs[0].ID(): tt.inputDiff,
-					inputs[1].ID(): tt.inputDt,
+					fsDiff[0].parent.ID(): tt.inputDiff,
+					fsDt[0].parent.ID():   tt.inputDt,
 				})
 				So(errEngine, ShouldBeNil)
 				So(result, ShouldHaveLength, 1)
-				So(result[output.ID()], ShouldAlmostEqual, tt.outputForce, 0.01)
+				So(result[fsCh[0].parent.ID()], ShouldAlmostEqual, tt.outputForce, 0.01)
 			}
 		}
 
@@ -341,26 +323,28 @@ func TestEvaluate(t *testing.T) {
 
 func BenchmarkEngineNTimes(b *testing.B) {
 	const evaluations = 1000
-	engine, inputs, _ := customEngine()
+	engine, fsDiff, fsDt, _ := customEngine()
 
 	// Evaluate n times the system
 	for i := 0; i < evaluations; i++ {
 		engine.Evaluate(map[id.ID]float64{
-			inputs[0].ID(): -1,
-			inputs[1].ID(): -0.1,
+			fsDiff[0].parent.ID(): -1,
+			fsDt[0].parent.ID():   -0.1,
 		})
 	}
 }
 
 func BenchmarkEngineMatrix(b *testing.B) {
-	engine, inputs, _ := customEngine()
+	engine, fsDiff, fsDt, _ := customEngine()
 
 	// Evaluate all possible values of the system
-	for _, diff := range inputs[0].u.Values() {
-		for _, dt := range inputs[1].u.Values() {
+	diffValues := fsDiff[0].parent.u.Values()
+	dtValues := fsDt[0].parent.u.Values()
+	for _, diff := range diffValues {
+		for _, dt := range dtValues {
 			engine.Evaluate(DataInput{
-				inputs[0].ID(): diff,
-				inputs[1].ID(): dt,
+				fsDiff[0].parent.ID(): diff,
+				fsDt[0].parent.ID():   dt,
 			})
 		}
 	}

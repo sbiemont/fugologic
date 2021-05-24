@@ -24,7 +24,7 @@ if err != nil{
 
 ### Fuzzy values definition
 
-Inputs and outputs are defined as:
+Fuzzy values and fuzzy sets are defined as :
 
 * `fuzzy.IDVal`: a fuzzy value that contains,
   * an identifier
@@ -101,7 +101,7 @@ Or in a more explicit way
 
 ```go
 // A1 and B1 and C1
-exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorAnd)
+exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd)
 ```
 
 At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
@@ -109,20 +109,20 @@ At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E
 ```go
 // Using default connectors
 // (A1 and B1 and C1) or (D1 and E1)
-expExp := (fsA1.And(fsB1).And(fsC1)).Or(fsD1.And(fsE1))
+exp := (fsA1.And(fsB1).And(fsC1)).Or(fsD1.And(fsE1))
 ```
 
 Or in a more explicit way
 
 ```go
 // A1 and B1 and C1
-expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorAnd)
+expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd)
 
 // D1 and E1
-expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorAnd)
+expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)
 
 // (A1 and B1 and C1) or (D1 and E1)
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorOr)
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)
 ```
 
 #### Describe an implication
@@ -150,7 +150,7 @@ rules := []fuzzy.Rule{
   fuzzy.If(fsA1.And(fsB1))     // expression
     .Use(fuzzy.ImplicationMin) // implication
     .Then([]fuzzy.IDSet{fsC1}) // consequence
-  // Describe other rules
+  // Describe other rules the same way
   // ...
 }
 ```
@@ -162,11 +162,11 @@ Connectors can be explicitely choosen, unlike for the first method.
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
   fuzzy.NewRule(
-    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorAnd), // expression
-    fuzzy.ImplicationMin,                                                 // implication
-    []fuzzy.IDSet{fsC1},                                                  // consequence
+    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorZadehAnd), // expression
+    fuzzy.ImplicationMin,                                                      // implication
+    []fuzzy.IDSet{fsC1},                                                       // consequence
   ),
-  // Describe other rules, for example:
+  // Describe other rules the same way, for example:
   //  * A1 and B2 => C2
   //  * A2 and B1 => C1
   //  * A2 and B2 => C2
@@ -230,7 +230,7 @@ When creating a system, some contraints are checked, like:
 
 * all identifiers shall be unique
 * an output shall only be produced once
-* loops are forbidden : an output cannot be linked to a previous engine
+* loops are forbidden : an output cannot be linked to an input of a previous engine
 
 ```go
 // Create engines
@@ -249,7 +249,7 @@ if err != nil {
 
 Then, launch the evaluation process by setting a new input value for each `IDVal` of the system.
 
-The result contains a crisp value for each fuzzy output value defined.
+The result contains a crisp value for each `IDVal` output value defined.
 
 ```go
 // Evaluation of the rules of each engines

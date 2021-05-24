@@ -37,6 +37,7 @@ func (set Set) Values() []float64 {
 	// var result []float64
 	// This error grows all over the steps
 
+	// var result []float64
 	// for x := set.xmin; x <= set.xmax; x = x + set.dx {
 	// 	result = append(result, x)
 	// }
