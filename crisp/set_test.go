@@ -8,10 +8,9 @@ import (
 
 func TestSet(t *testing.T) {
 	Convey("new set with dx", t, func() {
-		set, err := NewSet(0, 1, 0.25)
-		So(err, ShouldBeNil)
-
 		Convey("when ok", func() {
+			set, err := NewSet(0, 1, 0.25)
+			So(err, ShouldBeNil)
 			So(set, ShouldResemble, Set{
 				xmin: 0.0,
 				xmax: 1.0,
@@ -20,11 +19,16 @@ func TestSet(t *testing.T) {
 		})
 
 		Convey("when values", func() {
+			set, _ := NewSet(0, 1, 0.25)
 			So(set.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
 		})
 
+		Convey("when values with error introduction", func() {
+			set, _ := NewSet(0, 0.5, 0.1)
+			So(set.Values(), ShouldResemble, []float64{0.0, 0.1, 0.2, 0.30000000000000004, 0.4, 0.5})
+		})
+
 		Convey("when empty", func() {
-			So(Set{}.Values(), ShouldBeEmpty)
 			So(Set{}.Values(), ShouldBeEmpty)
 		})
 	})
