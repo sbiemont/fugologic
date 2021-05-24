@@ -2,7 +2,7 @@ package id
 
 import "github.com/google/uuid"
 
-// ID is a uniq identifier
+// ID represents an identifier
 type ID string
 
 // NewID returns a random unique identifier

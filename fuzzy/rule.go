@@ -1,24 +1,5 @@
 package fuzzy
 
-import (
-	"errors"
-	"math"
-)
-
-// Connector links a list of premises
-type Connector func(a, b float64) float64
-
-var (
-	ConnectorAnd Connector = math.Min
-	ConnectorOr  Connector = math.Max
-)
-
-// Premise can be evaluated (like a fuzzy set or an expression)
-// A premise can be an Expression or an IDSet
-type Premise interface {
-	Evaluate(input DataInput) (float64, error)
-}
-
 // flattenIDSets extracts the IDSets from a list of premises
 func flattenIDSets(init []IDSet, premises []Premise) []IDSet {
 	for _, premise := range premises {
@@ -30,53 +11,6 @@ func flattenIDSets(init []IDSet, premises []Premise) []IDSet {
 		}
 	}
 	return init
-}
-
-// Expression describes "connect(premises)". Eg.: A or B or C
-// An Expression is also a Premise.
-// Eg.:
-//  * Expression1 = A or B or C
-//  * Expression2 = D or E
-//  * Expression3 = Expression1 and Expression2 = (A or B or C) and (D or E)
-type Expression struct {
-	premises []Premise
-	connect  Connector
-}
-
-// NewExpression initialise a fully evaluable expression
-func NewExpression(premises []Premise, connect Connector) Expression {
-	return Expression{
-		premises: premises,
-		connect:  connect,
-	}
-}
-
-// Evaluate the expression content
-func (exp Expression) Evaluate(input DataInput) (float64, error) {
-	// Check
-	if len(exp.premises) < 1 {
-		return 0, errors.New("expression: at least 1 premise expected")
-	}
-
-	// Evaluate premises to compute values
-	values := make([]float64, len(exp.premises))
-	for i, premise := range exp.premises {
-		value, err := premise.Evaluate(input)
-		if err != nil {
-			return 0, err
-		}
-		values[i] = value
-	}
-
-	// Connect values
-	y := values[0]
-	if exp.connect != nil {
-		for _, value := range values[1:] {
-			y = exp.connect(y, value)
-		}
-	}
-
-	return y, nil
 }
 
 // Implication links an expression and produces a single fuzzy Set

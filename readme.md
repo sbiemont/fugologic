@@ -29,7 +29,7 @@ Inputs and outputs are defined as:
 * `fuzzy.IDVal`: a fuzzy value that contains,
   * an identifier
   * a list of fuzzy sets (only required for system and/or engine checks)
-  * a crisp interval of values (only required for defuzziing)
+  * a crisp interval of values (only required for defuzzification)
 * `fuzzy.IDSet`: fuzzy set that contains,
   * an identifier
   * a membership method
@@ -75,6 +75,11 @@ rule = A1 and B1    then          C1, D1
 
 Choose the input fuzzy sets and link them using a connector.
 
+2 ways are possible to describe a rule:
+
+* **compact** : uses by default the Zadeh connectors (And, Or)
+* **explicit** : choose explicitely connectors for fuzzy sets
+
 Simplest case : the expression has only one premise (directly use the fuzzy set)
 
 ```go
@@ -83,7 +88,16 @@ exp := fsA1
 ```
 
 An expression can be a flat list of several fuzzy sets linked with the same connector.
-For example : `A1 and B1 and C1`
+
+For example : `A1 and B1 and C1`.
+
+```go
+// Using default connectors
+// A1 and B1 and C1
+exp := fsA1.And(fsB1).And(fsC1)
+```
+
+Or in a more explicit way
 
 ```go
 // A1 and B1 and C1
@@ -91,6 +105,14 @@ exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorAnd
 ```
 
 At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
+
+```go
+// Using default connectors
+// (A1 and B1 and C1) or (D1 and E1)
+expExp := (fsA1.And(fsB1).And(fsC1)).Or(fsD1.And(fsE1))
+```
+
+Or in a more explicit way
 
 ```go
 // A1 and B1 and C1
@@ -108,8 +130,8 @@ exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorOr)
 An implication links the input expression and the ouput consequence.
 Several methods can be chosen like:
 
-* `ImplicationProd` : Mamdani implication product
-* `ImplicationMin`
+* `ImplicationMin` : Mamdani implication minimum
+* `ImplicationProd` : Sugeno implication product
 * ...
 
 #### Describe an output consequence
@@ -118,14 +140,30 @@ A consequence is just a list of fuzzy sets.
 
 #### Write a rule
 
-Combine the several items previously seen to describe the rules:
+Combine the several items previously seen to describe the rules.
+
+The first method is useful when describing rules directly int the code (but it uses default connectors)
+
+```go
+rules := []fuzzy.Rule{
+  // A1 and B1 => C1
+  fuzzy.If(fsA1.And(fsB1))     // expression
+    .Use(fuzzy.ImplicationMin) // implication
+    .Then([]fuzzy.IDSet{fsC1}) // consequence
+  // Describe other rules
+  // ...
+}
+```
+
+The second method can be used to easily generate rules from an external builder.
+Connectors can be explicitely choosen, unlike for the first method.
 
 ```go
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
   fuzzy.NewRule(
     fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorAnd), // expression
-    fuzzy.ImplicationProd,                                                // mamdani implication product
+    fuzzy.ImplicationMin,                                                 // implication
     []fuzzy.IDSet{fsC1},                                                  // consequence
   ),
   // Describe other rules, for example:
@@ -166,7 +204,7 @@ Then, launch the evaluation process by setting a new input value for each `IDVal
 The result contains a crisp value for each fuzzy output value defined.
 
 ```go
-// Evaluation of the rule "A1 and B1 => C1"
+// Evaluate all the rules of the engine
 result, err := engine.Evaluate(fuzzy.DataInput{
   "a": 1,
   "b": 0.05,
@@ -249,7 +287,6 @@ classDiagram
     + Evaluate()
   }
   class Defuzzer {
-    + Add([]IDSet)
     + Defuzz()
   }
   class DataInput {
@@ -264,20 +301,20 @@ classDiagram
 
   System --> "*" Engine
   DataInput --> "1" IDSet
-  Defuzzer --> "1" IDSet
+  Defuzzer --> "1" IDSet : results
 
   IDSet "1" <--> "*" IDVal
 
-  Premise "*" <-- Expression
+  Premise "*" <-- Expression : premises
   Expression --|> Premise
   IDSet --|> Premise
-  DataInput <-- Premise
+  DataInput <.. Premise
 
-  Engine --> "*" Rule
-  Engine --> "1" Defuzzer
-  Engine --> DataInput
-  Engine --> DataOutput
+  Engine --> "*" Rule : rules
+  Engine --> "1" Defuzzer : defuzzer
+  Engine ..> DataInput
+  Engine ..> DataOutput
 
-  Rule --> "*" Expression : inputs
+  Rule --> "*" Premise : inputs
   Rule --> "*" IDSet : outputs
 ```

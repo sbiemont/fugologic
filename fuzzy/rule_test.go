@@ -26,83 +26,6 @@ func TestImplication(t *testing.T) {
 	})
 }
 
-func TestExpression(t *testing.T) {
-	var timesTwo Set = func(x float64) float64 { return x * 2 }
-
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", timesTwo, &fvA)
-
-	fvB := NewIDValCustom("b", crisp.Set{})
-	fsB1 := NewIDSetCustom("b1", timesTwo, &fvB)
-
-	fvC := NewIDValCustom("c", crisp.Set{})
-	fsC1 := NewIDSetCustom("c1", timesTwo, &fvC)
-
-	fvD := NewIDValCustom("d", crisp.Set{})
-	fsD1 := NewIDSetCustom("d1", timesTwo, &fvD)
-
-	fvE := NewIDValCustom("e", crisp.Set{})
-	fsE1 := NewIDSetCustom("e1", timesTwo, &fvE)
-
-	Convey("new expression", t, func() {
-		Convey("when empty", func() {
-			exp := NewExpression([]Premise{}, ConnectorAnd)
-			result, err := exp.Evaluate(DataInput{})
-			So(err, ShouldBeError, "expression: at least 1 premise expected")
-			So(result, ShouldBeZeroValue)
-		})
-
-		Convey("when one premise", func() {
-			dataIn := DataInput{
-				fvA.uuid: 1,
-			}
-			result, err := fsA1.Evaluate(dataIn)
-			So(err, ShouldBeNil)
-			So(result, ShouldEqual, 1*2) // iso(1)*2
-		})
-
-		Convey("when several premises", func() {
-			dataIn := DataInput{
-				fvA.uuid: 1,
-				fvB.uuid: 2,
-				fvC.uuid: 3,
-			}
-
-			Convey("when connector AND", func() {
-				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorAnd)
-				result, err := exp.Evaluate(dataIn)
-				So(err, ShouldBeNil)
-				So(result, ShouldEqual, 1*2) // min(1, 2, 3)*2
-			})
-
-			Convey("when connector OR", func() {
-				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorOr)
-				result, err := exp.Evaluate(dataIn)
-				So(err, ShouldBeNil)
-				So(result, ShouldEqual, 3*2) // max(1, 2, 3)*2
-			})
-		})
-
-		Convey("when complex expression (A and B and C) or (D and E)", func() {
-			dataIn := DataInput{
-				fvA.uuid: 1,
-				fvB.uuid: 2,
-				fvC.uuid: 3,
-				fvD.uuid: 4,
-				fvE.uuid: 5,
-			}
-
-			expABC := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorAnd)
-			expDE := NewExpression([]Premise{fsD1, fsE1}, ConnectorAnd)
-			exp := NewExpression([]Premise{expABC, expDE}, ConnectorOr)
-
-			result, err := exp.Evaluate(dataIn)
-			So(err, ShouldBeNil)
-			So(result, ShouldEqual, 8) // max(min(1, 2, 3)*2, min(4, 5)*2)
-		})
-	})
-}
-
 func TestFlattenIDSets(t *testing.T) {
 	var timesTwo Set = func(x float64) float64 { return x * 2 }
 
@@ -128,10 +51,10 @@ func TestFlattenIDSets(t *testing.T) {
 	})
 
 	Convey("flatten id sets", t, func() {
-		expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorAnd)       // A and B
-		expCD := NewExpression([]Premise{fsC1, fsD1}, ConnectorAnd)       // C and D
-		expABCD := NewExpression([]Premise{expAB, expCD}, ConnectorOr)    // (A and B) or (C and D)
-		expABCDE := NewExpression([]Premise{expABCD, fsE1}, ConnectorAnd) // ((A and B) or (C and D)) and E
+		expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd)       // A and B
+		expCD := NewExpression([]Premise{fsC1, fsD1}, ConnectorZadehAnd)       // C and D
+		expABCD := NewExpression([]Premise{expAB, expCD}, ConnectorZadehOr)    // (A and B) or (C and D)
+		expABCDE := NewExpression([]Premise{expABCD, fsE1}, ConnectorZadehAnd) // ((A and B) or (C and D)) and E
 
 		result := flattenIDSets(nil, []Premise{expABCDE})
 		So(result, ShouldHaveLength, 5)
@@ -214,8 +137,8 @@ func TestRule(t *testing.T) {
 
 		Convey("when several inputs", func() {
 			// (A and B) or C => D
-			expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorAnd)
-			expABC := NewExpression([]Premise{expAB, fsC1}, ConnectorAnd)
+			expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd)
+			expABC := NewExpression([]Premise{expAB, fsC1}, ConnectorZadehAnd)
 			rule := NewRule(expABC, ImplicationProd, []IDSet{fsD1})
 			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID(), fsB1.ID(), fsC1.ID()})
 		})

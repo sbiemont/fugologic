@@ -32,9 +32,20 @@ func (set Set) Values() []float64 {
 		return nil
 	}
 
-	result := []float64{}
-	for i := set.xmin; i <= set.xmax; i += set.dx {
-		result = append(result, i)
+	// /!\ the loop x += dx introduces a constant delta error at each step
+	// Eg.: try loop from 0 to 5 with a step of 0.1
+	// var result []float64
+	// This error grows all over the steps
+
+	// for x := set.xmin; x <= set.xmax; x = x + set.dx {
+	// 	result = append(result, x)
+	// }
+
+	// Prefer the solution of x = min + i*dx (a delta error is still present but more acceptable)
+	n := int(1 + (set.xmax-set.xmin)/set.dx)
+	result := make([]float64, n)
+	for i := 0; i < n; i++ {
+		result[i] = set.xmin + float64(i)*set.dx
 	}
 	return result
 }
