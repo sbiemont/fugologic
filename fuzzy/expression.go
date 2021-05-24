@@ -37,15 +37,15 @@ var (
 	ConnectorZadehNor Connector = func(a, b float64) float64 { return 1 - math.Max(a, b) }
 
 	// Hyperbolic AND = a*b
-	HyperbolicAnd Connector = func(a, b float64) float64 { return a * b }
+	ConnectorHyperbolicAnd Connector = func(a, b float64) float64 { return a * b }
 	// Hyperbolic OR = a+b-a*b
-	HyperbolicOr Connector = func(a, b float64) float64 { return a + b - a*b }
+	ConnectorHyperbolicOr Connector = func(a, b float64) float64 { return a + b - a*b }
 	// Hyperbolic XOR = a+b-2*a*b
-	HyperbolicXor Connector = func(a, b float64) float64 { return a + b - 2*a*b }
+	ConnectorHyperbolicXor Connector = func(a, b float64) float64 { return a + b - 2*a*b }
 	// Hyperbolic NAND = 1-a*b
-	HyperbolicNand Connector = func(a, b float64) float64 { return 1 - a*b }
+	ConnectorHyperbolicNand Connector = func(a, b float64) float64 { return 1 - a*b }
 	// Hyperbolic OR = 1-a-b+a*b
-	HyperbolicNor Connector = func(a, b float64) float64 { return 1 - a - b + a*b }
+	ConnectorHyperbolicNor Connector = func(a, b float64) float64 { return 1 - a - b + a*b }
 )
 
 // Expression connects a list of premises. Eg.: A or B or C
