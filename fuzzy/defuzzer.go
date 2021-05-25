@@ -90,8 +90,8 @@ func NewDefuzzer(fct Defuzzification) Defuzzer {
 	}
 }
 
-// Add merges the sets to the defuzzer result
-func (dfz *Defuzzer) Add(idSets []IDSet) {
+// add the sets to the defuzzer result
+func (dfz *Defuzzer) add(idSets []IDSet) {
 	dfz.results = append(dfz.results, idSets...)
 }
 

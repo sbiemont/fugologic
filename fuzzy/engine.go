@@ -36,7 +36,7 @@ func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 		}
 
 		// Push result into the defuzzer
-		eng.defuzz.Add(idSets)
+		eng.defuzz.add(idSets)
 	}
 
 	// Apply defuzzification

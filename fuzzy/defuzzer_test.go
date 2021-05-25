@@ -27,8 +27,8 @@ func TestDefuzzerAdd(t *testing.T) {
 
 		Convey("when ok", func() {
 			defuzzer := NewDefuzzer(nil)
-			defuzzer.Add([]IDSet{fsA1, fsA3})
-			defuzzer.Add([]IDSet{fsA2})
+			defuzzer.add([]IDSet{fsA1, fsA3})
+			defuzzer.add([]IDSet{fsA2})
 			So(defuzzer.results, ShouldHaveLength, 3)
 		})
 	})
@@ -55,7 +55,7 @@ func TestDefuzzerDefuzz(t *testing.T) {
 
 		Convey("when ok", func() {
 			defuzzer := NewDefuzzer(defuzzificationNone)
-			defuzzer.Add([]IDSet{fsA1, fsA2, fsB1, fsB2})
+			defuzzer.add([]IDSet{fsA1, fsA2, fsB1, fsB2})
 			result, err := defuzzer.Defuzz()
 			So(err, ShouldBeNil)
 			So(result, ShouldResemble, DataOutput{

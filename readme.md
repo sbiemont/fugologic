@@ -71,6 +71,26 @@ rule = A1 and B1    then          C1, D1
 * `implication` : define an implication method
 * `consequence` : defines several fuzzy sets as the outputs
 
+#### Use a rule builder
+
+This part is optional but helps creating simple rules.
+
+To create a rule builder, just set the default configuration:
+
+```go
+builder := Builder {
+  and:  fuzzy.ConnectorZadehAnd,
+  or:   fuzzy.ConnectorZadehOr,
+  impl: fuzzy.ImplicationMin,
+}
+```
+
+Or use a predefined builder like:
+
+```go
+builder := NewMamdaniBuilder()
+```
+
 #### Describe an input expression
 
 Choose the input fuzzy sets and link them using a connector.
@@ -94,7 +114,7 @@ For example : `A1 and B1 and C1`.
 ```go
 // Using default connectors
 // A1 and B1 and C1
-exp := fsA1.And(fsB1).And(fsC1)
+exp := builder.If(fsA1).And(fsB1).And(fsC1)
 ```
 
 Or in a more explicit way
@@ -108,8 +128,9 @@ At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E
 
 ```go
 // Using default connectors
-// (A1 and B1 and C1) or (D1 and E1)
-exp := (fsA1.And(fsB1).And(fsC1)).Or(fsD1.And(fsE1))
+expABC := builder.If(fsA1).And(fsB1).And(fsC1) // A1 and B1 and C1
+expDE := builder.If(fsD1).And(fsE1)            // D1 and E1
+exp := expABC.Or(expDE)                        // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 Or in a more explicit way
@@ -147,7 +168,7 @@ The first method is useful when describing rules directly int the code (but it u
 ```go
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
-  fuzzy.If(fsA1.And(fsB1)).Then([]fuzzy.IDSet{fsC1})
+  builder.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1})
   // Describe other rules the same way
   // ...
 }
