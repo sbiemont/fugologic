@@ -11,13 +11,6 @@ type Premise interface {
 	Evaluate(input DataInput) (float64, error)
 }
 
-// If starts a rule expression
-func If(premise Premise) RuleExpression {
-	return RuleExpression{
-		premise: premise,
-	}
-}
-
 // Connector links a list of premises
 type Connector func(a, b float64) float64
 
@@ -29,7 +22,7 @@ var (
 	ConnectorZadehOr Connector = math.Max
 	// Zadeh XOR = a+b-2*min(a,b)
 	ConnectorZadehXor Connector = func(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
-	// Zadeh NAND = 1-max(a,b)
+	// Zadeh NAND = 1-min(a,b)
 	ConnectorZadehNand Connector = func(a, b float64) float64 { return 1 - math.Min(a, b) }
 	// Zadeh NOR = 1-max(a,b)
 	ConnectorZadehNor Connector = func(a, b float64) float64 { return 1 - math.Max(a, b) }
@@ -64,6 +57,19 @@ func NewExpression(premises []Premise, connect Connector) Expression {
 	}
 }
 
+// Connect the current expression, using the connector and the given premise
+// Returns <new exp> = <exp> <connect> <premise>
+// E.g:    <A and B> = <A>   <and>     <B>
+func (exp Expression) Connect(premise Premise, connect Connector) Expression {
+	if exp.connect == nil {
+		// Direct connection
+		return NewExpression(append(exp.premises, premise), connect)
+	}
+
+	// Connect both premises in a new expression
+	return NewExpression([]Premise{exp, premise}, connect)
+}
+
 // Evaluate the expression content
 func (exp Expression) Evaluate(input DataInput) (float64, error) {
 	// Check
@@ -90,45 +96,4 @@ func (exp Expression) Evaluate(input DataInput) (float64, error) {
 	}
 
 	return y, nil
-}
-
-// aggregate the given premise to the current expression using a custom connector
-func (exp Expression) aggregate(premise Premise, connect Connector) Premise {
-	if exp.connect == nil {
-		// Direct connection
-		return Expression{
-			premises: append(exp.premises, premise),
-			connect:  connect,
-		}
-	}
-
-	// Connect both premises in a new expression
-	return Expression{
-		premises: []Premise{exp, premise},
-		connect:  connect,
-	}
-}
-
-// And connects the current expression and a premise with the default AND connector
-func (exp Expression) And(premise Premise) Premise {
-	return exp.aggregate(premise, ConnectorZadehAnd)
-}
-
-// Or connects the current expression and a premise with the default OR connector
-func (exp Expression) Or(premise Premise) Premise {
-	return exp.aggregate(premise, ConnectorZadehOr)
-}
-
-// RuleExpression connects an expression to an implication
-type RuleExpression struct {
-	premise Premise
-}
-
-// Then describes the consequence of an implication
-func (rexp RuleExpression) Then(consequence []IDSet) Rule {
-	return Rule{
-		inputs:      rexp.premise,
-		implication: ImplicationMin,
-		outputs:     consequence,
-	}
 }

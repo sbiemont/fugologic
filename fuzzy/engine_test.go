@@ -88,59 +88,7 @@ func customEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
 		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
 	}
 
-	defuzzer := NewDefuzzer(DefuzzificationCentroid)
-	engine, _ := NewEngine(rules, defuzzer)
-	return engine, fsDiff, fsDt, fsCh
-}
-
-func compactEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
-	fsDiff, fsDt, fsCh := customValues()
-
-	// Rules
-	// a & b -> c
-	//               |    temp/dt             |
-	//               |------------------------|
-	//               | -- |  - |  0 |  + | ++ |
-	// ---------|----|----|----|----|----|----|
-	// diff     | -- | ++ | ++ | ++ |  + |  + |
-	// consigne |  - | ++ | ++ |  + |  0 |  0 |
-	//          |  0 |  + |  + |  0 |  - |  - |
-	//          |  + |  0 |  0 |  - | -- | -- |
-	//          | ++ |  - |  - | -- | -- | -- |
-	rules := []Rule{
-		If(fsDiff[0].And(fsDt[0])).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[1])).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[2])).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[3])).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[0].And(fsDt[4])).Then([]IDSet{fsCh[3]}),
-
-		If(fsDiff[1].And(fsDt[0])).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[1].And(fsDt[1])).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[1].And(fsDt[2])).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[1].And(fsDt[3])).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[1].And(fsDt[4])).Then([]IDSet{fsCh[2]}),
-
-		If(fsDiff[2].And(fsDt[0])).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[2].And(fsDt[1])).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[2].And(fsDt[2])).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[2].And(fsDt[3])).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[2].And(fsDt[4])).Then([]IDSet{fsCh[1]}),
-
-		If(fsDiff[3].And(fsDt[0])).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[3].And(fsDt[1])).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[3].And(fsDt[2])).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[3].And(fsDt[3])).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[3].And(fsDt[4])).Then([]IDSet{fsCh[0]}),
-
-		If(fsDiff[4].And(fsDt[0])).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[4].And(fsDt[1])).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[4].And(fsDt[2])).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[4].And(fsDt[3])).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[4].And(fsDt[4])).Then([]IDSet{fsCh[0]}),
-	}
-
-	defuzzer := NewDefuzzer(DefuzzificationCentroid)
-	engine, _ := NewEngine(rules, defuzzer)
+	engine, _ := NewEngine(rules, DefuzzificationCentroid)
 	return engine, fsDiff, fsDt, fsCh
 }
 
@@ -170,8 +118,7 @@ func TestEngineCheck(t *testing.T) {
 				NewRule(fsA1, ImplicationMin, []IDSet{fsC1}),
 				NewRule(fsC1, ImplicationMin, []IDSet{fsD1}),
 			}
-			defuzzer := NewDefuzzer(DefuzzificationCentroid)
-			_, err := NewEngine(rules, defuzzer)
+			_, err := NewEngine(rules, DefuzzificationCentroid)
 			So(err, ShouldBeNil)
 		})
 
@@ -187,8 +134,7 @@ func TestEngineCheck(t *testing.T) {
 				NewRule(fsA1, ImplicationMin, []IDSet{fsC1Bis}),
 				NewRule(fsC1, ImplicationMin, []IDSet{fsD1}),
 			}
-			defuzzer := NewDefuzzer(DefuzzificationCentroid)
-			_, err := NewEngine(rules, defuzzer)
+			_, err := NewEngine(rules, DefuzzificationCentroid)
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldContainSubstring, "sets: id `c1` already present (for val id `c")
 		})
@@ -221,19 +167,8 @@ func TestEvaluate(t *testing.T) {
 			NewRule(NewExpression([]Premise{fsA2, fsB2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsC2}),
 		}
 
-		// Same rules with compact expression
-		rulesCompact := []Rule{
-			If(fsA1.And(fsB1)).Then([]IDSet{fsC1}),
-			If(fsA2.And(fsB2)).Then([]IDSet{fsC2}),
-		}
-
-		defuzzer := NewDefuzzer(DefuzzificationCentroid)
-
-		engine, errEngine := NewEngine(rules, defuzzer)
+		engine, errEngine := NewEngine(rules, DefuzzificationCentroid)
 		So(errEngine, ShouldBeNil)
-
-		engineCompact, errEngineCompact := NewEngine(rulesCompact, defuzzer)
-		So(errEngineCompact, ShouldBeNil)
 
 		dataIn := DataInput{
 			fvA.ID(): 2.1,
@@ -245,12 +180,6 @@ func TestEvaluate(t *testing.T) {
 		So(errEval, ShouldBeNil)
 		So(result, ShouldNotBeNil)
 		So(result[fvC.ID()], ShouldEqual, 12.5)
-
-		// Evaluate engine with compact rules
-		resultCompact, errEvalCompact := engineCompact.Evaluate(dataIn)
-		So(errEvalCompact, ShouldBeNil)
-		So(resultCompact, ShouldNotBeNil)
-		So(resultCompact[fvC.ID()], ShouldEqual, 12.5)
 	})
 
 	Convey("custom evaluate", t, func() {
@@ -317,7 +246,6 @@ func TestEvaluate(t *testing.T) {
 		}
 
 		check(customEngine())
-		check(compactEngine())
 	})
 }
 

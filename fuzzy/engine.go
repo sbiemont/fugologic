@@ -3,11 +3,11 @@ package fuzzy
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
 	rules  []Rule
-	defuzz Defuzzer
+	defuzz Defuzzification
 }
 
 // NewEngine builds a new Engine instance
-func NewEngine(rules []Rule, defuzz Defuzzer) (Engine, error) {
+func NewEngine(rules []Rule, defuzz Defuzzification) (Engine, error) {
 	// Gather inputs and outpus
 	var idSets []IDSet
 	for _, rule := range rules {
@@ -28,6 +28,8 @@ func NewEngine(rules []Rule, defuzz Defuzzer) (Engine, error) {
 
 // Evalute rules and defuzz result
 func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
+	dfz := newDefuzzer(eng.defuzz)
+
 	for _, rule := range eng.rules {
 		// Evaluate rule
 		idSets, err := rule.evaluate(input)
@@ -36,11 +38,11 @@ func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 		}
 
 		// Push result into the defuzzer
-		eng.defuzz.Add(idSets)
+		dfz.add(idSets)
 	}
 
 	// Apply defuzzification
-	return eng.defuzz.Defuzz()
+	return dfz.defuzz()
 }
 
 // Inputs gather and flatten all IDSet from rules' expressions

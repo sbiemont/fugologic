@@ -60,16 +60,36 @@ Create other inputs and outputs the same way.
 
 ### Define the rules
 
-A rule is defined with 3 components:
+A rule is defined with 3 components :
+
+* `expression` : connect several fuzzy sets together
+* `implication` : define an implication method
+* `consequence` : defines several fuzzy sets as the outputs
 
 ```raw
 rule = <expression> <implication> <consequence>
 rule = A1 and B1    then          C1, D1
 ```
 
-* `expression` : connect several fuzzy sets together
-* `implication` : define an implication method
-* `consequence` : defines several fuzzy sets as the outputs
+#### Use a rule builder
+
+The rule builder is optional but helps creating simple rules.
+
+To create a rule builder, just set the default configuration :
+
+```go
+builder := Builder {
+  and:  fuzzy.ConnectorZadehAnd,
+  or:   fuzzy.ConnectorZadehOr,
+  impl: fuzzy.ImplicationMin,
+}
+```
+
+Or use a predefined builder, like :
+
+```go
+builder := NewMamdaniBuilder()
+```
 
 #### Describe an input expression
 
@@ -77,7 +97,7 @@ Choose the input fuzzy sets and link them using a connector.
 
 2 ways are possible to describe a rule:
 
-* **compact** : uses by default the Zadeh connectors (And, Or)
+* **compact** : use by default the builder configuration
 * **explicit** : choose explicitely connectors for fuzzy sets
 
 Simplest case : the expression has only one premise (directly use the fuzzy set)
@@ -87,14 +107,14 @@ Simplest case : the expression has only one premise (directly use the fuzzy set)
 exp := fsA1
 ```
 
-An expression can be a flat list of several fuzzy sets linked with the same connector.
+An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
 
 For example : `A1 and B1 and C1`.
 
 ```go
 // Using default connectors
 // A1 and B1 and C1
-exp := fsA1.And(fsB1).And(fsC1)
+exp := builder.If(fsA1).And(fsB1).And(fsC1)
 ```
 
 Or in a more explicit way
@@ -108,8 +128,9 @@ At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E
 
 ```go
 // Using default connectors
-// (A1 and B1 and C1) or (D1 and E1)
-exp := (fsA1.And(fsB1).And(fsC1)).Or(fsD1.And(fsE1))
+expABC := builder.If(fsA1).And(fsB1).And(fsC1) // A1 and B1 and C1
+expDE := builder.If(fsD1).And(fsE1)            // D1 and E1
+exp := expABC.Or(expDE)                        // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 Or in a more explicit way
@@ -147,7 +168,7 @@ The first method is useful when describing rules directly int the code (but it u
 ```go
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
-  fuzzy.If(fsA1.And(fsB1)).Then([]fuzzy.IDSet{fsC1})
+  builder.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1}),
   // Describe other rules the same way
   // ...
 }
@@ -171,24 +192,16 @@ rules := []fuzzy.Rule{
 }
 ```
 
-### Choose a defuzzing method
-
-Create a defuzzer with a specific method (like the centroïd method)
-
-```go
-defuzzer := fuzzy.NewDefuzzer(fuzzy.DefuzzificationCentroid)
-```
-
 ### Create an engine
 
-A fuzzy engine combines some rules and a defuzzer.
+A fuzzy engine combines some rules and a defuzzification method (like the centroïd method).
 
 #### Engine new instance
 
 If the rules contains an error, the engine builder will fail.
 
 ```go
-engine, err := fuzzy.NewEngine(rules, defuzzer)
+engine, err := fuzzy.NewEngine(rules, DefuzzificationCentroid)
 if err != nil {
   // An error occurred, check the rules
   return err
@@ -197,7 +210,7 @@ if err != nil {
 
 #### Engine evaluation
 
-Then, launch the evaluation process by setting a new input value for each `IDVal` of the engine.
+Then, launch the evaluation process by setting a new input value for each `fuzzy.IDVal` of the engine.
 
 The result contains a crisp value for each fuzzy output value defined.
 
@@ -211,8 +224,7 @@ if err != nil {
   return err
 }
 
-// Result
-// fuzzy.DataOutput{
+// result = fuzzy.DataOutput{
 //   "c": <crisp result>,
 // }
 ```
@@ -245,9 +257,9 @@ if err != nil {
 
 #### System evaluation
 
-Then, launch the evaluation process by setting a new input value for each `IDVal` of the system.
+Then, launch the evaluation process by setting a new input value for each `fuzzy.IDVal` of the system.
 
-The result contains a crisp value for each `IDVal` output value defined.
+The result contains a crisp value for each `fuzzy.IDVal` output value defined.
 
 ```go
 // Evaluation of the rules of each engines
@@ -259,8 +271,7 @@ if err != nil {
   return err
 }
 
-// Result
-// fuzzy.DataOutput{
+// result = fuzzy.DataOutput{
 //   "c": <crisp result>,
 // }
 ```
