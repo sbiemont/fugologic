@@ -47,16 +47,6 @@ func (is IDSet) Not() IDSet {
 	}
 }
 
-// And returns the expression IDSet AND Premise
-func (is IDSet) And(premise Premise) Premise {
-	return NewExpression([]Premise{is, premise}, ConnectorZadehAnd)
-}
-
-// Or returns the expression IDSet OR Premise
-func (is IDSet) Or(premise Premise) Premise {
-	return NewExpression([]Premise{is, premise}, ConnectorZadehOr)
-}
-
 // Evaluate fetches the right input and returns the Set value
 func (is IDSet) Evaluate(input DataInput) (float64, error) {
 	x, err := input.find(is)

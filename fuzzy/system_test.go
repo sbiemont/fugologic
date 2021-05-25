@@ -28,11 +28,17 @@ func TestSystem(t *testing.T) {
 	defuzz := NewDefuzzer(defuzzificationNone)
 
 	// A and B => C
-	rulesEng1 := []Rule{If(fsA1.And(fsB1)).Then([]IDSet{fsC1})}
+	rulesEng1 := []Rule{
+		NewRule(NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsC1}),
+	}
 	// D => E, F
-	rulesEng2 := []Rule{If(fsD1).Then([]IDSet{fsE1, fsF1})}
+	rulesEng2 := []Rule{
+		NewRule(fsD1, ImplicationMin, []IDSet{fsE1, fsF1}),
+	}
 	// C and E => G
-	rulesEng3 := []Rule{If(fsC1.And(fsE1)).Then([]IDSet{fsG1})}
+	rulesEng3 := []Rule{
+		NewRule(NewExpression([]Premise{fsC1, fsE1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsG1}),
+	}
 
 	Convey("evaluate", t, func() {
 		eng1, err1 := NewEngine(rulesEng1, defuzz)

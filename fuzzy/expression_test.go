@@ -1,34 +1,13 @@
 package fuzzy
 
 import (
+	"math"
 	"testing"
 
 	"fugologic.git/crisp"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-func TestPremise(t *testing.T) {
-	Convey("if", t, func() {
-		Convey("when fuzzy set", func() {
-			fv := NewIDVal(crisp.Set{})
-			fs := NewIDSet(NewSetTriangular(0, 1, 2), &fv)
-
-			premise := If(fs).premise
-			So(premise, ShouldHaveSameTypeAs, IDSet{})
-			So(premise.(IDSet).uuid, ShouldEqual, fs.uuid)
-		})
-
-		Convey("when expression", func() {
-			fv := NewIDVal(crisp.Set{})
-			fs := NewIDSet(NewSetTriangular(0, 1, 2), &fv)
-
-			expression := NewExpression([]Premise{fs}, nil)
-			premise := If(expression).premise
-			So(premise, ShouldHaveSameTypeAs, Expression{})
-		})
-	})
-}
 
 func TestExpression(t *testing.T) {
 	var timesTwo Set = func(x float64) float64 { return x * 2 }
@@ -103,6 +82,46 @@ func TestExpression(t *testing.T) {
 			result, err := exp.Evaluate(dataIn)
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 8) // max(min(1, 2, 3)*2, min(4, 5)*2)
+		})
+	})
+
+	Convey("connect", t, func() {
+		Convey("when 2 premises", func() {
+			exp := NewExpression([]Premise{fsA1}, nil).Connect(fsB1, math.Max)
+			result, err := exp.Evaluate(DataInput{
+				"a": 1,
+				"b": 2,
+			})
+			So(err, ShouldBeNil)
+			So(result, ShouldEqual, 4) // 2*max(1, 2)
+		})
+
+		Convey("when 1 expression", func() {
+			exp := NewExpression([]Premise{fsA1, fsB1}, nil).Connect(fsC1, math.Max)
+			result, err := exp.Evaluate(DataInput{
+				"a": 1,
+				"b": 2,
+				"c": 3,
+			})
+			So(err, ShouldBeNil)
+			So(result, ShouldEqual, 6) // 2*max(1, 2, 3)
+		})
+
+		Convey("when several connect", func() {
+			exp := NewExpression([]Premise{fsA1}, nil).
+				Connect(fsB1, math.Max).
+				Connect(fsC1, math.Min).
+				Connect(fsD1, math.Max).
+				Connect(fsE1, math.Min)
+			result, err := exp.Evaluate(DataInput{
+				"a": 1,
+				"b": 2,
+				"c": 3,
+				"d": 4,
+				"e": 5,
+			})
+			So(err, ShouldBeNil)
+			So(result, ShouldEqual, 8) // 2*min(max(min(max(1, 2), 3), 4), 5)
 		})
 	})
 }
