@@ -108,35 +108,35 @@ func compactEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
 	//          |  + |  0 |  0 |  - | -- | -- |
 	//          | ++ |  - |  - | -- | -- | -- |
 	rules := []Rule{
-		If(fsDiff[0].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[0].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[0].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[0].And(fsDt[0])).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[1])).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[2])).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[0].And(fsDt[3])).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[0].And(fsDt[4])).Then([]IDSet{fsCh[3]}),
 
-		If(fsDiff[1].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[1].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[4]}),
-		If(fsDiff[1].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[1].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[1].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[1].And(fsDt[0])).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[1].And(fsDt[1])).Then([]IDSet{fsCh[4]}),
+		If(fsDiff[1].And(fsDt[2])).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[1].And(fsDt[3])).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[1].And(fsDt[4])).Then([]IDSet{fsCh[2]}),
 
-		If(fsDiff[2].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[2].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[3]}),
-		If(fsDiff[2].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[2].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[2].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[2].And(fsDt[0])).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[2].And(fsDt[1])).Then([]IDSet{fsCh[3]}),
+		If(fsDiff[2].And(fsDt[2])).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[2].And(fsDt[3])).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[2].And(fsDt[4])).Then([]IDSet{fsCh[1]}),
 
-		If(fsDiff[3].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[3].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[2]}),
-		If(fsDiff[3].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[3].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[3].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[3].And(fsDt[0])).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[3].And(fsDt[1])).Then([]IDSet{fsCh[2]}),
+		If(fsDiff[3].And(fsDt[2])).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[3].And(fsDt[3])).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[3].And(fsDt[4])).Then([]IDSet{fsCh[0]}),
 
-		If(fsDiff[4].And(fsDt[0])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[4].And(fsDt[1])).Use(ImplicationMin).Then([]IDSet{fsCh[1]}),
-		If(fsDiff[4].And(fsDt[2])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[4].And(fsDt[3])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
-		If(fsDiff[4].And(fsDt[4])).Use(ImplicationMin).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[4].And(fsDt[0])).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[4].And(fsDt[1])).Then([]IDSet{fsCh[1]}),
+		If(fsDiff[4].And(fsDt[2])).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[4].And(fsDt[3])).Then([]IDSet{fsCh[0]}),
+		If(fsDiff[4].And(fsDt[4])).Then([]IDSet{fsCh[0]}),
 	}
 
 	defuzzer := NewDefuzzer(DefuzzificationCentroid)
@@ -223,8 +223,8 @@ func TestEvaluate(t *testing.T) {
 
 		// Same rules with compact expression
 		rulesCompact := []Rule{
-			If(fsA1.And(fsB1)).Use(ImplicationMin).Then([]IDSet{fsC1}),
-			If(fsA2.And(fsB2)).Use(ImplicationMin).Then([]IDSet{fsC2}),
+			If(fsA1.And(fsB1)).Then([]IDSet{fsC1}),
+			If(fsA2.And(fsB2)).Then([]IDSet{fsC2}),
 		}
 
 		defuzzer := NewDefuzzer(DefuzzificationCentroid)

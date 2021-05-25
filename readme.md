@@ -147,9 +147,7 @@ The first method is useful when describing rules directly int the code (but it u
 ```go
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
-  fuzzy.If(fsA1.And(fsB1))     // expression
-    .Use(fuzzy.ImplicationMin) // implication
-    .Then([]fuzzy.IDSet{fsC1}) // consequence
+  fuzzy.If(fsA1.And(fsB1)).Then([]fuzzy.IDSet{fsC1})
   // Describe other rules the same way
   // ...
 }
