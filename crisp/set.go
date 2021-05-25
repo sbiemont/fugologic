@@ -26,6 +26,23 @@ func NewSet(xmin, xmax, dx float64) (Set, error) {
 	}, nil
 }
 
+// NewSetN builds a new Set instance with N values
+func NewSetN(xmin, xmax float64, n int) (Set, error) {
+	if n <= 1 {
+		return Set{}, errors.New("crisp set: n shall be >= 2")
+	}
+
+	if xmin > xmax {
+		return Set{}, errors.New("crisp set: xmin shall be < xmax")
+	}
+
+	return Set{
+		xmin: xmin,
+		xmax: xmax,
+		dx:   (xmax - xmin) / float64(n-1),
+	}, nil
+}
+
 // Values translates the interval into discrete increasing values
 func (set Set) Values() []float64 {
 	if set.dx == 0 {
