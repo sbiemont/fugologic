@@ -77,26 +77,26 @@ func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 	return xSmallestMax, xLargestMax
 }
 
-// Defuzzer is responsible for collecting rule's results and to defuzz
-type Defuzzer struct {
+// defuzzer is responsible for collecting rule's results and to defuzz
+type defuzzer struct {
 	fct     Defuzzification // Defuzzification method
 	results []IDSet         // From Val ID to list of result Set
 }
 
-// NewDefuzzer builds a new Defuzzer instance
-func NewDefuzzer(fct Defuzzification) Defuzzer {
-	return Defuzzer{
+// newDefuzzer builds a new Defuzzer instance
+func newDefuzzer(fct Defuzzification) defuzzer {
+	return defuzzer{
 		fct: fct,
 	}
 }
 
 // add the sets to the defuzzer result
-func (dfz *Defuzzer) add(idSets []IDSet) {
+func (dfz *defuzzer) add(idSets []IDSet) {
 	dfz.results = append(dfz.results, idSets...)
 }
 
-// Defuzz the values
-func (dfz Defuzzer) Defuzz() (DataOutput, error) {
+// defuzz the values
+func (dfz defuzzer) defuzz() (DataOutput, error) {
 	// Group IDSet by IDVal parent
 	groups := make(map[id.ID][]IDSet)
 	universes := make(map[id.ID]crisp.Set)
@@ -116,7 +116,7 @@ func (dfz Defuzzer) Defuzz() (DataOutput, error) {
 }
 
 // union all sets into one (helper function): s = s1 U s2 U .. U sN
-func (Defuzzer) union(iss []IDSet) Set {
+func (defuzzer) union(iss []IDSet) Set {
 	result := iss[0].set
 	for _, val := range iss[1:] {
 		result = result.Union(val.set)

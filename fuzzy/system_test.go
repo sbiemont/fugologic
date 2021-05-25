@@ -25,7 +25,7 @@ func TestSystem(t *testing.T) {
 	fsF1 := newTestSet("f")
 	fsG1 := newTestSet("g")
 
-	defuzz := NewDefuzzer(defuzzificationNone)
+	defuzz := defuzzificationNone
 
 	// A and B => C
 	rulesEng1 := []Rule{
