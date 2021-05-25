@@ -126,25 +126,11 @@ type RuleExpression struct {
 	premise Premise
 }
 
-// Use a custom implication method
-func (rexp RuleExpression) Use(implication Implication) RuleImplication {
-	return RuleImplication{
-		premise:     rexp.premise,
-		implication: implication,
-	}
-}
-
-// RuleImplication connects a rule implication to a consequence
-type RuleImplication struct {
-	premise     Premise
-	implication Implication
-}
-
 // Then describes the consequence of an implication
-func (rimp RuleImplication) Then(consequence []IDSet) Rule {
+func (rexp RuleExpression) Then(consequence []IDSet) Rule {
 	return Rule{
-		inputs:      rimp.premise,
-		implication: rimp.implication,
+		inputs:      rexp.premise,
+		implication: ImplicationMin,
 		outputs:     consequence,
 	}
 }
