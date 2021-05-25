@@ -9,8 +9,6 @@ import (
 // A premise can be evaluated or linked to another premise
 type Premise interface {
 	Evaluate(input DataInput) (float64, error)
-	And(premise Premise) Premise // use default `And` connector
-	Or(premise Premise) Premise  // use default `Or` connector
 }
 
 // If starts a rule expression
