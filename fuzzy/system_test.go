@@ -26,6 +26,7 @@ func TestSystem(t *testing.T) {
 	fsG1 := newTestSet("g")
 
 	defuzz := defuzzificationNone
+	agg := AggregationUnion
 
 	// A and B => C
 	rulesEng1 := []Rule{
@@ -41,11 +42,11 @@ func TestSystem(t *testing.T) {
 	}
 
 	Convey("evaluate", t, func() {
-		eng1, err1 := NewEngine(rulesEng1, defuzz)
+		eng1, err1 := NewEngine(rulesEng1, agg, defuzz)
 		So(err1, ShouldBeNil)
-		eng2, err2 := NewEngine(rulesEng2, defuzz)
+		eng2, err2 := NewEngine(rulesEng2, agg, defuzz)
 		So(err2, ShouldBeNil)
-		eng3, err3 := NewEngine(rulesEng3, defuzz)
+		eng3, err3 := NewEngine(rulesEng3, agg, defuzz)
 		So(err3, ShouldBeNil)
 
 		Convey("when ok", func() {
@@ -79,7 +80,7 @@ func TestSystem(t *testing.T) {
 				Convey("when output defined twice", func() {
 					// D => E, F, G
 					rulesEng2Bis := []Rule{NewRule(fsD1, ImplicationProd, []IDSet{fsE1, fsF1, fsG1})}
-					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, defuzz)
+					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
 					var system System = []Engine{eng1, eng2Bis, eng3}
@@ -97,7 +98,7 @@ func TestSystem(t *testing.T) {
 					// D => E, A
 					fsF1Bis := newTestSet("a")
 					rulesEng2Bis := []Rule{NewRule(fsD1, ImplicationProd, []IDSet{fsE1, fsF1Bis})}
-					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, defuzz)
+					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
 					var system System = []Engine{eng1, eng2Bis, eng3}
@@ -114,7 +115,7 @@ func TestSystem(t *testing.T) {
 				Convey("when loop", func() {
 					// G => E, F
 					rulesEng2Bis := []Rule{NewRule(fsG1, ImplicationProd, []IDSet{fsE1, fsF1})}
-					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, defuzz)
+					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
 					var system System = []Engine{eng1, eng2Bis, eng3}

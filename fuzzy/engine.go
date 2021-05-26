@@ -3,11 +3,14 @@ package fuzzy
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
 	rules  []Rule
+	agg    Aggregation
 	defuzz Defuzzification
 }
 
 // NewEngine builds a new Engine instance
-func NewEngine(rules []Rule, defuzz Defuzzification) (Engine, error) {
+//  * The Aggregation merges all result sets together
+//  * The Defuzzification extracts one value from the aggregation
+func NewEngine(rules []Rule, agg Aggregation, defuzz Defuzzification) (Engine, error) {
 	// Gather inputs and outpus
 	var idSets []IDSet
 	for _, rule := range rules {
@@ -23,12 +26,13 @@ func NewEngine(rules []Rule, defuzz Defuzzification) (Engine, error) {
 	return Engine{
 		rules:  rules,
 		defuzz: defuzz,
+		agg:    agg,
 	}, nil
 }
 
 // Evalute rules and defuzz result
 func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
-	dfz := newDefuzzer(eng.defuzz)
+	dfz := newDefuzzer(eng.defuzz, eng.agg)
 
 	for _, rule := range eng.rules {
 		// Evaluate rule
