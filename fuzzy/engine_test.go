@@ -88,7 +88,7 @@ func customEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
 		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
 	}
 
-	engine, _ := NewEngine(rules, DefuzzificationCentroid)
+	engine, _ := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 	return engine, fsDiff, fsDt, fsCh
 }
 
@@ -118,7 +118,7 @@ func TestEngineCheck(t *testing.T) {
 				NewRule(fsA1, ImplicationMin, []IDSet{fsC1}),
 				NewRule(fsC1, ImplicationMin, []IDSet{fsD1}),
 			}
-			_, err := NewEngine(rules, DefuzzificationCentroid)
+			_, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 			So(err, ShouldBeNil)
 		})
 
@@ -134,7 +134,7 @@ func TestEngineCheck(t *testing.T) {
 				NewRule(fsA1, ImplicationMin, []IDSet{fsC1Bis}),
 				NewRule(fsC1, ImplicationMin, []IDSet{fsD1}),
 			}
-			_, err := NewEngine(rules, DefuzzificationCentroid)
+			_, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 			So(err, ShouldNotBeNil)
 			So(err.Error(), ShouldContainSubstring, "sets: id `c1` already present (for val id `c")
 		})
@@ -167,7 +167,7 @@ func TestEvaluate(t *testing.T) {
 			NewRule(NewExpression([]Premise{fsA2, fsB2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsC2}),
 		}
 
-		engine, errEngine := NewEngine(rules, DefuzzificationCentroid)
+		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 		So(errEngine, ShouldBeNil)
 
 		dataIn := DataInput{

@@ -15,11 +15,31 @@ func TestSetUnion(t *testing.T) {
 
 			fs3 := fs1.Union(fs2)
 			So(fs3(10), ShouldEqual, 0)
-			So(fs3(10), ShouldEqual, 0)
 			So(fs3(15), ShouldEqual, 1)
+			So(fs3(25), ShouldEqual, 1)
 			So(fs3(27.5), ShouldEqual, 0.5)
 			So(fs3(30), ShouldEqual, 1)
 			So(fs3(40), ShouldEqual, 1)
+			So(fs3(45), ShouldEqual, 0)
+		})
+	})
+}
+
+func TestSetIntersection(t *testing.T) {
+	Convey("intersection", t, func() {
+		Convey("when trapezoids", func() {
+			fs1 := NewSetTrapezoid(10, 15, 25, 30)
+			fs2 := NewSetTrapezoid(25, 30, 40, 45)
+
+			fs3 := fs1.Intersection(fs2)
+			So(fs3(10), ShouldEqual, 0)
+			So(fs3(15), ShouldEqual, 0)
+			So(fs3(25), ShouldEqual, 0)
+			So(fs3(26.25), ShouldEqual, 0.25)
+			So(fs3(27.5), ShouldEqual, 0.5)
+			So(fs3(28.75), ShouldEqual, 0.25)
+			So(fs3(30), ShouldEqual, 0)
+			So(fs3(40), ShouldEqual, 0)
 			So(fs3(45), ShouldEqual, 0)
 		})
 	})
@@ -115,7 +135,7 @@ func TestSetMultiply(t *testing.T) {
 	})
 }
 
-func TestSetMerge(t *testing.T) {
+func TestSetAggregate(t *testing.T) {
 	// Add 1
 	var fs1 Set = func(x float64) float64 {
 		return x + 1
@@ -126,14 +146,14 @@ func TestSetMerge(t *testing.T) {
 		return x + 100
 	}
 
-	Convey("merge", t, func() {
+	Convey("aggregate", t, func() {
 		Convey("when max", func() {
-			fs := fs1.chain(fs2, math.Max)
+			fs := fs1.aggregate(fs2, math.Max)
 			So(fs(1), ShouldEqual, 101) // Max(2, 101)
 		})
 
 		Convey("when min", func() {
-			fs := fs1.chain(fs2, math.Min)
+			fs := fs1.aggregate(fs2, math.Min)
 			So(fs(1), ShouldEqual, 2) // Min(2, 101)
 		})
 	})

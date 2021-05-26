@@ -14,14 +14,14 @@ func flattenIDSets(init []IDSet, premises []Premise) []IDSet {
 }
 
 // Implication links an expression and produces a single fuzzy Set
-type Implication func(set Set, y float64) Set
+type Implication func(set Set, k float64) Set
 
 var (
 	// ImplicationProd returns the product of a Set with a constant factor
-	ImplicationProd Implication = func(set Set, y float64) Set { return set.Multiply(y) }
+	ImplicationProd Implication = func(set Set, k float64) Set { return set.Multiply(k) }
 
 	// ImplicationMin sets the max upper bound
-	ImplicationMin Implication = func(set Set, y float64) Set { return set.Min(y) }
+	ImplicationMin Implication = func(set Set, k float64) Set { return set.Min(k) }
 )
 
 // Rule evaluates the input expression + implication + fuzzy output

@@ -8,21 +8,27 @@ import (
 // https://en.wikipedia.org/wiki/Fuzzy_set
 type Set func(float64) float64
 
-// chain 2 functions as one
-func (fs Set) chain(fs2 Set, merge func(float64, float64) float64) Set {
+var (
+	union        = math.Max
+	intersection = math.Min
+)
+
+// aggregate of 2 sets using a specific method
+// E.g: fs1.aggregate(fs2, math.Max)
+func (fs Set) aggregate(fs2 Set, fct func(float64, float64) float64) Set {
 	return func(x float64) float64 {
-		return merge(fs(x), fs2(x))
+		return fct(fs(x), fs2(x))
 	}
 }
 
 // Union of 2 sets
 func (fs Set) Union(fs2 Set) Set {
-	return fs.chain(fs2, math.Max)
+	return fs.aggregate(fs2, union)
 }
 
 // Intersection of 2 sets
 func (fs Set) Intersection(fs2 Set) Set {
-	return fs.chain(fs2, math.Min)
+	return fs.aggregate(fs2, intersection)
 }
 
 // Complement of the current set
@@ -33,9 +39,9 @@ func (fs Set) Complement() Set {
 }
 
 // Min merges a minimum membership method
-func (fs Set) Min(y float64) Set {
+func (fs Set) Min(k float64) Set {
 	return func(x float64) float64 {
-		return math.Min(fs(x), y)
+		return math.Min(fs(x), k)
 	}
 }
 

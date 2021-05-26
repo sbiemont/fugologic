@@ -194,14 +194,27 @@ rules := []fuzzy.Rule{
 
 ### Create an engine
 
-A fuzzy engine combines some rules and a defuzzification method (like the centroïd method).
+A fuzzy engine evaluates some rules, aggregates a unique `fuzzy.IDSet` result, and extract one value from it using a defuzzification method.
 
 #### Engine new instance
 
 If the rules contains an error, the engine builder will fail.
 
+Other parameters are required.
+
+* The aggregation (merge all resulting )
+  * `AggregationUnion` : union
+  * `AggregationIntersection` : intersection
+  * ...
+* The defuzzification
+  * `DefuzzificationCentroid` : centroïd
+  * `DefuzzificationSmallestOfMaxs` : if several `y` maximums are found, get the one with the smallest `x`
+  * `DefuzzificationMiddleOfMaxs` : if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
+  * `DefuzzificationLargestOfMaxs` : if several `y` maximums are found, get the one with the largest `x`
+  * ...
+
 ```go
-engine, err := fuzzy.NewEngine(rules, DefuzzificationCentroid)
+engine, err := fuzzy.NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 if err != nil {
   // An error occurred, check the rules
   return err
@@ -244,8 +257,8 @@ When creating a system, some contraints are checked, like:
 
 ```go
 // Create engines
-engine1, _ := fuzzy.NewEngine(rules1, defuzzer1)
-engine2, _ := fuzzy.NewEngine(rules2, defuzzer2)
+engine1, _ := fuzzy.NewEngine(rules1, AggregationUnion, DefuzzificationCentroid)
+engine2, _ := fuzzy.NewEngine(rules2, AggregationUnion, DefuzzificationProd)
 
 // Create and evaluate the system
 system, err := NewSystem([]Engine{engine1, engine2})

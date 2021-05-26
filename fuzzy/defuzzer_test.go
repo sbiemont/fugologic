@@ -21,12 +21,12 @@ func TestDefuzzerAdd(t *testing.T) {
 
 	Convey("add", t, func() {
 		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil)
+			defuzzer := newDefuzzer(nil, AggregationUnion)
 			So(defuzzer.results, ShouldBeEmpty)
 		})
 
 		Convey("when ok", func() {
-			defuzzer := newDefuzzer(nil)
+			defuzzer := newDefuzzer(nil, AggregationUnion)
 			defuzzer.add([]IDSet{fsA1, fsA3})
 			defuzzer.add([]IDSet{fsA2})
 			So(defuzzer.results, ShouldHaveLength, 3)
@@ -47,14 +47,14 @@ func TestDefuzzerDefuzz(t *testing.T) {
 
 	Convey("add", t, func() {
 		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil)
+			defuzzer := newDefuzzer(nil, AggregationUnion)
 			result, err := defuzzer.defuzz()
 			So(err, ShouldBeNil)
 			So(result, ShouldBeEmpty)
 		})
 
 		Convey("when ok", func() {
-			defuzzer := newDefuzzer(defuzzificationNone)
+			defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion)
 			defuzzer.add([]IDSet{fsA1, fsA2, fsB1, fsB2})
 			result, err := defuzzer.defuzz()
 			So(err, ShouldBeNil)
@@ -120,7 +120,6 @@ func TestDefuzzification(t *testing.T) {
 			})
 
 			Convey("when multiply", func() {
-
 				fs1 := NewSetTrapezoid(0, 1, 4, 5).Multiply(0.3)
 				fs2 := NewSetTrapezoid(3, 4, 6, 7).Multiply(0.5)
 				fs3 := NewSetTrapezoid(5, 6, 7, 8)
@@ -183,11 +182,21 @@ func TestDefuzzification(t *testing.T) {
 			So(xlm, ShouldEqual, 3)
 		})
 
-		Convey("when trapezoid ymax=0.5", func() {
-			fs1 := NewSetTrapezoid(1, 2, 3, 4)
+		Convey("when trapezoid with ymax", func() {
+			fs1 := NewSetTrapezoid(1, 2, 3, 4).Min(0.6)
 			universe, _ := crisp.NewSet(0, 5, 0.1)
 
-			xsm, xlm := defuzzificationMaximums(fs1.Min(0.6), universe)
+			xsm, xlm := defuzzificationMaximums(fs1, universe)
+			So(xsm, ShouldEqual, 1.6)
+			So(xlm, ShouldAlmostEqual, 3.3)
+		})
+
+		Convey("when smallest/largest of maxs", func() {
+			fs1 := NewSetTrapezoid(1, 2, 3, 4).Min(0.6)
+			universe, _ := crisp.NewSet(0, 5, 0.1)
+
+			xsm := DefuzzificationSmallestOfMaxs(fs1, universe)
+			xlm := DefuzzificationLargestOfMaxs(fs1, universe)
 			So(xsm, ShouldEqual, 1.6)
 			So(xlm, ShouldAlmostEqual, 3.3)
 		})

@@ -49,12 +49,13 @@ func TestExpression(t *testing.T) {
 			Convey("then", func() {
 				engine, _ := fuzzy.NewEngine(
 					[]fuzzy.Rule{exp.Then([]fuzzy.IDSet{fsE1})}, // only checks the "then" call
+					fuzzy.AggregationUnion,
 					fuzzy.DefuzzificationCentroid,
 				)
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
 				fmt.Print(res)
-				So(res, ShouldEqual, fuzzy.DataOutput{
+				So(res, ShouldResemble, fuzzy.DataOutput{
 					"e": 0,
 				})
 			})
@@ -69,12 +70,13 @@ func TestExpression(t *testing.T) {
 			Convey("then", func() {
 				engine, _ := fuzzy.NewEngine(
 					[]fuzzy.Rule{exp.Then([]fuzzy.IDSet{fsE1})}, // only checks the "then" call
+					fuzzy.AggregationUnion,
 					fuzzy.DefuzzificationCentroid,
 				)
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
 				fmt.Print(res)
-				So(res, ShouldEqual, fuzzy.DataOutput{
+				So(res, ShouldResemble, fuzzy.DataOutput{
 					"e": 0,
 				})
 			})

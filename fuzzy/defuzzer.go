@@ -26,23 +26,31 @@ var (
 		return mx / m
 	}
 
-	// DefuzzificationSmallestOfMax returns the smallest of maximums
-	DefuzzificationSmallestOfMax Defuzzification = func(fs Set, u crisp.Set) float64 {
+	// DefuzzificationSmallestOfMaxs returns the smallest of maximums
+	DefuzzificationSmallestOfMaxs Defuzzification = func(fs Set, u crisp.Set) float64 {
 		xSmallestMax, _ := defuzzificationMaximums(fs, u)
 		return xSmallestMax
 	}
 
-	// DefuzzificationMiddleOfMax returns the middle of maximums
-	DefuzzificationMiddleOfMax Defuzzification = func(fs Set, u crisp.Set) float64 {
+	// DefuzzificationMiddleOfMaxs returns the middle of maximums
+	DefuzzificationMiddleOfMaxs Defuzzification = func(fs Set, u crisp.Set) float64 {
 		xSmallestMax, xLargestMax := defuzzificationMaximums(fs, u)
 		return (xSmallestMax + xLargestMax) / 2
 	}
 
-	// DefuzzificationLargestOfMax returns the largest of maximums
-	DefuzzificationLargestOfMax Defuzzification = func(fs Set, u crisp.Set) float64 {
+	// DefuzzificationLargestOfMaxs returns the largest of maximums
+	DefuzzificationLargestOfMaxs Defuzzification = func(fs Set, u crisp.Set) float64 {
 		_, xLargestMax := defuzzificationMaximums(fs, u)
 		return xLargestMax
 	}
+)
+
+// Aggregation represents the aggregation of 2 fuzzy set (for merging all result sets)
+type Aggregation func(float64, float64) float64
+
+var (
+	AggregationUnion        Aggregation = union
+	AggregationIntersection Aggregation = intersection
 )
 
 // defuzzificationMaximums returns the smallest of maximums and the largest of maximums
@@ -54,12 +62,16 @@ var (
 func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 	var xSmallestMax, xLargestMax float64
 	var ySmallestMax, yLargestMax float64
+
+	// Compute all y values
 	values := u.Values()
 	yValues := make([]float64, len(values))
 	for i, x := range values {
 		yValues[i] = fs(x)
 	}
 
+	// Find largest yi max for xi values where i in [0 ; n]
+	// Find smallest yi max for xi values where i in [n ; 0]
 	l := len(values) - 1
 	for i, x := range values {
 		x2 := values[l-i]
@@ -79,14 +91,16 @@ func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 
 // defuzzer is responsible for collecting rule's results and to defuzz
 type defuzzer struct {
+	agg     Aggregation     // Aggregation of result fuzzy sets
 	fct     Defuzzification // Defuzzification method
 	results []IDSet         // From Val ID to list of result Set
 }
 
 // newDefuzzer builds a new Defuzzer instance
-func newDefuzzer(fct Defuzzification) defuzzer {
+func newDefuzzer(fct Defuzzification, agg Aggregation) defuzzer {
 	return defuzzer{
 		fct: fct,
+		agg: agg,
 	}
 }
 
@@ -109,17 +123,17 @@ func (dfz defuzzer) defuzz() (DataOutput, error) {
 	// For each group, apply defuzz
 	values := make(map[id.ID]float64, len(dfz.results))
 	for id, group := range groups {
-		union := dfz.union(group)
-		values[id] = dfz.fct(union, universes[id])
+		aggregation := dfz.aggregate(group)
+		values[id] = dfz.fct(aggregation, universes[id])
 	}
 	return values, nil
 }
 
-// union all sets into one (helper function): s = s1 U s2 U .. U sN
-func (defuzzer) union(iss []IDSet) Set {
+// aggregate all sets into one (helper function): s = s1 U s2 U .. U sN
+func (dfz defuzzer) aggregate(iss []IDSet) Set {
 	result := iss[0].set
 	for _, val := range iss[1:] {
-		result = result.Union(val.set)
+		result = result.aggregate(val.set, dfz.agg)
 	}
 	return result
 }
