@@ -2,20 +2,24 @@ package builder
 
 import "fugologic.git/fuzzy"
 
-// NewMamdaniBuilder sets the default configuration for Mamdani inference system
-func NewMamdaniBuilder() Builder {
-	return Builder{
-		and:  fuzzy.ConnectorZadehAnd,
-		or:   fuzzy.ConnectorZadehOr,
-		impl: fuzzy.ImplicationMin,
-	}
+// NewBuilderMamdani sets the default configuration for Mamdani inference system
+func NewBuilderMamdani() Builder {
+	return NewBuilder(
+		fuzzy.ConnectorZadehAnd,
+		fuzzy.ConnectorZadehOr,
+		fuzzy.ImplicationMin,
+		fuzzy.AggregationUnion,
+		fuzzy.DefuzzificationCentroid,
+	)
 }
 
-// NewSugenoBuilder sets the default configuration for Takagi-Sugeno inference system
-func NewSugenoBuilder() Builder {
-	return Builder{
-		and:  fuzzy.ConnectorZadehAnd,
-		or:   fuzzy.ConnectorZadehOr,
-		impl: fuzzy.ImplicationProd,
-	}
+// NewBuilderSugeno sets the default configuration for Takagi-Sugeno inference system
+func NewBuilderSugeno() Builder {
+	return NewBuilder(
+		fuzzy.ConnectorZadehAnd,
+		fuzzy.ConnectorZadehOr,
+		fuzzy.ImplicationProd,
+		fuzzy.AggregationUnion,
+		fuzzy.DefuzzificationCentroid,
+	)
 }

@@ -4,9 +4,8 @@ Fugologic is a naive implementation of a fuzzy logic system.
 
 ## Roadmap
 
-* Let `builder.Builder` create a `fuzzy.Engine` using default configuration
-* Add a full example using `builder.Builder`
-* Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System`
+1. Add a full example using `builder.Builder` with `fuzzy.Engine` creation
+2. Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System`
 
 ## Getting started
 
@@ -28,18 +27,28 @@ if err != nil{
 }
 ```
 
+It can also be defined with n values (x min, xmax, n values)
+
+```go
+// 4 values in [0.0 ; 0.3]
+set, err := crisp.NewSetN(0.0, 0.3, 4)
+if err != nil{
+  // Error if the crisp set is badly defined
+}
+```
+
 ### Fuzzy values definition
 
 Fuzzy values and fuzzy sets are defined as :
 
 * `fuzzy.IDVal`: a fuzzy value that contains,
-  * an identifier
-  * a list of fuzzy sets (only required for system and/or engine checks)
-  * a crisp interval of values (only required for defuzzification)
+  * an identifier `id.ID`
+  * a list of `fuzzy.IDSet` (only required for system and/or engine checks)
+  * a `crisp.Set` interval of values (only required for defuzzification)
 * `fuzzy.IDSet`: fuzzy set that contains,
-  * an identifier
-  * a membership method
-  * its parent `fuzzy.IDVal`
+  * an identifier (`id.ID`)
+  * a membership method (`fuzzy.Set`)
+  * its parent (`fuzzy.IDVal`)
 
 *Notes* :
 
@@ -50,7 +59,7 @@ Fuzzy values and fuzzy sets are defined as :
 
 First, create a fuzzy value and link it to a list of fuzzy sets.
 
-Ensure that the crisp interval of the fuzzy value covers the fuzzy sets intervals.
+Ensure that the crisp interval of the fuzzy value covers all the fuzzy sets intervals.
 
 ```go
 // Fuzzy value "a"
@@ -68,8 +77,8 @@ Create other inputs and outputs the same way.
 
 A rule is defined with 3 components :
 
-* `expression` : connect several fuzzy sets together
-* `implication` : define an implication method
+* `expression` : connects several fuzzy sets together
+* `implication` : defines an implication method
 * `consequence` : defines several fuzzy sets as the outputs
 
 ```raw
@@ -79,34 +88,53 @@ rule = A1 and B1    then          C1, D1
 
 #### Use a rule builder
 
-The rule builder is optional but helps creating simple rules.
+The rule builder is optional but helps creating simple rules, and then, an engine.
 
-To create a rule builder, just set the default configuration :
-
-```go
-builder := Builder {
-  and:  fuzzy.ConnectorZadehAnd,
-  or:   fuzzy.ConnectorZadehOr,
-  impl: fuzzy.ImplicationMin,
-}
-```
-
-Or use a predefined builder, like :
+Create a new builder, using predefined configuration :
 
 ```go
-builder := NewMamdaniBuilder()
+bld := NewBuilderMamdani()
 ```
+
+Or create a custom builder by setting the default configuration :
+
+```go
+bld := builder.NewBuilder(
+  fuzzy.ConnectorZadehAnd,
+  fuzzy.ConnectorZadehOr,
+  fuzzy.ImplicationMin,
+  fuzzy.AggregationUnion,
+  fuzzy.DefuzzificationCentroid,
+)
+```
+
+* The `fuzzy.Connector` connect several rule premises together to create an expression
+  * `ConnectorZadehAnd` : Zadeh "and" connector
+  * `ConnectorZadehOr` : Zadeh "or" connector
+  * ...
+  * `ConnectorHyperbolicAnd` : Hyperbolic "and" connector
+  * `ConnectorHyperbolicOr` : Hyperbolic "or" connector
+  * ...
+* The `fuzzy.Implication` propagates the expression results into consequences
+  * `ImplicationMin` : Mamdani implication minimum
+  * `ImplicationProd` : Sugeno implication product
+  * ...
+* The `fuzzy.Aggregation` merges all coherent implications
+  * `AggregationUnion` : union
+  * `AggregationIntersection` : intersection
+  * ...
+* The `fuzzy.Defuzzification` extracts one value from the aggregated results
+  * `DefuzzificationCentroid` : centroïd
+  * `DefuzzificationSmallestOfMaxs` : if several `y` maximums are found, get the one with the smallest `x`
+  * `DefuzzificationMiddleOfMaxs` : if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
+  * `DefuzzificationLargestOfMaxs` : if several `y` maximums are found, get the one with the largest `x`
+  * ...
 
 #### Describe an input expression
 
-Choose the input fuzzy sets and link them using a connector.
+Select the input `fuzzy.IDSet` and link them using a `fuzzy.Connector`.
 
-2 ways are possible to describe a rule:
-
-* **compact** : use by default the builder configuration
-* **explicit** : choose explicitely connectors for fuzzy sets
-
-Simplest case : the expression has only one premise (directly use the fuzzy set)
+Simplest case : the expression has only one premise and no connector (directly use the fuzzy set)
 
 ```go
 // A1
@@ -118,14 +146,15 @@ An expression can be a flat list of several `fuzzy.IDSet` linked with the same `
 For example : `A1 and B1 and C1`.
 
 ```go
-// Using default connectors
+// Using a builder
 // A1 and B1 and C1
-exp := builder.If(fsA1).And(fsB1).And(fsC1)
+exp := bld.If(fsA1).And(fsB1).And(fsC1)
 ```
 
 Or in a more explicit way
 
 ```go
+// Using explicit syntax
 // A1 and B1 and C1
 exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd)
 ```
@@ -133,57 +162,52 @@ exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZad
 At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
 
 ```go
-// Using default connectors
-expABC := builder.If(fsA1).And(fsB1).And(fsC1) // A1 and B1 and C1
-expDE := builder.If(fsD1).And(fsE1)            // D1 and E1
-exp := expABC.Or(expDE)                        // (A1 and B1 and C1) or (D1 and E1)
+// Using a builder
+expABC := bld.If(fsA1).And(fsB1).And(fsC1) // A1 and B1 and C1
+expDE := bld.If(fsD1).And(fsE1)            // D1 and E1
+exp := expABC.Or(expDE)                    // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 Or in a more explicit way
 
 ```go
-// A1 and B1 and C1
-expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd)
-
-// D1 and E1
-expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)
-
-// (A1 and B1 and C1) or (D1 and E1)
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)
+// Using explicit syntax
+expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd) // A1 and B1 and C1
+expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)       // D1 and E1
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)        // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 #### Describe an implication
 
-An implication links the input expression and the ouput consequence.
-Several methods can be chosen like:
-
-* `ImplicationMin` : Mamdani implication minimum
-* `ImplicationProd` : Sugeno implication product
-* ...
+An implication links the input expression and the ouput consequences (using a `fuzzy.Implication`)
 
 #### Describe an output consequence
 
-A consequence is just a list of fuzzy sets.
+A consequence is just a list of `fuzzy.IDSet`.
 
 #### Write a rule
 
 Combine the several items previously seen to describe the rules.
 
-The first method is useful when describing rules directly int the code (but it uses default connectors)
+The first method is useful when describing rules directly in the code (using a builder)
+
+Note : the builder that creates a rule stores it.
 
 ```go
-rules := []fuzzy.Rule{
-  // A1 and B1 => C1
-  builder.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1}),
-  // Describe other rules the same way
-  // ...
-}
+// Using a builder, the rule is stored in the builder
+// A1 and B1 => C1
+bld.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1})
+// Describe other rules the same way
+// ...
 ```
 
-The second method can be used to easily generate rules from an external builder.
+The second method can be used to easily generate rules manually.
 Connectors can be explicitely choosen, unlike for the first method.
 
+Note : create a list of rules to use it afterwards.
+
 ```go
+// Using explicit syntax, the rule has to be part of a list
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
   fuzzy.NewRule(
@@ -200,26 +224,27 @@ rules := []fuzzy.Rule{
 
 ### Create an engine
 
-A fuzzy engine evaluates some rules, aggregates a unique `fuzzy.IDSet` result, and extract one value from it using a defuzzification method.
+A `fuzzy.Engine` evaluates a list of `fuzzy.Rule`, applies a `fuzzy.Aggregation` to get a fuzzy result, and extracts one crisp value for each output using a `fuzzy.Defuzzification` method.
 
 #### Engine new instance
 
 If the rules contains an error, the engine builder will fail.
 
-Other parameters are required.
-
-* The aggregation (merge all resulting )
-  * `AggregationUnion` : union
-  * `AggregationIntersection` : intersection
-  * ...
-* The defuzzification
-  * `DefuzzificationCentroid` : centroïd
-  * `DefuzzificationSmallestOfMaxs` : if several `y` maximums are found, get the one with the smallest `x`
-  * `DefuzzificationMiddleOfMaxs` : if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
-  * `DefuzzificationLargestOfMaxs` : if several `y` maximums are found, get the one with the largest `x`
-  * ...
+Create an engin from the builder
 
 ```go
+// Using a builder
+engine, err := bld.Engine()
+if err != nil {
+  // An error occurred, check the rules
+  return err
+}
+```
+
+Or create an engine manually with custom methods
+
+```go
+// Using explicit syntax
 engine, err := fuzzy.NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 if err != nil {
   // An error occurred, check the rules
@@ -229,7 +254,7 @@ if err != nil {
 
 #### Engine evaluation
 
-Then, launch the evaluation process by setting a new input value for each `fuzzy.IDVal` of the engine.
+Then, launch the evaluation process by setting a new crisp input value for each `fuzzy.IDVal` of the engine.
 
 The result contains a crisp value for each fuzzy output value defined.
 
@@ -267,7 +292,7 @@ engine1, _ := fuzzy.NewEngine(rules1, AggregationUnion, DefuzzificationCentroid)
 engine2, _ := fuzzy.NewEngine(rules2, AggregationUnion, DefuzzificationProd)
 
 // Create and evaluate the system
-system, err := NewSystem([]Engine{engine1, engine2})
+system, err := fuzzy.NewSystem([]Engine{engine1, engine2})
 if err != nil {
   // An error occurred, check the rules
   return err
@@ -342,6 +367,9 @@ classDiagram
   Engine --> "1" Defuzzer : defuzzer
   Engine ..> DataInput
   Engine ..> DataOutput
+
+  Builder --> "*" Rule : rules
+  Builder ..> Engine
 
   Rule --> "*" Premise : inputs
   Rule --> "*" IDSet : outputs
