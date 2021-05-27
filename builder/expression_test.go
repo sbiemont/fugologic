@@ -24,19 +24,21 @@ func TestExpression(t *testing.T) {
 	}
 
 	Convey("evaluate", t, func() {
-		builder := Builder{
+		bld := NewBuilder(
 			fuzzy.ConnectorZadehAnd,
 			fuzzy.ConnectorZadehOr,
 			fuzzy.ImplicationMin,
-		}
+			fuzzy.AggregationUnion,
+			fuzzy.DefuzzificationCentroid,
+		)
 
-		expAB := Expression{
-			builder: builder,
-			fzExp:   fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorZadehAnd),
+		expAB := expression{
+			bld:   &bld,
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorZadehAnd),
 		}
-		expCD := Expression{
-			builder: builder,
-			fzExp:   fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.ConnectorZadehAnd),
+		expCD := expression{
+			bld:   &bld,
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.ConnectorZadehAnd),
 		}
 
 		Convey("and", func() {
@@ -47,11 +49,8 @@ func TestExpression(t *testing.T) {
 			So(res, ShouldEqual, 1)
 
 			Convey("then", func() {
-				engine, _ := fuzzy.NewEngine(
-					[]fuzzy.Rule{exp.Then([]fuzzy.IDSet{fsE1})}, // only checks the "then" call
-					fuzzy.AggregationUnion,
-					fuzzy.DefuzzificationCentroid,
-				)
+				exp.Then([]fuzzy.IDSet{fsE1}) // only checks the "then" call
+				engine, _ := bld.Engine()
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
 				fmt.Print(res)
@@ -68,11 +67,8 @@ func TestExpression(t *testing.T) {
 			So(res, ShouldEqual, 3)
 
 			Convey("then", func() {
-				engine, _ := fuzzy.NewEngine(
-					[]fuzzy.Rule{exp.Then([]fuzzy.IDSet{fsE1})}, // only checks the "then" call
-					fuzzy.AggregationUnion,
-					fuzzy.DefuzzificationCentroid,
-				)
+				exp.Then([]fuzzy.IDSet{fsE1}) // only checks the "then" call
+				engine, _ := bld.Engine()
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
 				fmt.Print(res)

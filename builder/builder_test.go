@@ -27,16 +27,18 @@ func TestIf(t *testing.T) {
 
 	Convey("if", t, func() {
 		Convey("when zadeh connectors", func() {
-			builder := Builder{
+			bld := NewBuilder(
 				fuzzy.ConnectorZadehAnd,
 				fuzzy.ConnectorZadehOr,
 				nil,
-			}
+				nil,
+				nil,
+			)
 
 			// (A and B and C) or (D and E)
-			expABC := builder.If(fsA1).And(fsB1).And(fsC1)
-			expCD := builder.If(fsD1).And(fsE1)
-			rule := builder.If(expABC.Or(expCD))
+			expABC := bld.If(fsA1).And(fsB1).And(fsC1)
+			expCD := bld.If(fsD1).And(fsE1)
+			rule := bld.If(expABC.Or(expCD))
 
 			res, err := rule.Evaluate(fuzzy.DataInput{
 				"a": 1,
@@ -51,17 +53,19 @@ func TestIf(t *testing.T) {
 
 		Convey("when connectors hyberbolic", func() {
 			// (A and B and C) or (D and E)
-			builder := Builder{
+			bld := NewBuilder(
 				fuzzy.ConnectorHyperbolicAnd,
 				fuzzy.ConnectorHyperbolicOr,
 				nil,
-			}
+				nil,
+				nil,
+			)
 
-			expABC := builder.If(fsA1).And(fsB1).And(fsC1)
-			expCD := builder.If(fsD1).And(fsE1)
-			rule := builder.If(expABC.Or(expCD))
+			expABC := bld.If(fsA1).And(fsB1).And(fsC1)
+			expCD := bld.If(fsD1).And(fsE1)
+			exp := bld.If(expABC.Or(expCD))
 
-			res, err := rule.Evaluate(fuzzy.DataInput{
+			res, err := exp.Evaluate(fuzzy.DataInput{
 				"a": 1,
 				"b": 2,
 				"c": 3,
@@ -75,5 +79,64 @@ func TestIf(t *testing.T) {
 			So(err, ShouldBeNil)
 			So(res, ShouldEqual, expected)
 		})
+	})
+}
+
+func TestAdd(t *testing.T) {
+	Convey("explicit add rule", t, func() {
+		bld := NewBuilder(nil, nil, nil, nil, nil)
+		So(bld.rules, ShouldBeEmpty)
+
+		// Add rule #1
+		rule1 := fuzzy.Rule{}
+		bld.add(rule1)
+		So(bld.rules, ShouldResemble, []fuzzy.Rule{rule1})
+
+		// Add rule #2
+		rule2 := fuzzy.Rule{}
+		bld.add(rule2)
+		So(bld.rules, ShouldResemble, []fuzzy.Rule{rule1, rule2})
+	})
+
+	Convey("implicit add rule", t, func() {
+		fsA1 := newTestSet("a")
+		fsB1 := newTestSet("b")
+		fsC1 := newTestSet("c")
+
+		bld := NewBuilderMamdani()
+		So(bld.rules, ShouldBeEmpty)
+
+		// Add rule #1
+		bld.If(fsA1).Then([]fuzzy.IDSet{fsC1})
+		So(bld.rules, ShouldHaveLength, 1)
+
+		// Add rule #2
+		bld.If(fsB1).Then([]fuzzy.IDSet{fsC1})
+		So(bld.rules, ShouldHaveLength, 2)
+	})
+}
+
+func TestEngine(t *testing.T) {
+	fsA1 := newTestSet("a")
+	fsB1 := newTestSet("b")
+	fsC1 := newTestSet("c")
+
+	Convey("engine", t, func() {
+		bld := NewBuilderMamdani()
+		bld.If(fsA1).Then([]fuzzy.IDSet{fsC1})
+		bld.If(fsB1).Then([]fuzzy.IDSet{fsC1})
+
+		engine, err := bld.Engine()
+		So(engine, ShouldNotBeEmpty)
+		So(err, ShouldBeNil)
+
+		result, err := engine.Evaluate(fuzzy.DataInput{
+			"a": 1,
+			"b": 2,
+		})
+		So(result, ShouldResemble, fuzzy.DataOutput{
+			"c": 0,
+		})
+		So(err, ShouldBeNil)
 	})
 }
