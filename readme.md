@@ -2,6 +2,12 @@
 
 Fugologic is a naive implementation of a fuzzy logic system.
 
+## Roadmap
+
+* Let `builder.Builder` create a `fuzzy.Engine` using default configuration
+* Add a full example using `builder.Builder`
+* Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System`
+
 ## Getting started
 
 For more example, see [/fugologic/fuzzy/engine_test.go](https://github.com/sbiemont/fugologic/blob/master/fuzzy/engine_test.go)
