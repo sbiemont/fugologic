@@ -7,9 +7,9 @@ import (
 
 // IDSet represents a static Set with an ID
 type IDSet struct {
-	set    Set
-	uuid   id.ID
-	parent *IDVal
+	set    Set    // membership function
+	uuid   id.ID  // identifier is only used to have error information
+	parent *IDVal // parent leads to the IDVal (for defuzzification)
 }
 
 // NewIDSet associates a Set with an UUID

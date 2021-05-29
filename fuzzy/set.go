@@ -4,7 +4,7 @@ import (
 	"math"
 )
 
-// Set defines a Fuzzy Set Type-I
+// Set defines a Fuzzy Set Type-1
 // https://en.wikipedia.org/wiki/Fuzzy_set
 type Set func(float64) float64
 
