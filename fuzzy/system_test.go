@@ -93,24 +93,6 @@ func TestSystem(t *testing.T) {
 				})
 			})
 
-			Convey("duplicated id", func() {
-				Convey("when duplicated", func() {
-					// D => E, A
-					fsF1Bis := newTestSet("a")
-					rulesEng2Bis := []Rule{NewRule(fsD1, ImplicationProd, []IDSet{fsE1, fsF1Bis})}
-					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
-					So(err2Bis, ShouldBeNil)
-
-					var system System = []Engine{eng1, eng2Bis, eng3}
-					So(system.checkUnicity(), ShouldBeError, "values: id `a` already present")
-				})
-
-				Convey("when ok", func() {
-					var system System = []Engine{eng1, eng2, eng3}
-					So(system.checkUnicity(), ShouldBeNil)
-				})
-			})
-
 			Convey("loop", func() {
 				Convey("when loop", func() {
 					// G => E, F

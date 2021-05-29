@@ -41,10 +41,6 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 // check all possible error of the system and return the first one
 func (sys System) check() error {
 	var err error
-	err = sys.checkUnicity()
-	if err != nil {
-		return err
-	}
 	err = sys.checkDuplicatedOutputs()
 	if err != nil {
 		return err
@@ -94,14 +90,4 @@ func (sys System) checkDuplicatedOutputs() error {
 		}
 	}
 	return nil
-}
-
-// checkUnicity controls the identifiers unicity
-func (sys System) checkUnicity() error {
-	var idsSets []IDSet
-	for _, eng := range sys {
-		idsSets = append(idsSets, eng.Inputs()...)
-		idsSets = append(idsSets, eng.Outputs()...)
-	}
-	return newChecker(idsSets).check()
 }
