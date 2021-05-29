@@ -48,8 +48,8 @@ method | description
 `NewSetGbell`      | Generalized bell-shaped
 `NewSetTrapezoid`  | Trapezoïdal
 `NewSetTriangular` | Triangular
-`NewSetStepUp`     | Step up (S-shaped)
-`NewSetStepDown`   | Setp down (Z-shaped)
+`NewSetStepUp`     | Step up (S shape)
+`NewSetStepDown`   | Step down (Z shape)
 
 ### Fuzzy values definition
 
@@ -57,7 +57,7 @@ Fuzzy values and fuzzy sets are defined as :
 
 * `fuzzy.IDVal`: a fuzzy value that contains,
   * an identifier `id.ID`
-  * a list of `fuzzy.IDSet` (only required for system and/or engine checks)
+  * a list of `fuzzy.IDSet` (only required for engine checks)
   * a `crisp.Set` interval of values (only required for defuzzification)
 * `fuzzy.IDSet`: fuzzy set that contains,
   * an identifier `id.ID` (only required for errors)
@@ -190,7 +190,7 @@ Or in a more explicit way
 // Using explicit syntax
 expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd) // A1 and B1 and C1
 expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)       // D1 and E1
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)        // (A1 and B1 and C1) or (D1 and E1)
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)       // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 #### Describe an implication
