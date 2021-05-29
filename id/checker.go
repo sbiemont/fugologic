@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// checker controls the Val and Set definition consistency
+// Identifiable represents an object with an ID
 type Identifiable interface {
 	ID() ID
 }

@@ -51,7 +51,6 @@ func (set Set) Values() []float64 {
 
 	// /!\ the loop x += dx introduces a constant delta error at each step
 	// Eg.: try loop from 0 to 5 with a step of 0.1
-	// var result []float64
 	// This error grows all over the steps
 
 	// var result []float64

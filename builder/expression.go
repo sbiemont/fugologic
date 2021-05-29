@@ -29,7 +29,7 @@ func (exp expression) Or(premise fuzzy.Premise) expression {
 	}
 }
 
-// Then describes the consequence of an implication
+// Then describes the consequence of an implication AND stores the rule into the builder
 func (exp expression) Then(consequence []fuzzy.IDSet) {
 	rule := fuzzy.NewRule(
 		exp.fzExp,

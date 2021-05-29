@@ -5,7 +5,7 @@ Fugologic is a naive implementation of a fuzzy logic system.
 ## Roadmap
 
 1. Add a full example using `builder.Builder` with `fuzzy.Engine` creation
-2. Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System`
+2. Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System` (using graph detection cycle)
 
 ## Getting started
 
@@ -37,6 +37,20 @@ if err != nil{
 }
 ```
 
+### Membership function definition
+
+A membership function is defined as a `fuzzy.Set`.
+Several methods are proposed, like :
+
+method | description
+------ | -----------
+`NewSetGauss`      | Gaussian
+`NewSetGbell`      | Generalized bell-shaped
+`NewSetTrapezoid`  | Trapezoïdal
+`NewSetTriangular` | Triangular
+`NewSetStepUp`     | Step up (S-shaped)
+`NewSetStepDown`   | Setp down (Z-shaped)
+
 ### Fuzzy values definition
 
 Fuzzy values and fuzzy sets are defined as :
@@ -46,13 +60,13 @@ Fuzzy values and fuzzy sets are defined as :
   * a list of `fuzzy.IDSet` (only required for system and/or engine checks)
   * a `crisp.Set` interval of values (only required for defuzzification)
 * `fuzzy.IDSet`: fuzzy set that contains,
-  * an identifier (`id.ID`)
-  * a membership method (`fuzzy.Set`)
-  * its parent (`fuzzy.IDVal`)
+  * an identifier `id.ID` (only required for errors)
+  * a membership method `fuzzy.Set`
+  * its parent `fuzzy.IDVal`
 
 *Notes* :
 
-* every identifier shall be unique
+* every identifier shall be unique in a `fuzzy.Engine`
 * `fuzzy.IDVal` and `fuzzy.IDSet` can be defined using a random generate ID or a custom one
 
 ### Define fuzzy inputs / outputs
@@ -108,27 +122,29 @@ bld := builder.NewBuilder(
 )
 ```
 
-* The `fuzzy.Connector` connect several rule premises together to create an expression
-  * `ConnectorZadehAnd` : Zadeh "and" connector
-  * `ConnectorZadehOr` : Zadeh "or" connector
-  * ...
-  * `ConnectorHyperbolicAnd` : Hyperbolic "and" connector
-  * `ConnectorHyperbolicOr` : Hyperbolic "or" connector
-  * ...
-* The `fuzzy.Implication` propagates the expression results into consequences
-  * `ImplicationMin` : Mamdani implication minimum
-  * `ImplicationProd` : Sugeno implication product
-  * ...
-* The `fuzzy.Aggregation` merges all coherent implications
-  * `AggregationUnion` : union
-  * `AggregationIntersection` : intersection
-  * ...
-* The `fuzzy.Defuzzification` extracts one value from the aggregated results
-  * `DefuzzificationCentroid` : centroïd
-  * `DefuzzificationSmallestOfMaxs` : if several `y` maximums are found, get the one with the smallest `x`
-  * `DefuzzificationMiddleOfMaxs` : if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
-  * `DefuzzificationLargestOfMaxs` : if several `y` maximums are found, get the one with the largest `x`
-  * ...
+type | example | description
+---- | ------- | -----------
+**`fuzzy.Connector`** ||connect several rule premises together to create an expression
+|| `ConnectorZadehAnd` | Zadeh "and" connector
+|| `ConnectorZadehOr` | Zadeh "or" connector
+|| ...
+|| `ConnectorHyperbolicAnd` | Hyperbolic "and" connector
+|| `ConnectorHyperbolicOr` | Hyperbolic "or" connector
+|| ...
+**`fuzzy.Implication`** || propagates the expression results into consequences
+|| `ImplicationMin` | Mamdani implication minimum
+|| `ImplicationProd` | Sugeno implication product
+|| ...
+**`fuzzy.Aggregation`** || merges all coherent implications
+|| `AggregationUnion` | union
+|| `AggregationIntersection` | intersection
+|| ...
+**`fuzzy.Defuzzification`** || extracts one value from the aggregated results
+|| `DefuzzificationCentroid` | centroïd
+|| `DefuzzificationSmallestOfMaxs` | if several `y` maximums are found, get the one with the smallest `x`
+|| `DefuzzificationMiddleOfMaxs` | if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
+|| `DefuzzificationLargestOfMaxs` | if several `y` maximums are found, get the one with the largest `x`
+|| ...
 
 #### Describe an input expression
 

@@ -13,6 +13,7 @@ type Builder struct {
 	rules []fuzzy.Rule
 }
 
+// NewBuilder creates a builder with a default configuration
 func NewBuilder(
 	and fuzzy.Connector,
 	or fuzzy.Connector,
