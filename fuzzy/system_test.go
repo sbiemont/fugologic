@@ -49,6 +49,10 @@ func TestSystem(t *testing.T) {
 		eng3, err3 := NewEngine(rulesEng3, agg, defuzz)
 		So(err3, ShouldBeNil)
 
+		eng1.uuid = "Engine #A"
+		eng2.uuid = "Engine #B"
+		eng3.uuid = "Engine #C"
+
 		Convey("when ok", func() {
 			var system System = []Engine{eng1, eng2, eng3}
 			output, errOut := system.Evaluate(DataInput{
@@ -93,22 +97,33 @@ func TestSystem(t *testing.T) {
 				})
 			})
 
-			Convey("loop", func() {
-				Convey("when loop", func() {
+			Convey("cycles", func() {
+				Convey("when cycles", func() {
 					// G => E, F
 					rulesEng2Bis := []Rule{NewRule(fsG1, ImplicationProd, []IDSet{fsE1, fsF1})}
 					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
-					var system System = []Engine{eng1, eng2Bis, eng3}
-					So(system.checkLoop(), ShouldBeError, "input `g` cannot become an output")
+					system, err := NewSystem([]Engine{eng1, eng2Bis, eng3})
+					So(err, ShouldBeError, "cannot flatten graph with cycle(s)")
+					So(system, ShouldBeNil)
 				})
 
 				Convey("when ok", func() {
-					var system System = []Engine{eng1, eng2, eng3}
-					So(system.checkLoop(), ShouldBeNil)
+					system, err := NewSystem([]Engine{eng1, eng2, eng3})
+					So(err, ShouldBeNil)
+					So(enginesIDs(system), ShouldResemble, []id.ID{eng2.uuid, eng1.uuid, eng3.uuid})
 				})
 			})
 		})
 	})
+}
+
+// Helper, extracts ids
+func enginesIDs(sys System) []id.ID {
+	var ids []id.ID
+	for _, engine := range sys {
+		ids = append(ids, engine.uuid)
+	}
+	return ids
 }

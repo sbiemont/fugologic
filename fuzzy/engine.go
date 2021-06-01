@@ -1,7 +1,10 @@
 package fuzzy
 
+import "fugologic.git/id"
+
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
+	uuid   id.ID // optional
 	rules  []Rule
 	agg    Aggregation
 	defuzz Defuzzification
