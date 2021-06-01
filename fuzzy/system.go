@@ -2,20 +2,22 @@ package fuzzy
 
 import (
 	"fmt"
+
+	"fugologic.git/graph"
 )
 
 // System groups engines and evaluate them all
-// For now, all engines have to be correctly ordered and will be evaluated sequentially
-// TODO évaluation séquentielle pour l'instant => à rendre dynamique
+// All engines are evaluated sequentially
 type System []Engine
 
-// NewSystem creates a new system and check for errors
+// NewSystem checks for errors, reorder the engines and creates a new system
 func NewSystem(engines []Engine) (System, error) {
-	system := System(engines)
-	if err := system.check(); err != nil {
+	tmp := System(engines)
+	if err := tmp.checkDuplicatedOutputs(); err != nil {
 		return nil, err
 	}
-	return system, nil
+
+	return tmp.reorder()
 }
 
 // Evaluate all engines one by one
@@ -38,36 +40,67 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 	return newOutput, nil
 }
 
-// check all possible error of the system and return the first one
-func (sys System) check() error {
-	var err error
-	err = sys.checkDuplicatedOutputs()
-	if err != nil {
-		return err
+// reorder builds a graph of engines, check the presence of cycles and flatten the created graph
+func (sys System) reorder() (System, error) {
+	// To nodes
+	nodes := make([]*graph.Node, len(sys))
+	for i, engine := range sys {
+		nodes[i] = graph.NewNode(engine)
 	}
-	err = sys.checkLoop()
-	if err != nil {
-		return err
-	}
-	return nil
-}
 
-// checkLoop builds an ordered list of inputs / outputs
-// * allows an output to become an input
-// * forbids an input to become an output
-func (sys System) checkLoop() error {
-	for i, engI := range sys {
-		for _, in := range engI.Inputs() {
-			for _, engJ := range sys[i+1:] {
-				for _, out := range engJ.Outputs() {
-					if in.parent == out.parent {
-						return fmt.Errorf("input `%s` cannot become an output", in.parent.uuid)
-					}
+	// Init graph
+	dg := graph.NewDirectedGraph(nodes)
+	addEdge := func(i, j int) {
+		dg.AddEdge(nodes[i], nodes[j])
+	}
+
+	// Returns true if a common IDVal is found
+	hasCommon := func(a, b []IDSet) bool {
+		for _, a1 := range a {
+			for _, b1 := range b {
+				if a1.parent == b1.parent {
+					return true
 				}
 			}
 		}
+		return false
 	}
-	return nil
+
+	// Add edges
+	for i, iEng := range sys {
+		// Edge at the current engine
+		iInputs := iEng.Inputs()
+		iOutputs := iEng.Outputs()
+		if hasCommon(iOutputs, iInputs) {
+			addEdge(i, i)
+		}
+
+		// Edges with the other engines
+		for j := i + 1; j < len(sys); j++ {
+			jEng := sys[j]
+			jInputs := jEng.Inputs()
+			jOutputs := jEng.Outputs()
+			if hasCommon(iOutputs, jInputs) {
+				addEdge(i, j)
+			}
+			if hasCommon(jOutputs, iInputs) {
+				addEdge(j, i)
+			}
+		}
+	}
+
+	// Check an sort nodes
+	flat, err := dg.Flatten()
+	if err != nil {
+		return nil, err
+	}
+
+	// To engines
+	engines := make([]Engine, len(sys))
+	for i, node := range flat {
+		engines[i] = node.Data().(Engine)
+	}
+	return engines, nil
 }
 
 // outputs flatten all outputs of the system

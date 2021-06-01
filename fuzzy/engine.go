@@ -1,13 +1,10 @@
 package fuzzy
 
-import (
-	"fmt"
-
-	"fugologic.git/id"
-)
+import "fugologic.git/id"
 
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
+	uuid   id.ID // optional
 	rules  []Rule
 	agg    Aggregation
 	defuzz Defuzzification
@@ -71,31 +68,4 @@ func (eng Engine) Outputs() []IDSet {
 		result = append(result, rule.outputs...)
 	}
 	return result
-}
-
-func checkIDs(idSets []IDSet) error {
-	// Extract all unique IDVal
-	var idVals = make(map[*IDVal]interface{})
-	for _, idSet := range idSets {
-		idVals[idSet.parent] = nil
-	}
-
-	// Extract all IDSets of IDVals and compare them
-	var vals []id.Identifiable
-	var sets []id.Identifiable
-	for idVal := range idVals {
-		vals = append(vals, idVal)
-		for _, idSet := range idVal.idSets {
-			sets = append(sets, idSet)
-		}
-	}
-
-	// Check all
-	if err := id.NewChecker(vals).Check(); err != nil {
-		return fmt.Errorf("values: %s", err)
-	}
-	if err := id.NewChecker(sets).Check(); err != nil {
-		return fmt.Errorf("sets: %s", err)
-	}
-	return nil
 }

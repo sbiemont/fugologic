@@ -45,14 +45,6 @@ var (
 	}
 )
 
-// Aggregation represents the aggregation of 2 fuzzy set (for merging all result sets)
-type Aggregation func(float64, float64) float64
-
-var (
-	AggregationUnion        Aggregation = union
-	AggregationIntersection Aggregation = intersection
-)
-
 // defuzzificationMaximums returns the smallest of maximums and the largest of maximums
 // E.g:
 //  x = [0 1 2 3 4 5 6 7 8 9]
@@ -88,6 +80,14 @@ func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 	}
 	return xSmallestMax, xLargestMax
 }
+
+// Aggregation represents the aggregation of 2 fuzzy set (for merging all result sets)
+type Aggregation func(float64, float64) float64
+
+var (
+	AggregationUnion        Aggregation = union
+	AggregationIntersection Aggregation = intersection
+)
 
 // defuzzer is responsible for collecting rule's results and to defuzz
 type defuzzer struct {
