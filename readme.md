@@ -2,14 +2,9 @@
 
 Fugologic is a naive implementation of a fuzzy logic system.
 
-## Roadmap
-
-1. Add a full example using `builder.Builder` with `fuzzy.Engine` creation
-2. Auto sort the list of `fuzzy.Engine` when creating a `fuzzy.System` (using graph detection cycle)
-
 ## Getting started
 
-For more example, see [/fugologic/fuzzy/engine_test.go](https://github.com/sbiemont/fugologic/blob/master/fuzzy/engine_test.go)
+For more example, see [/fugologic/example/example_test.go](https://github.com/sbiemont/fugologic/blob/master/example/example_test.go)
 
 ## Define the system
 
