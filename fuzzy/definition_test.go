@@ -8,6 +8,22 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func TestNewIDSet(t *testing.T) {
+	iso := func(x float64) float64 { return x }
+
+	Convey("id set", t, func() {
+		Convey("when not", func() {
+			fvA := NewIDVal(crisp.Set{})
+			fsA1 := NewIDSet(iso, &fvA)
+
+			not := fsA1.Not()
+			So(not.parent, ShouldEqual, &fvA)
+			So(not.uuid, ShouldEqual, fsA1.uuid)
+			So(not.set(0.1), ShouldEqual, 0.9)
+		})
+	})
+}
+
 func TestNewIDVal(t *testing.T) {
 	Convey("id val", t, func() {
 		fvA := NewIDVal(crisp.Set{})
