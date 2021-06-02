@@ -49,7 +49,7 @@ func TestExpression(t *testing.T) {
 			So(res, ShouldEqual, 1)
 
 			Convey("then", func() {
-				exp.Then([]fuzzy.IDSet{fsE1}) // only checks the "then" call
+				exp.Then(fsE1) // only checks the "then" call
 				engine, _ := bld.Engine()
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
@@ -67,7 +67,7 @@ func TestExpression(t *testing.T) {
 			So(res, ShouldEqual, 3)
 
 			Convey("then", func() {
-				exp.Then([]fuzzy.IDSet{fsE1}) // only checks the "then" call
+				exp.Then(fsE1) // only checks the "then" call
 				engine, _ := bld.Engine()
 				res, err := engine.Evaluate(input)
 				So(err, ShouldBeNil)
