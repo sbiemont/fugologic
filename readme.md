@@ -62,7 +62,7 @@ Fuzzy values and fuzzy sets are defined as :
 *Notes* :
 
 * every identifier shall be unique in a `fuzzy.Engine`
-* `fuzzy.IDVal` and `fuzzy.IDSet` can be defined using a random generate ID or a custom one
+* `fuzzy.IDVal` and `fuzzy.IDSet` can be defined using a random generated ID or a custom one
 
 ### Define fuzzy inputs / outputs
 
@@ -99,7 +99,7 @@ rule = A1 and B1    then          C1, D1
 
 The rule builder is optional but helps creating simple rules, and then, an engine.
 
-Create a new builder, using predefined configuration :
+Create a new builder using predefined configuration :
 
 ```go
 bld := NewBuilderMamdani()
@@ -184,8 +184,8 @@ Or in a more explicit way
 ```go
 // Using explicit syntax
 expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd) // A1 and B1 and C1
-expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)       // D1 and E1
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)       // (A1 and B1 and C1) or (D1 and E1)
+expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)        // D1 and E1
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)        // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 #### Describe an implication
@@ -200,14 +200,20 @@ A consequence is just a list of `fuzzy.IDSet`.
 
 Combine the several items previously seen to describe the rules.
 
+*Note* : a fuzzy set can be complemented using the `Not` function
+
+```go
+fsA1.Not()
+```
+
 The first method is useful when describing rules directly in the code (using a builder)
 
-Note : the builder that creates a rule stores it.
+*Note* : the builder that creates a rule stores it.
 
 ```go
 // Using a builder, the rule is stored in the builder
 // A1 and B1 => C1
-bld.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1})
+bld.If(fsA1).And(fsB1).Then(fsC1)
 // Describe other rules the same way
 // ...
 ```
@@ -215,7 +221,7 @@ bld.If(fsA1).And(fsB1).Then([]fuzzy.IDSet{fsC1})
 The second method can be used to easily generate rules manually.
 Connectors can be explicitely choosen, unlike for the first method.
 
-Note : create a list of rules to use it afterwards.
+*Note* : create a list of rules to use it afterwards.
 
 ```go
 // Using explicit syntax, the rule has to be part of a list

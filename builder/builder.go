@@ -1,6 +1,8 @@
 package builder
 
-import "fugologic.git/fuzzy"
+import (
+	"fugologic.git/fuzzy"
+)
 
 // Builder groups custom connector and implication
 type Builder struct {

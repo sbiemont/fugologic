@@ -107,11 +107,11 @@ func TestAdd(t *testing.T) {
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
-		bld.If(fsA1).Then([]fuzzy.IDSet{fsC1})
+		bld.If(fsA1).Then(fsC1)
 		So(bld.rules, ShouldHaveLength, 1)
 
 		// Add rule #2
-		bld.If(fsB1).Then([]fuzzy.IDSet{fsC1})
+		bld.If(fsB1).Then(fsC1)
 		So(bld.rules, ShouldHaveLength, 2)
 	})
 }
@@ -123,8 +123,8 @@ func TestEngine(t *testing.T) {
 
 	Convey("engine", t, func() {
 		bld := NewBuilderMamdani()
-		bld.If(fsA1).Then([]fuzzy.IDSet{fsC1})
-		bld.If(fsB1).Then([]fuzzy.IDSet{fsC1})
+		bld.If(fsA1).Then(fsC1)
+		bld.If(fsB1).Then(fsC1)
 
 		engine, err := bld.Engine()
 		So(engine, ShouldNotBeEmpty)
