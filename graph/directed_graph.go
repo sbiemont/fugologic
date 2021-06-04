@@ -37,7 +37,7 @@ func NewDirectedGraph(nodes []*Node, edges DirectedEdges) (DirectedGraph, error)
 		edges: edges,
 	}
 
-	if cycles := dg.isCyclic(); cycles {
+	if dg.isCyclic() {
 		return DirectedGraph{}, errors.New("cycle(s) detected in directed graph")
 	}
 
