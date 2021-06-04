@@ -49,9 +49,9 @@ func (sys System) reorder() (System, error) {
 	}
 
 	// Init graph
-	dg := graph.NewDirectedGraph(nodes)
+	edges := graph.NewDirectedEdges()
 	addEdge := func(i, j int) {
-		dg.AddEdge(nodes[i], nodes[j])
+		edges.Add(nodes[i], nodes[j])
 	}
 
 	// Returns true if a common IDVal is found
@@ -90,14 +90,14 @@ func (sys System) reorder() (System, error) {
 	}
 
 	// Check an sort nodes
-	flat, err := dg.Flatten()
+	dg, err := graph.NewDirectedGraph(nodes, edges)
 	if err != nil {
 		return nil, err
 	}
 
 	// To engines
 	engines := make([]Engine, len(sys))
-	for i, node := range flat {
+	for i, node := range dg.Flatten() {
 		engines[i] = node.Data().(Engine)
 	}
 	return engines, nil
