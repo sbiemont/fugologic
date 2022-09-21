@@ -47,10 +47,11 @@ var (
 
 // defuzzificationMaximums returns the smallest of maximums and the largest of maximums
 // E.g:
-//  x = [0 1 2 3 4 5 6 7 8 9]
-//  y = [0 0 1 1 2 2 1 1 0 0]
-//  smallest of max is the left max for x=4 (y=2)
-//  largest of max is the right max for x=5 (y=2)
+//
+//	x = [0 1 2 3 4 5 6 7 8 9]
+//	y = [0 0 1 1 2 2 1 1 0 0]
+//	smallest of max is the left max for x=4 (y=2)
+//	largest of max is the right max for x=5 (y=2)
 func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 	var xSmallestMax, xLargestMax float64
 	var ySmallestMax, yLargestMax float64

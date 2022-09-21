@@ -11,8 +11,8 @@ type Engine struct {
 }
 
 // NewEngine builds a new Engine instance
-//  * The Aggregation merges all result sets together
-//  * The Defuzzification extracts one value from the aggregation
+//   - The Aggregation merges all result sets together
+//   - The Defuzzification extracts one value from the aggregation
 func NewEngine(rules []Rule, agg Aggregation, defuzz Defuzzification) (Engine, error) {
 	// Gather inputs and outpus
 	var idSets []IDSet
