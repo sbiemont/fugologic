@@ -54,8 +54,8 @@ func (fs Set) Multiply(k float64) Set {
 
 // NewSetGauss membership function
 // https://www.mathworks.com/help/fuzzy/gaussmf.html
-//   _
-// _/ \_
+//
+// _/¯\_
 func NewSetGauss(sigma, c float64) Set {
 	return func(x float64) float64 {
 		return float64(math.Exp(-(math.Pow(x-c, 2.0)) / (2.0 * math.Pow(sigma, 2.0))))
@@ -64,8 +64,8 @@ func NewSetGauss(sigma, c float64) Set {
 
 // NewSetGbell membership function: 1 / (1 + ((x-c)/a)^2b)
 // https://www.mathworks.com/help/fuzzy/gbellmf.html
-//   _
-// _/ \_
+//
+// _/¯\_
 func NewSetGbell(a, b, c float64) Set {
 	return func(x float64) float64 {
 		return 1.0 / (1.0 + math.Pow(math.Abs((x-c)/a), 2*b))
@@ -74,11 +74,11 @@ func NewSetGbell(a, b, c float64) Set {
 
 // NewSetTrapezoid membership function
 // https://www.mathworks.com/help/fuzzy/trapmf.html
-//  * a: first base (left to right) of the function (y=0)
-//  * b: peak of the function (y=1)
-//  * c: seconde base of the function (y=0)
-//   _
-// _/ \_
+// - a: first base (left to right) of the function (y=0)
+// - b: peak of the function (y=1)
+// - c: seconde base of the function (y=0)
+//
+// _/¯\_
 func NewSetTrapezoid(a, b, c, d float64) Set {
 	return func(x float64) float64 {
 		switch {
@@ -96,9 +96,10 @@ func NewSetTrapezoid(a, b, c, d float64) Set {
 
 // NewSetTriangular membership function
 // https://www.mathworks.com/help/fuzzy/trimf.html
-//  * a: first base (left to right) of the function (y=0)
-//  * b: peak of the function (y=1)
-//  * c: seconde base of the function (y=0)
+// - a: first base (left to right) of the function (y=0)
+// - b: peak of the function (y=1)
+// - c: second base of the function (y=0)
+//
 // _/\_
 func NewSetTriangular(a, b, c float64) Set {
 	return func(x float64) float64 {
@@ -114,10 +115,10 @@ func NewSetTriangular(a, b, c float64) Set {
 }
 
 // NewSetStepUp membership function
-//  * a: first base (left to right) of the function (y=0)
-//  * b: peak of the function (y=1)
-//   _
-// _/
+// - a: first base (left to right) of the function (y=0)
+// - b: peak of the function (y=1)
+//
+// _/¯
 func NewSetStepUp(a, b float64) Set {
 	return func(x float64) float64 {
 		switch {
@@ -132,10 +133,10 @@ func NewSetStepUp(a, b float64) Set {
 }
 
 // NewSetStepDown membership function
-//  * a: peak (left to right) of the function (1)
-//  * b: last base of the function (0)
-// _
-//  \_
+// - a: peak (left to right) of the function (1)
+// - b: last base of the function (0)
+//
+// ¯\_
 func NewSetStepDown(a, b float64) Set {
 	return func(x float64) float64 {
 		switch {

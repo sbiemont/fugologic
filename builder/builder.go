@@ -8,6 +8,8 @@ import (
 type Builder struct {
 	and    fuzzy.Connector
 	or     fuzzy.Connector
+	nor    fuzzy.Connector
+	nand   fuzzy.Connector
 	impl   fuzzy.Implication
 	agg    fuzzy.Aggregation
 	defuzz fuzzy.Defuzzification
@@ -19,6 +21,8 @@ type Builder struct {
 func NewBuilder(
 	and fuzzy.Connector,
 	or fuzzy.Connector,
+	nand fuzzy.Connector,
+	nor fuzzy.Connector,
 	impl fuzzy.Implication,
 	agg fuzzy.Aggregation,
 	defuzz fuzzy.Defuzzification,
@@ -26,6 +30,8 @@ func NewBuilder(
 	return Builder{
 		and:    and,
 		or:     or,
+		nand:   nand,
+		nor:    nor,
 		impl:   impl,
 		agg:    agg,
 		defuzz: defuzz,

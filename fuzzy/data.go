@@ -2,13 +2,11 @@ package fuzzy
 
 import (
 	"fmt"
-
-	"fugologic/id"
 )
 
 // Data is a generic type to manipulate input/output values
 // It represents couples of IDVal identifier and crisp value
-type Data map[id.ID]float64
+type Data map[*IDVal]float64
 
 // DataOutput represents the system output
 type DataOutput Data
@@ -21,7 +19,7 @@ func (din DataInput) find(idSet IDSet) (float64, error) {
 	if idSet.parent == nil {
 		return 0, fmt.Errorf("input: cannot find parent for id set `%s`", idSet.uuid)
 	}
-	value, ok := din[idSet.parent.uuid]
+	value, ok := din[idSet.parent]
 	if !ok {
 		return 0, fmt.Errorf("input: cannot find data for id val `%s` (id set `%s`)", idSet.parent.uuid, idSet.uuid)
 	}
@@ -29,9 +27,9 @@ func (din DataInput) find(idSet IDSet) (float64, error) {
 }
 
 // merge both data values and return the copy
-func mergeData(d1 map[id.ID]float64, d2 map[id.ID]float64) map[id.ID]float64 {
-	result := map[id.ID]float64{}
-	m := func(data map[id.ID]float64) {
+func mergeData(d1, d2 map[*IDVal]float64) map[*IDVal]float64 {
+	result := map[*IDVal]float64{}
+	m := func(data map[*IDVal]float64) {
 		for k, v := range data {
 			result[k] = v
 		}

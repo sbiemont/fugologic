@@ -13,20 +13,32 @@ func (exp expression) Evaluate(input fuzzy.DataInput) (float64, error) {
 	return exp.fzExp.Evaluate(input)
 }
 
-// And connects the current expression and a premise with the AND connector of the builder
-func (exp expression) And(premise fuzzy.Premise) expression {
+// connect the current expression with a new one with a connector
+func (exp expression) connect(premise fuzzy.Premise, cnt fuzzy.Connector) expression {
 	return expression{
 		bld:   exp.bld,
-		fzExp: exp.fzExp.Connect(premise, exp.bld.and),
+		fzExp: exp.fzExp.Connect(premise, cnt),
 	}
+}
+
+// And connects the current expression and a premise with the AND connector of the builder
+func (exp expression) And(premise fuzzy.Premise) expression {
+	return exp.connect(premise, exp.bld.and)
 }
 
 // Or connects the current expression and a premise with the OR connector of the builder
 func (exp expression) Or(premise fuzzy.Premise) expression {
-	return expression{
-		bld:   exp.bld,
-		fzExp: exp.fzExp.Connect(premise, exp.bld.or),
-	}
+	return exp.connect(premise, exp.bld.or)
+}
+
+// NOr connects the current expression and a premise with the NOT-OR connector of the builder
+func (exp expression) NOr(premise fuzzy.Premise) expression {
+	return exp.connect(premise, exp.bld.nor)
+}
+
+// NAnd connects the current expression and a premise with the NOT-AND connector of the builder
+func (exp expression) NAnd(premise fuzzy.Premise) expression {
+	return exp.connect(premise, exp.bld.nand)
 }
 
 // Then describes the consequence of an implication AND stores the rule into the builder

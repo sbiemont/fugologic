@@ -69,8 +69,7 @@ func (sys System) reorder() (System, error) {
 	// Add edges
 	for i, iEng := range sys {
 		// Edge at the current engine
-		iInputs := iEng.Inputs()
-		iOutputs := iEng.Outputs()
+		iInputs, iOutputs := iEng.io()
 		if hasCommon(iOutputs, iInputs) {
 			addEdge(i, i)
 		}
@@ -78,8 +77,7 @@ func (sys System) reorder() (System, error) {
 		// Edges with the other engines
 		for j := i + 1; j < len(sys); j++ {
 			jEng := sys[j]
-			jInputs := jEng.Inputs()
-			jOutputs := jEng.Outputs()
+			jInputs, jOutputs := jEng.io()
 			if hasCommon(iOutputs, jInputs) {
 				addEdge(i, j)
 			}
@@ -107,7 +105,8 @@ func (sys System) reorder() (System, error) {
 func (sys System) outputs() []IDSet {
 	var result []IDSet
 	for _, eng := range sys {
-		result = append(result, eng.Outputs()...)
+		_, outputs := eng.io()
+		result = append(result, outputs...)
 	}
 	return result
 }

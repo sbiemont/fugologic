@@ -41,9 +41,9 @@ var (
 
 // Expression connects a list of premises. Eg.: A or B or C
 // Eg.:
-//  * Expression1 = A or B or C
-//  * Expression2 = D or E
-//  * Expression3 = Expression1 and Expression2 = (A or B or C) and (D or E)
+//   - Expression1 = A or B or C
+//   - Expression2 = D or E
+//   - Expression3 = Expression1 and Expression2 = (A or B or C) and (D or E)
 type Expression struct {
 	premises []Premise
 	connect  Connector

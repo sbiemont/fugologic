@@ -70,3 +70,15 @@ func (rule Rule) evaluate(input DataInput) ([]IDSet, error) {
 func (rule Rule) Inputs() []IDSet {
 	return flattenIDSets(nil, []Premise{rule.inputs})
 }
+
+type rules []Rule
+
+// io extracts inputs and outputs IDSet from a list of rules
+func (r rules) io() ([]IDSet, []IDSet) {
+	var inputs, outputs []IDSet
+	for _, rule := range r {
+		inputs = append(inputs, rule.Inputs()...)
+		outputs = append(outputs, rule.outputs...)
+	}
+	return inputs, outputs
+}

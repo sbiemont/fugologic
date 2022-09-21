@@ -7,6 +7,8 @@ func NewBuilderMamdani() Builder {
 	return NewBuilder(
 		fuzzy.ConnectorZadehAnd,
 		fuzzy.ConnectorZadehOr,
+		fuzzy.ConnectorZadehNand,
+		fuzzy.ConnectorZadehNor,
 		fuzzy.ImplicationMin,
 		fuzzy.AggregationUnion,
 		fuzzy.DefuzzificationCentroid,
@@ -18,6 +20,8 @@ func NewBuilderSugeno() Builder {
 	return NewBuilder(
 		fuzzy.ConnectorZadehAnd,
 		fuzzy.ConnectorZadehOr,
+		fuzzy.ConnectorZadehNand,
+		fuzzy.ConnectorZadehNor,
 		fuzzy.ImplicationProd,
 		fuzzy.AggregationUnion,
 		fuzzy.DefuzzificationCentroid,

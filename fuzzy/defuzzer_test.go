@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	"fugologic/crisp"
+	"fugologic/id"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -14,53 +16,61 @@ var defuzzificationNone Defuzzification = func(_ Set, _ crisp.Set) float64 {
 func TestDefuzzerAdd(t *testing.T) {
 	newSet := func() Set { return func(x float64) float64 { return x } }
 
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", newSet(), &fvA)
-	fsA2 := NewIDSetCustom("a2", newSet(), &fvA)
-	fsA3 := NewIDSetCustom("a3", newSet(), &fvA)
+	fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{
+		"a1": newSet(),
+		"a2": newSet(),
+	})
 
-	Convey("add", t, func() {
+	Convey("new", t, func() {
 		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil, AggregationUnion)
+			defuzzer := newDefuzzer(nil, AggregationUnion, nil)
 			So(defuzzer.results, ShouldBeEmpty)
 		})
 
 		Convey("when ok", func() {
-			defuzzer := newDefuzzer(nil, AggregationUnion)
-			defuzzer.add([]IDSet{fsA1, fsA3})
-			defuzzer.add([]IDSet{fsA2})
-			So(defuzzer.results, ShouldHaveLength, 3)
+			defuzzer := newDefuzzer(DefuzzificationCentroid, AggregationUnion, []IDSet{
+				fvA.Get("a1"),
+				fvA.Get("a2"),
+			})
+			So(defuzzer.fct, ShouldEqual, DefuzzificationCentroid)
+			So(defuzzer.agg, ShouldEqual, AggregationUnion)
+			So(defuzzer.results, ShouldHaveLength, 2)
+			So(defuzzer.results[0].uuid, ShouldEqual, "a1")
+			So(defuzzer.results[1].uuid, ShouldEqual, "a2")
 		})
 	})
 }
 
 func TestDefuzzerDefuzz(t *testing.T) {
 	setA, _ := crisp.NewSet(1, 4, 0.1)
-	fvA := NewIDValCustom("a", setA)
-	fsA1 := NewIDSetCustom("a1", NewSetTriangular(1, 2, 3).Min(0.25), &fvA)
-	fsA2 := NewIDSetCustom("a2", NewSetTriangular(2, 3, 4).Min(0.75), &fvA)
+	fvA, _ := NewIDVal("a", setA, map[id.ID]Set{
+		"a1": NewSetTriangular(1, 2, 3).Min(0.25),
+		"a2": NewSetTriangular(2, 3, 4).Min(0.75),
+	})
 
 	setB, _ := crisp.NewSet(11, 14, 0.1)
-	fvB := NewIDValCustom("b", setB)
-	fsB1 := NewIDSetCustom("b1", NewSetTriangular(11, 12, 13).Min(0.1), &fvB)
-	fsB2 := NewIDSetCustom("b2", NewSetTriangular(12, 13, 14).Min(0.9), &fvB)
+	fvB, _ := NewIDVal("b", setB, map[id.ID]Set{
+		"b1": NewSetTriangular(11, 12, 13).Min(0.1),
+		"b2": NewSetTriangular(12, 13, 14).Min(0.9),
+	})
 
 	Convey("add", t, func() {
 		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil, AggregationUnion)
+			defuzzer := newDefuzzer(nil, AggregationUnion, nil)
 			result, err := defuzzer.defuzz()
 			So(err, ShouldBeNil)
 			So(result, ShouldBeEmpty)
 		})
 
 		Convey("when ok", func() {
-			defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion)
-			defuzzer.add([]IDSet{fsA1, fsA2, fsB1, fsB2})
+			defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion, []IDSet{
+				fvA.Get("a1"), fvA.Get("a2"), fvB.Get("b1"), fvB.Get("b2"),
+			})
 			result, err := defuzzer.defuzz()
 			So(err, ShouldBeNil)
 			So(result, ShouldResemble, DataOutput{
-				"a": 0,
-				"b": 0,
+				fvA: 0,
+				fvB: 0,
 			})
 		})
 	})

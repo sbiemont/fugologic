@@ -2,7 +2,6 @@ package fuzzy
 
 import (
 	"fugologic/crisp"
-	"fugologic/id"
 )
 
 // Defuzzification method definition
@@ -98,34 +97,30 @@ type defuzzer struct {
 }
 
 // newDefuzzer builds a new Defuzzer instance
-func newDefuzzer(fct Defuzzification, agg Aggregation) defuzzer {
+func newDefuzzer(fct Defuzzification, agg Aggregation, results []IDSet) defuzzer {
 	return defuzzer{
-		fct: fct,
-		agg: agg,
+		fct:     fct,
+		agg:     agg,
+		results: results,
 	}
-}
-
-// add the sets to the defuzzer result
-func (dfz *defuzzer) add(idSets []IDSet) {
-	dfz.results = append(dfz.results, idSets...)
 }
 
 // defuzz the values
 func (dfz defuzzer) defuzz() (DataOutput, error) {
 	// Group IDSet by IDVal parent
-	groups := make(map[id.ID][]IDSet)
-	universes := make(map[id.ID]crisp.Set)
+	groups := make(map[*IDVal][]IDSet)
+	universes := make(map[*IDVal]crisp.Set)
 	for _, idSet := range dfz.results {
 		idVal := idSet.parent
-		groups[idVal.uuid] = append(groups[idVal.uuid], idSet)
-		universes[idVal.uuid] = idVal.u
+		groups[idVal] = append(groups[idVal], idSet)
+		universes[idVal] = idVal.u
 	}
 
 	// For each group, apply defuzz
-	values := make(map[id.ID]float64, len(dfz.results))
-	for id, group := range groups {
+	values := make(DataOutput, len(dfz.results))
+	for idVal, group := range groups {
 		aggregation := dfz.aggregate(group)
-		values[id] = dfz.fct(aggregation, universes[id])
+		values[idVal] = dfz.fct(aggregation, universes[idVal])
 	}
 	return values, nil
 }

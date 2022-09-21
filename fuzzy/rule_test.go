@@ -5,6 +5,7 @@ import (
 
 	"fugologic/crisp"
 	"fugologic/id"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
@@ -29,20 +30,20 @@ func TestImplication(t *testing.T) {
 func TestFlattenIDSets(t *testing.T) {
 	var timesTwo Set = func(x float64) float64 { return x * 2 }
 
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", timesTwo, &fvA)
+	fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{"a1": timesTwo})
+	fsA1 := fvA.Get("a1")
 
-	fvB := NewIDValCustom("b", crisp.Set{})
-	fsB1 := NewIDSetCustom("b1", timesTwo, &fvB)
+	fvB, _ := NewIDVal("b", crisp.Set{}, map[id.ID]Set{"b1": timesTwo})
+	fsB1 := fvB.Get("b1")
 
-	fvC := NewIDValCustom("c", crisp.Set{})
-	fsC1 := NewIDSetCustom("c1", timesTwo, &fvC)
+	fvC, _ := NewIDVal("c", crisp.Set{}, map[id.ID]Set{"c1": timesTwo})
+	fsC1 := fvC.Get("c1")
 
-	fvD := NewIDValCustom("d", crisp.Set{})
-	fsD1 := NewIDSetCustom("d1", timesTwo, &fvD)
+	fvD, _ := NewIDVal("d", crisp.Set{}, map[id.ID]Set{"d1": timesTwo})
+	fsD1 := fvD.Get("d1")
 
-	fvE := NewIDValCustom("e", crisp.Set{})
-	fsE1 := NewIDSetCustom("e1", timesTwo, &fvE)
+	fvE, _ := NewIDVal("e", crisp.Set{}, map[id.ID]Set{"e1": timesTwo})
+	fsE1 := fvE.Get("e1")
 
 	Convey("when only one set", t, func() {
 		result := flattenIDSets(nil, []Premise{fsA1})
@@ -66,7 +67,7 @@ func TestFlattenIDSets(t *testing.T) {
 			parents = append(parents, idSet.parent)
 			uuids = append(uuids, idSet.uuid)
 		}
-		So(parents, ShouldResemble, []*IDVal{&fvA, &fvB, &fvC, &fvD, &fvE})
+		So(parents, ShouldResemble, []*IDVal{fvA, fvB, fvC, fvD, fvE})
 		So(uuids, ShouldResemble, []id.ID{"a1", "b1", "c1", "d1", "e1"})
 	})
 }
@@ -85,11 +86,11 @@ func TestRule(t *testing.T) {
 		var setA Set = func(x float64) float64 { return x }
 		var setB Set = func(x float64) float64 { return x }
 
-		fvA := NewIDValCustom("a", crisp.Set{})
-		fsA1 := NewIDSetCustom("a1", setA, &fvA)
+		fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{"a1": setA})
+		fsA1 := fvA.Get("a1")
 
-		fvB := NewIDValCustom("b", crisp.Set{})
-		fsB1 := NewIDSetCustom("b1", setB, &fvB)
+		fvB, _ := NewIDVal("b", crisp.Set{}, map[id.ID]Set{"b1": setB})
+		fsB1 := fvB.Get("b1")
 
 		// A => B
 		rule := NewRule(fsA1, ImplicationProd, []IDSet{fsB1})
@@ -103,31 +104,22 @@ func TestRule(t *testing.T) {
 
 		Convey("when ok", func() {
 			dataIn := DataInput{
-				"a": 1,
+				fvA: 1,
 			}
 			output, err := rule.evaluate(dataIn)
 			So(err, ShouldBeNil)
 			So(output, ShouldHaveLength, 1)
-			So(output[0].parent, ShouldEqual, &fvB)
+			So(output[0].parent, ShouldEqual, fvB)
 			So(output[0].set, ShouldNotEqual, setB) // Membership function should have been replaced
 			So(output[0].uuid, ShouldEqual, "b1")
 		})
 	})
 
 	Convey("inputs", t, func() {
-		var set Set = func(x float64) float64 { return x }
-
-		fvA := NewIDValCustom("a", crisp.Set{})
-		fsA1 := NewIDSetCustom("a1", set, &fvA)
-
-		fvB := NewIDValCustom("b", crisp.Set{})
-		fsB1 := NewIDSetCustom("b1", set, &fvB)
-
-		fvC := NewIDValCustom("c", crisp.Set{})
-		fsC1 := NewIDSetCustom("c1", set, &fvC)
-
-		fvD := NewIDValCustom("d", crisp.Set{})
-		fsD1 := NewIDSetCustom("d1", set, &fvD)
+		_, fsA1 := newTestVal("a", "a1")
+		_, fsB1 := newTestVal("b", "b1")
+		_, fsC1 := newTestVal("c", "c1")
+		_, fsD1 := newTestVal("d", "d1")
 
 		Convey("when one input", func() {
 			// A => B

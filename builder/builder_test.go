@@ -11,25 +11,28 @@ import (
 )
 
 // Create a fuzzy value, a fuzzy set and link both
-func newTestSet(name id.ID) fuzzy.IDSet {
+func newTestVal(val, set id.ID) (*fuzzy.IDVal, fuzzy.IDSet) {
 	fuzzySet := func(x float64) float64 { return x }
-	fv := fuzzy.NewIDValCustom(name, crisp.Set{})
-	fs1 := fuzzy.NewIDSetCustom(name+"1", fuzzySet, &fv)
-	return fs1
+	fv, _ := fuzzy.NewIDVal(val, crisp.Set{}, map[id.ID]fuzzy.Set{
+		set: fuzzySet,
+	})
+	return fv, fv.Get(set)
 }
 
 func TestIf(t *testing.T) {
-	fsA1 := newTestSet("a")
-	fsB1 := newTestSet("b")
-	fsC1 := newTestSet("c")
-	fsD1 := newTestSet("d")
-	fsE1 := newTestSet("e")
+	fvA, fsA1 := newTestVal("a", "a1")
+	fvB, fsB1 := newTestVal("b", "b1")
+	fvC, fsC1 := newTestVal("c", "c1")
+	fvD, fsD1 := newTestVal("d", "d1")
+	fvE, fsE1 := newTestVal("e", "e1")
 
 	Convey("if", t, func() {
 		Convey("when zadeh connectors", func() {
 			bld := NewBuilder(
 				fuzzy.ConnectorZadehAnd,
 				fuzzy.ConnectorZadehOr,
+				nil,
+				nil,
 				nil,
 				nil,
 				nil,
@@ -41,11 +44,11 @@ func TestIf(t *testing.T) {
 			rule := bld.If(expABC.Or(expCD))
 
 			res, err := rule.Evaluate(fuzzy.DataInput{
-				"a": 1,
-				"b": 2,
-				"c": 3,
-				"d": 4,
-				"e": 5,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
+				fvD: 4,
+				fvE: 5,
 			})
 			So(err, ShouldBeNil)
 			So(res, ShouldEqual, 4)
@@ -59,6 +62,8 @@ func TestIf(t *testing.T) {
 				nil,
 				nil,
 				nil,
+				nil,
+				nil,
 			)
 
 			expABC := bld.If(fsA1).And(fsB1).And(fsC1)
@@ -66,11 +71,11 @@ func TestIf(t *testing.T) {
 			exp := bld.If(expABC.Or(expCD))
 
 			res, err := exp.Evaluate(fuzzy.DataInput{
-				"a": 1,
-				"b": 2,
-				"c": 3,
-				"d": 4,
-				"e": 5,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
+				fvD: 4,
+				fvE: 5,
 			})
 
 			abc := 1 * 2 * 3
@@ -84,7 +89,7 @@ func TestIf(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	Convey("explicit add rule", t, func() {
-		bld := NewBuilder(nil, nil, nil, nil, nil)
+		bld := NewBuilder(nil, nil, nil, nil, nil, nil, nil)
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
@@ -99,9 +104,9 @@ func TestAdd(t *testing.T) {
 	})
 
 	Convey("implicit add rule", t, func() {
-		fsA1 := newTestSet("a")
-		fsB1 := newTestSet("b")
-		fsC1 := newTestSet("c")
+		_, fsA1 := newTestVal("a", "a1")
+		_, fsB1 := newTestVal("b", "b1")
+		_, fsC1 := newTestVal("c", "c1")
 
 		bld := NewBuilderMamdani()
 		So(bld.rules, ShouldBeEmpty)
@@ -117,9 +122,9 @@ func TestAdd(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	fsA1 := newTestSet("a")
-	fsB1 := newTestSet("b")
-	fsC1 := newTestSet("c")
+	fvA,fsA1 := newTestVal("a", "a1")
+	fvB,fsB1 := newTestVal("b", "b1")
+	fvC,fsC1 := newTestVal("c", "c1")
 
 	Convey("engine", t, func() {
 		bld := NewBuilderMamdani()
@@ -131,11 +136,11 @@ func TestEngine(t *testing.T) {
 		So(err, ShouldBeNil)
 
 		result, err := engine.Evaluate(fuzzy.DataInput{
-			"a": 1,
-			"b": 2,
+			fvA: 1,
+			fvB: 2,
 		})
 		So(result, ShouldResemble, fuzzy.DataOutput{
-			"c": 0,
+			fvC: 0,
 		})
 		So(err, ShouldBeNil)
 	})
