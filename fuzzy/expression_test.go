@@ -4,7 +4,7 @@ import (
 	"math"
 	"testing"
 
-	"fugologic.git/crisp"
+	"fugologic/crisp"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

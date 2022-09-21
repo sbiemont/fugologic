@@ -3,9 +3,9 @@ package builder
 import (
 	"testing"
 
-	"fugologic.git/crisp"
-	"fugologic.git/fuzzy"
-	"fugologic.git/id"
+	"fugologic/crisp"
+	"fugologic/fuzzy"
+	"fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

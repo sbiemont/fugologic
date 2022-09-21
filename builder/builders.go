@@ -1,6 +1,6 @@
 package builder
 
-import "fugologic.git/fuzzy"
+import "fugologic/fuzzy"
 
 // NewBuilderMamdani sets the default configuration for Mamdani inference system
 func NewBuilderMamdani() Builder {

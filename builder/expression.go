@@ -1,6 +1,6 @@
 package builder
 
-import "fugologic.git/fuzzy"
+import "fugologic/fuzzy"
 
 // expression embeds a custom builder and a fuzzy expression
 type expression struct {

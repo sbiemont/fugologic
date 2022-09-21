@@ -3,8 +3,8 @@ package fuzzy
 import (
 	"fmt"
 
-	"fugologic.git/crisp"
-	"fugologic.git/id"
+	"fugologic/crisp"
+	"fugologic/id"
 )
 
 // IDSet represents a static Set with an ID

@@ -1,8 +1,8 @@
 package fuzzy
 
 import (
-	"fugologic.git/crisp"
-	"fugologic.git/id"
+	"fugologic/crisp"
+	"fugologic/id"
 )
 
 // Defuzzification method definition

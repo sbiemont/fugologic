@@ -3,7 +3,7 @@ package fuzzy
 import (
 	"fmt"
 
-	"fugologic.git/id"
+	"fugologic/id"
 )
 
 // Data is a generic type to manipulate input/output values

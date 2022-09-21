@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"fugologic.git/fuzzy"
+	"fugologic/fuzzy"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

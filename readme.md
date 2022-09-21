@@ -247,7 +247,7 @@ A `fuzzy.Engine` evaluates a list of `fuzzy.Rule`, applies a `fuzzy.Aggregation`
 
 If the rules contains an error, the engine builder will fail.
 
-Create an engin from the builder
+Create an engine from the builder
 
 ```go
 // Using a builder

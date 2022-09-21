@@ -3,8 +3,8 @@ package fuzzy
 import (
 	"testing"
 
-	"fugologic.git/crisp"
-	"fugologic.git/id"
+	"fugologic/crisp"
+	"fugologic/id"
 	. "github.com/smartystreets/goconvey/convey"
 )
 

@@ -3,7 +3,7 @@ package fuzzy
 import (
 	"fmt"
 
-	"fugologic.git/graph"
+	"fugologic/graph"
 )
 
 // System groups engines and evaluate them all

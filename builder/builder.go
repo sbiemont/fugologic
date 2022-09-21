@@ -1,7 +1,7 @@
 package builder
 
 import (
-	"fugologic.git/fuzzy"
+	"fugologic/fuzzy"
 )
 
 // Builder groups custom connector and implication

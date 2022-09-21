@@ -1,6 +1,6 @@
 package fuzzy
 
-import "fugologic.git/id"
+import "fugologic/id"
 
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
