@@ -4,29 +4,32 @@ import (
 	"fmt"
 	"testing"
 
-	"fugologic.git/fuzzy"
+	"fugologic/fuzzy"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestExpression(t *testing.T) {
-	fsA1 := newTestSet("a")
-	fsB1 := newTestSet("b")
-	fsC1 := newTestSet("c")
-	fsD1 := newTestSet("d")
-	fsE1 := newTestSet("e")
+	fvA, fsA1 := newTestVal("a", "a1")
+	fvB, fsB1 := newTestVal("b", "b1")
+	fvC, fsC1 := newTestVal("c", "c1")
+	fvD, fsD1 := newTestVal("d", "d1")
+	fvE, fsE1 := newTestVal("e", "e1")
 
 	input := fuzzy.DataInput{
-		"a": 1,
-		"b": 2,
-		"c": 3,
-		"d": 4,
-		"e": 5,
+		fvA: 1,
+		fvB: 2,
+		fvC: 3,
+		fvD: 4,
+		fvE: 5,
 	}
 
 	Convey("evaluate", t, func() {
 		bld := NewBuilder(
 			fuzzy.ConnectorZadehAnd,
 			fuzzy.ConnectorZadehOr,
+			nil,
+			nil,
 			fuzzy.ImplicationMin,
 			fuzzy.AggregationUnion,
 			fuzzy.DefuzzificationCentroid,
@@ -55,7 +58,7 @@ func TestExpression(t *testing.T) {
 				So(err, ShouldBeNil)
 				fmt.Print(res)
 				So(res, ShouldResemble, fuzzy.DataOutput{
-					"e": 0,
+					fvE: 0,
 				})
 			})
 		})
@@ -73,7 +76,7 @@ func TestExpression(t *testing.T) {
 				So(err, ShouldBeNil)
 				fmt.Print(res)
 				So(res, ShouldResemble, fuzzy.DataOutput{
-					"e": 0,
+					fvE: 0,
 				})
 			})
 		})

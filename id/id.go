@@ -9,3 +9,8 @@ type ID string
 func NewID() ID {
 	return ID(uuid.New().String())
 }
+
+// Empty checks if the id has no value
+func (i ID) Empty() bool {
+	return i == ""
+}

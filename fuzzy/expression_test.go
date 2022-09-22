@@ -4,7 +4,8 @@ import (
 	"math"
 	"testing"
 
-	"fugologic.git/crisp"
+	"fugologic/crisp"
+	"fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -12,20 +13,20 @@ import (
 func TestExpression(t *testing.T) {
 	var timesTwo Set = func(x float64) float64 { return x * 2 }
 
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", timesTwo, &fvA)
+	fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{"a1": timesTwo})
+	fsA1 := fvA.Get("a1")
 
-	fvB := NewIDValCustom("b", crisp.Set{})
-	fsB1 := NewIDSetCustom("b1", timesTwo, &fvB)
+	fvB, _ := NewIDVal("b", crisp.Set{}, map[id.ID]Set{"b1": timesTwo})
+	fsB1 := fvB.Get("b1")
 
-	fvC := NewIDValCustom("c", crisp.Set{})
-	fsC1 := NewIDSetCustom("c1", timesTwo, &fvC)
+	fvC, _ := NewIDVal("c", crisp.Set{}, map[id.ID]Set{"c1": timesTwo})
+	fsC1 := fvC.Get("c1")
 
-	fvD := NewIDValCustom("d", crisp.Set{})
-	fsD1 := NewIDSetCustom("d1", timesTwo, &fvD)
+	fvD, _ := NewIDVal("d", crisp.Set{}, map[id.ID]Set{"d1": timesTwo})
+	fsD1 := fvD.Get("d1")
 
-	fvE := NewIDValCustom("e", crisp.Set{})
-	fsE1 := NewIDSetCustom("e1", timesTwo, &fvE)
+	fvE, _ := NewIDVal("e", crisp.Set{}, map[id.ID]Set{"e1": timesTwo})
+	fsE1 := fvE.Get("e1")
 
 	Convey("new expression", t, func() {
 		Convey("when empty", func() {
@@ -37,7 +38,7 @@ func TestExpression(t *testing.T) {
 
 		Convey("when one premise", func() {
 			dataIn := DataInput{
-				fvA.uuid: 1,
+				fvA: 1,
 			}
 			result, err := fsA1.Evaluate(dataIn)
 			So(err, ShouldBeNil)
@@ -46,9 +47,9 @@ func TestExpression(t *testing.T) {
 
 		Convey("when several premises", func() {
 			dataIn := DataInput{
-				fvA.uuid: 1,
-				fvB.uuid: 2,
-				fvC.uuid: 3,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
 			}
 
 			Convey("when connector AND", func() {
@@ -68,11 +69,11 @@ func TestExpression(t *testing.T) {
 
 		Convey("when complex expression (A and B and C) or (D and E)", func() {
 			dataIn := DataInput{
-				fvA.uuid: 1,
-				fvB.uuid: 2,
-				fvC.uuid: 3,
-				fvD.uuid: 4,
-				fvE.uuid: 5,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
+				fvD: 4,
+				fvE: 5,
 			}
 
 			expABC := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorZadehAnd)
@@ -89,8 +90,8 @@ func TestExpression(t *testing.T) {
 		Convey("when 2 premises", func() {
 			exp := NewExpression([]Premise{fsA1}, nil).Connect(fsB1, math.Max)
 			result, err := exp.Evaluate(DataInput{
-				"a": 1,
-				"b": 2,
+				fvA: 1,
+				fvB: 2,
 			})
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 4) // 2*max(1, 2)
@@ -99,9 +100,9 @@ func TestExpression(t *testing.T) {
 		Convey("when 1 expression", func() {
 			exp := NewExpression([]Premise{fsA1, fsB1}, nil).Connect(fsC1, math.Max)
 			result, err := exp.Evaluate(DataInput{
-				"a": 1,
-				"b": 2,
-				"c": 3,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
 			})
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 6) // 2*max(1, 2, 3)
@@ -114,11 +115,11 @@ func TestExpression(t *testing.T) {
 				Connect(fsD1, math.Max).
 				Connect(fsE1, math.Min)
 			result, err := exp.Evaluate(DataInput{
-				"a": 1,
-				"b": 2,
-				"c": 3,
-				"d": 4,
-				"e": 5,
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
+				fvD: 4,
+				fvE: 5,
 			})
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 8) // 2*min(max(min(max(1, 2), 3), 4), 5)

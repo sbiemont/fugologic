@@ -3,50 +3,52 @@ package fuzzy
 import (
 	"testing"
 
-	"fugologic.git/crisp"
-	"fugologic.git/id"
+	"fugologic/crisp"
+	"fugologic/id"
+
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func customValues() ([5]IDSet, [5]IDSet, [5]IDSet) {
+func customValues() (*IDVal, *IDVal, *IDVal) {
 	// Input #1
 	setDiff, _ := crisp.NewSet(-2, 2, 0.1)
-	fvDiff := NewIDValCustom("diff/consigne", setDiff)
-	fsDiffM2 := NewIDSetCustom("diff/consigne.--", NewSetStepDown(-2, -0.5), &fvDiff)
-	fsDiffM1 := NewIDSetCustom("diff/consigne.-", NewSetTriangular(-2, -0.5, 0), &fvDiff)
-	fsDiff0 := NewIDSetCustom("diff/consigne.0", NewSetTriangular(-0.5, 0, 0.5), &fvDiff)
-	fsDiffP1 := NewIDSetCustom("diff/consigne.+", NewSetTriangular(0, 0.5, 2), &fvDiff)
-	fsDiffP2 := NewIDSetCustom("diff/consigne.++", NewSetStepUp(0.5, 2), &fvDiff)
+	fzDiff, _ := NewIDVal("diff/consigne", setDiff, map[id.ID]Set{
+		"--": NewSetStepDown(-2, -0.5),
+		"-":  NewSetTriangular(-2, -0.5, 0),
+		"0":  NewSetTriangular(-0.5, 0, 0.5),
+		"+":  NewSetTriangular(0, 0.5, 2),
+		"++": NewSetStepUp(0.5, 2),
+	})
 
 	// Input #2
 	setDt, _ := crisp.NewSet(-0.2, 0.2, 0.01)
-	fvDt := NewIDValCustom("temp/dt", setDt)
-	fsDtM2 := NewIDSetCustom("temp/dt.--", NewSetStepDown(-0.2, -0.1), &fvDt)
-	fsDtM1 := NewIDSetCustom("temp/dt.-", NewSetTriangular(-0.2, -0.1, 0), &fvDt)
-	fsDt0 := NewIDSetCustom("temp/dt.0", NewSetTriangular(-0.1, 0, 0.1), &fvDt)
-	fsDtP1 := NewIDSetCustom("temp/dt.+", NewSetTriangular(0, 0.1, 0.2), &fvDt)
-	fsDtP2 := NewIDSetCustom("temp/dt.++", NewSetStepUp(0.1, 0.2), &fvDt)
+	fzDt, _ := NewIDVal("temp/dt", setDt, map[id.ID]Set{
+		"--": NewSetStepDown(-0.2, -0.1),
+		"-":  NewSetTriangular(-0.2, -0.1, 0),
+		"0":  NewSetTriangular(-0.1, 0, 0.1),
+		"+":  NewSetTriangular(0, 0.1, 0.2),
+		"++": NewSetStepUp(0.1, 0.2),
+	})
 
 	// Output
 	setCh, _ := crisp.NewSet(-4, 4, 0.1)
-	fvCh := NewIDValCustom("force", setCh)
-	fsChM2 := NewIDSetCustom("force.--", NewSetStepDown(-4, -1), &fvCh)
-	fsChM1 := NewIDSetCustom("force.-", NewSetTriangular(-2, -1, 0), &fvCh)
-	fsCh0 := NewIDSetCustom("force.0", NewSetTriangular(-1, 0, 1), &fvCh)
-	fsChP1 := NewIDSetCustom("force.+", NewSetTriangular(0, 1, 2), &fvCh)
-	fsChP2 := NewIDSetCustom("force.++", NewSetStepUp(1, 4), &fvCh)
+	fzCh, _ := NewIDVal("force", setCh, map[id.ID]Set{
+		"--": NewSetStepDown(-4, -1),
+		"-":  NewSetTriangular(-2, -1, 0),
+		"0":  NewSetTriangular(-1, 0, 1),
+		"+":  NewSetTriangular(0, 1, 2),
+		"++": NewSetStepUp(1, 4),
+	})
 
-	return [5]IDSet{fsDiffM2, fsDiffM1, fsDiff0, fsDiffP1, fsDiffP2},
-		[5]IDSet{fsDtM2, fsDtM1, fsDt0, fsDtP1, fsDtP2},
-		[5]IDSet{fsChM2, fsChM1, fsCh0, fsChP1, fsChP2}
+	return fzDiff, fzDt, fzCh
 }
 
 // Custom engine for testing
-func customEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
-	fsDiff, fsDt, fsCh := customValues()
+func customEngine() (Engine, *IDVal, *IDVal, *IDVal) {
+	fvDiff, fvDt, fvCh := customValues()
 
 	// Rules
-	// a & b -> c
+	// diff & dt -> force
 	//               |    temp/dt             |
 	//               |------------------------|
 	//               | -- |  - |  0 |  + | ++ |
@@ -56,59 +58,51 @@ func customEngine() (Engine, [5]IDSet, [5]IDSet, [5]IDSet) {
 	//          |  0 |  + |  + |  0 |  - |  - |
 	//          |  + |  0 |  0 |  - | -- | -- |
 	//          | ++ |  - |  - | -- | -- | -- |
+	and := ConnectorZadehAnd
+	implies := ImplicationMin
 	rules := []Rule{
-		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
-		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
-		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
-		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
-		NewRule(NewExpression([]Premise{fsDiff[0], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("++")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("++")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("++")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("+")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("+")}),
 
-		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
-		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[4]}),
-		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
-		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
-		NewRule(NewExpression([]Premise{fsDiff[1], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("++")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("++")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("+")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("0")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("0")}),
 
-		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
-		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[3]}),
-		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
-		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
-		NewRule(NewExpression([]Premise{fsDiff[2], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("+")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("+")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("0")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("-")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("-")}),
 
-		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
-		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[2]}),
-		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
-		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
-		NewRule(NewExpression([]Premise{fsDiff[3], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("0")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("0")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("-")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("--")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("--")}),
 
-		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[0]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
-		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[1]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[1]}),
-		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[2]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
-		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[3]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
-		NewRule(NewExpression([]Premise{fsDiff[4], fsDt[4]}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsCh[0]}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("-")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("-")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("--")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("--")}),
+		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("--")}),
 	}
 
 	engine, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 	So(err, ShouldBeNil)
-	return engine, fsDiff, fsDt, fsCh
+	return engine, fvDiff, fvDt, fvCh
 }
 
 func TestEngineCheck(t *testing.T) {
 	Convey("check", t, func() {
-		var fuzzySet Set = func(x float64) float64 { return x }
-		var crispSet crisp.Set = crisp.Set{}
-
-		fvA := NewIDValCustom("a", crispSet)
-		fsA1 := NewIDSetCustom("a1", fuzzySet, &fvA)
-
-		fvB := NewIDValCustom("b", crispSet)
-		fsB1 := NewIDSetCustom("b1", fuzzySet, &fvB)
-
-		fvC := NewIDValCustom("c", crispSet)
-		fsC1 := NewIDSetCustom("c1", fuzzySet, &fvC)
-
-		fvD := NewIDValCustom("d", crispSet)
-		fsD1 := NewIDSetCustom("d1", fuzzySet, &fvD)
+		_, fsA1 := newTestVal("a", "a1")
+		_, fsB1 := newTestVal("b", "b1")
+		_, fsC1 := newTestVal("c", "c1")
+		_, fsD1 := newTestVal("d", "d1")
 
 		Convey("when ok", func() {
 			// a => b
@@ -124,20 +118,19 @@ func TestEngineCheck(t *testing.T) {
 		})
 
 		Convey("when error", func() {
-			fvCBis := NewIDValCustom("c'", crispSet)
-			fsC1Bis := NewIDSetCustom("c1", fuzzySet, &fvCBis)
+			fvCBis, _ := newTestVal("c", "c1")
 
 			// a => b
 			// a => c' [c and c' have the same id]
 			// c => d
 			rules := []Rule{
 				NewRule(fsA1, ImplicationMin, []IDSet{fsB1}),
-				NewRule(fsA1, ImplicationMin, []IDSet{fsC1Bis}),
+				NewRule(fsA1, ImplicationMin, []IDSet{fvCBis.Get("c1")}),
 				NewRule(fsC1, ImplicationMin, []IDSet{fsD1}),
 			}
 			_, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 			So(err, ShouldNotBeNil)
-			So(err.Error(), ShouldEqual, "sets: id `c1` already defined")
+			So(err.Error(), ShouldEqual, "values: id `c` already defined")
 		})
 	})
 }
@@ -146,41 +139,44 @@ func TestEvaluate(t *testing.T) {
 	Convey("custom minimalistic test", t, func() {
 		// Definitions
 		setA, _ := crisp.NewSet(1, 4, 0.1)
-		fvA := NewIDValCustom("a", setA)
-		fsA1 := NewIDSetCustom("a1", NewSetTriangular(1, 2, 3), &fvA)
-		fsA2 := NewIDSetCustom("a2", NewSetTriangular(2, 3, 4), &fvA)
+		fvA, _ := NewIDVal("a", setA, map[id.ID]Set{
+			"a1": NewSetTriangular(1, 2, 3),
+			"a2": NewSetTriangular(2, 3, 4),
+		})
 
 		setB, _ := crisp.NewSet(2, 5, 0.1)
-		fvB := NewIDValCustom("b", setB)
-		fsB1 := NewIDSetCustom("b1", NewSetTriangular(2, 3, 4), &fvB)
-		fsB2 := NewIDSetCustom("b2", NewSetTriangular(3, 4, 5), &fvB)
+		fvB, _ := NewIDVal("b", setB, map[id.ID]Set{
+			"b1": NewSetTriangular(2, 3, 4),
+			"b2": NewSetTriangular(3, 4, 5),
+		})
 
 		setC, _ := crisp.NewSet(11, 14, 0.1)
-		fvC := NewIDValCustom("c", setC)
-		fsC1 := NewIDSetCustom("c1", NewSetTriangular(11, 12, 13), &fvC)
-		fsC2 := NewIDSetCustom("c2", NewSetTriangular(12, 13, 14), &fvC)
+		fvC, _ := NewIDVal("c", setC, map[id.ID]Set{
+			"c1": NewSetTriangular(11, 12, 13),
+			"c2": NewSetTriangular(12, 13, 14),
+		})
 
 		// Rules
 		// a1 & b1 -> c1
 		// a2 & b2 -> c2
 		rules := []Rule{
-			NewRule(NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsC1}),
-			NewRule(NewExpression([]Premise{fsA2, fsB2}, ConnectorZadehAnd), ImplicationMin, []IDSet{fsC2}),
+			NewRule(NewExpression([]Premise{fvA.Get("a1"), fvB.Get("b1")}, ConnectorZadehAnd), ImplicationMin, []IDSet{fvC.Get("c1")}),
+			NewRule(NewExpression([]Premise{fvA.Get("a2"), fvB.Get("b2")}, ConnectorZadehAnd), ImplicationMin, []IDSet{fvC.Get("c2")}),
 		}
 
 		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 		So(errEngine, ShouldBeNil)
 
 		dataIn := DataInput{
-			fvA.ID(): 2.1,
-			fvB.ID(): 3.9,
+			fvA: 2.1,
+			fvB: 3.9,
 		}
 
 		// Evaluate engine
 		result, errEval := engine.Evaluate(dataIn)
 		So(errEval, ShouldBeNil)
 		So(result, ShouldNotBeNil)
-		So(result[fvC.ID()], ShouldEqual, 12.5)
+		So(result[fvC], ShouldEqual, 12.5)
 	})
 
 	Convey("custom evaluate", t, func() {
@@ -234,15 +230,15 @@ func TestEvaluate(t *testing.T) {
 		}
 
 		// Check engine method
-		check := func(engine Engine, fsDiff, fsDt, fsCh [5]IDSet) {
+		check := func(engine Engine, fvDiff, fvDt, fvCh *IDVal) {
 			for _, tt := range tests {
-				result, errEngine := engine.Evaluate(map[id.ID]float64{
-					fsDiff[0].parent.ID(): tt.inputDiff,
-					fsDt[0].parent.ID():   tt.inputDt,
+				result, errEngine := engine.Evaluate(map[*IDVal]float64{
+					fvDiff: tt.inputDiff,
+					fvDt:   tt.inputDt,
 				})
 				So(errEngine, ShouldBeNil)
 				So(result, ShouldHaveLength, 1)
-				So(result[fsCh[0].parent.ID()], ShouldAlmostEqual, tt.outputForce, 0.01)
+				So(result[fvCh], ShouldAlmostEqual, tt.outputForce, 0.01)
 			}
 		}
 
@@ -252,29 +248,64 @@ func TestEvaluate(t *testing.T) {
 
 func BenchmarkEngineNTimes(b *testing.B) {
 	const evaluations = 1000
-	engine, fsDiff, fsDt, _ := customEngine()
+	engine, fvDiff, fvDt, _ := customEngine()
 
 	// Evaluate n times the system
 	for i := 0; i < evaluations; i++ {
-		engine.Evaluate(map[id.ID]float64{
-			fsDiff[0].parent.ID(): -1,
-			fsDt[0].parent.ID():   -0.1,
+		engine.Evaluate(map[*IDVal]float64{
+			fvDiff: -1,
+			fvDt:   -0.1,
 		})
 	}
 }
 
 func BenchmarkEngineMatrix(b *testing.B) {
-	engine, fsDiff, fsDt, _ := customEngine()
+	engine, fvDiff, fvDt, _ := customEngine()
 
 	// Evaluate all possible values of the system
-	diffValues := fsDiff[0].parent.u.Values()
-	dtValues := fsDt[0].parent.u.Values()
+	diffValues := fvDiff.u.Values()
+	dtValues := fvDt.u.Values()
 	for _, diff := range diffValues {
 		for _, dt := range dtValues {
 			engine.Evaluate(DataInput{
-				fsDiff[0].parent.ID(): diff,
-				fsDt[0].parent.ID():   dt,
+				fvDiff: diff,
+				fvDt:   dt,
 			})
 		}
 	}
+}
+
+func TestCheckIDs(t *testing.T) {
+	fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{"a1": nil, "a2": nil})
+	fsA1 := fvA.Get("a1")
+	fsA2 := fvA.Get("a2")
+
+	_, fsABis1 := newTestVal("a", "a-bis-1")
+	_, fsATer1 := newTestVal("a-ter", "a1")
+
+	Convey("id val", t, func() {
+		Convey("when ok", func() {
+			So(checkIDs([]IDSet{fsA1, fsA2}), ShouldBeNil)
+		})
+
+		Convey("when same id val uuid", func() {
+			So(checkIDs([]IDSet{fsA1, fsA2, fsABis1}), ShouldBeError, "values: id `a` already defined")
+		})
+
+		Convey("when same id set uuid", func() {
+			So(checkIDs([]IDSet{fsA1, fsA2, fsATer1}), ShouldBeNil)
+		})
+
+		Convey("when no id val uuid", func() {
+			fv, err := NewIDVal("", crisp.Set{}, map[id.ID]Set{"b1": nil})
+			So(err, ShouldBeError, "id val cannot be empty")
+			So(fv, ShouldBeNil)
+		})
+
+		Convey("when no id set uuid", func() {
+			fv, err := NewIDVal("c", crisp.Set{}, map[id.ID]Set{"": nil})
+			So(err, ShouldBeError, "id set cannot be empty")
+			So(fv, ShouldBeNil)
+		})
+	})
 }

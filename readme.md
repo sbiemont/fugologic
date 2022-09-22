@@ -72,12 +72,21 @@ Ensure that the crisp interval of the fuzzy value covers all the fuzzy sets inte
 
 ```go
 // Fuzzy value "a"
-setA, _ := crisp.NewSet(-3, 3, 0.1)
-fvA := fuzzy.NewIDValCustom("a", setA)
-
 // Fuzzy sets "a1", "a2"
-fsA1 := fuzzy.NewIDSetCustom("a1", fuzzy.NewSetTriangular(-3, -1, 1), &fvA)
-fsA2 := fuzzy.NewIDSetCustom("a2", fuzzy.NewSetTriangular(-1, 1, 3), &fvA)
+setA, _ := crisp.NewSet(-3, 3, 0.1)
+fvA := fuzzy.NewIDVal("a", setA, map[id.ID]Set{
+  "a1": fuzzy.NewSetTriangular(-3, -1, 1),
+  "a2": fuzzy.NewSetTriangular(-1, 1, 3),
+})
+
+// Retrieve build fuzzy sets using their ids
+fsA1 := fvA.Get("a1")
+fsA2 := fvA.Get("a2")
+
+// Or fetch a fuzzy set and its presence
+// - fsUnknown is empty
+// - ok is false
+fsUnknown, ok := fvA.Fetch("unknown")
 ```
 
 Create other inputs and outputs the same way.
@@ -247,7 +256,7 @@ A `fuzzy.Engine` evaluates a list of `fuzzy.Rule`, applies a `fuzzy.Aggregation`
 
 If the rules contains an error, the engine builder will fail.
 
-Create an engin from the builder
+Create an engine from the builder
 
 ```go
 // Using a builder

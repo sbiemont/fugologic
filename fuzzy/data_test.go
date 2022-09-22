@@ -3,19 +3,12 @@ package fuzzy
 import (
 	"testing"
 
-	"fugologic.git/crisp"
-	"fugologic.git/id"
 	. "github.com/smartystreets/goconvey/convey"
 )
 
 func TestDataInput(t *testing.T) {
-	newSet := func() Set { return func(x float64) float64 { return x } }
-
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", newSet(), &fvA)
-
-	fvMissingParent := NewIDValCustom("b", crisp.Set{})
-	fsMissingParent := NewIDSetCustom("b1", newSet(), &fvMissingParent)
+	fvA, fsA1 := newTestVal("a", "a1")
+	_, fsMissingParent := newTestVal("b", "b1")
 
 	Convey("find", t, func() {
 		Convey("when parent missing", func() {
@@ -34,7 +27,7 @@ func TestDataInput(t *testing.T) {
 		})
 
 		Convey("when ok", func() {
-			provider := DataInput{"a": 1}
+			provider := DataInput{fvA: 1}
 			y, err := provider.find(fsA1)
 			So(err, ShouldBeNil)
 			So(y, ShouldEqual, 1)
@@ -43,40 +36,45 @@ func TestDataInput(t *testing.T) {
 }
 
 func TestMergeData(t *testing.T) {
-	empty := Data{}
-	filled1 := Data{
-		"a": 1,
-		"b": 2,
+	fvA, _ := newTestVal("a", "a1")
+	fvB, _ := newTestVal("b", "b1")
+	fvC, _ := newTestVal("c", "c1")
+	fvD, _ := newTestVal("d", "d1")
+
+	empty := map[*IDVal]float64{}
+	filled1 := map[*IDVal]float64{
+		fvA: 1,
+		fvB: 2,
 	}
-	filled2 := Data{
-		"c": 3,
-		"d": 4,
+	filled2 := map[*IDVal]float64{
+		fvC: 3,
+		fvD: 4,
 	}
 
 	Convey("merge", t, func() {
 		Convey("when empty", func() {
-			So(mergeData(empty, Data{}), ShouldBeEmpty)
+			So(mergeData(empty, map[*IDVal]float64{}), ShouldBeEmpty)
 		})
 
 		Convey("when merge with empty", func() {
-			So(mergeData(empty, filled1), ShouldResemble, map[id.ID]float64(filled1))
-			So(mergeData(filled1, empty), ShouldResemble, map[id.ID]float64(filled1))
+			So(mergeData(empty, filled1), ShouldResemble, map[*IDVal]float64(filled1))
+			So(mergeData(filled1, empty), ShouldResemble, map[*IDVal]float64(filled1))
 		})
 
 		Convey("when ok", func() {
-			So(mergeData(filled1, filled2), ShouldResemble, map[id.ID]float64{
-				"a": 1,
-				"b": 2,
-				"c": 3,
-				"d": 4,
+			So(mergeData(filled1, filled2), ShouldResemble, map[*IDVal]float64{
+				fvA: 1,
+				fvB: 2,
+				fvC: 3,
+				fvD: 4,
 			})
-			So(filled1, ShouldResemble, Data{ // filled1: unchanged
-				"a": 1,
-				"b": 2,
+			So(filled1, ShouldResemble, map[*IDVal]float64{ // filled1: unchanged
+				fvA: 1,
+				fvB: 2,
 			})
-			So(filled2, ShouldResemble, Data{ // filled2: unchanged
-				"c": 3,
-				"d": 4,
+			So(filled2, ShouldResemble, map[*IDVal]float64{ // filled2: unchanged
+				fvC: 3,
+				fvD: 4,
 			})
 		})
 	})

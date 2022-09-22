@@ -1,8 +1,7 @@
 package fuzzy
 
 import (
-	"fugologic.git/crisp"
-	"fugologic.git/id"
+	"fugologic/crisp"
 )
 
 // Defuzzification method definition
@@ -47,10 +46,11 @@ var (
 
 // defuzzificationMaximums returns the smallest of maximums and the largest of maximums
 // E.g:
-//  x = [0 1 2 3 4 5 6 7 8 9]
-//  y = [0 0 1 1 2 2 1 1 0 0]
-//  smallest of max is the left max for x=4 (y=2)
-//  largest of max is the right max for x=5 (y=2)
+//
+//	x = [0 1 2 3 4 5 6 7 8 9]
+//	y = [0 0 1 1 2 2 1 1 0 0]
+//	smallest of max is the left max for x=4 (y=2)
+//	largest of max is the right max for x=5 (y=2)
 func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 	var xSmallestMax, xLargestMax float64
 	var ySmallestMax, yLargestMax float64
@@ -97,34 +97,30 @@ type defuzzer struct {
 }
 
 // newDefuzzer builds a new Defuzzer instance
-func newDefuzzer(fct Defuzzification, agg Aggregation) defuzzer {
+func newDefuzzer(fct Defuzzification, agg Aggregation, results []IDSet) defuzzer {
 	return defuzzer{
-		fct: fct,
-		agg: agg,
+		fct:     fct,
+		agg:     agg,
+		results: results,
 	}
-}
-
-// add the sets to the defuzzer result
-func (dfz *defuzzer) add(idSets []IDSet) {
-	dfz.results = append(dfz.results, idSets...)
 }
 
 // defuzz the values
 func (dfz defuzzer) defuzz() (DataOutput, error) {
 	// Group IDSet by IDVal parent
-	groups := make(map[id.ID][]IDSet)
-	universes := make(map[id.ID]crisp.Set)
+	groups := make(map[*IDVal][]IDSet)
+	universes := make(map[*IDVal]crisp.Set)
 	for _, idSet := range dfz.results {
 		idVal := idSet.parent
-		groups[idVal.uuid] = append(groups[idVal.uuid], idSet)
-		universes[idVal.uuid] = idVal.u
+		groups[idVal] = append(groups[idVal], idSet)
+		universes[idVal] = idVal.u
 	}
 
 	// For each group, apply defuzz
-	values := make(map[id.ID]float64, len(dfz.results))
-	for id, group := range groups {
+	values := make(DataOutput, len(dfz.results))
+	for idVal, group := range groups {
 		aggregation := dfz.aggregate(group)
-		values[id] = dfz.fct(aggregation, universes[id])
+		values[idVal] = dfz.fct(aggregation, universes[idVal])
 	}
 	return values, nil
 }

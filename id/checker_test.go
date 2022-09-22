@@ -35,13 +35,12 @@ func TestNewChecker(t *testing.T) {
 			So(checker.Check(), ShouldBeError, "id `a` already defined")
 		})
 
-		Convey("when id set error", func() {
+		Convey("when id set is empty", func() {
 			checker := NewChecker([]Identifiable{a, b, c, empty})
 
 			// Values are not sorted, check the beginning of the error
 			err := checker.Check()
-			So(err, ShouldNotBeNil)
-			So(checker.Check().Error(), ShouldEqual, "id required")
+			So(err, ShouldBeNil)
 		})
 	})
 }

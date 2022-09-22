@@ -1,74 +1,60 @@
 package fuzzy
 
 import (
+	"fugologic/crisp"
+	"fugologic/id"
 	"testing"
-
-	"fugologic.git/crisp"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestNewIDSet(t *testing.T) {
-	iso := func(x float64) float64 { return x }
+func TestDefinition(t *testing.T) {
+	Convey("new id val", t, func() {
+		val, _ := NewIDVal("value", crisp.Set{}, nil)
+		So(val.ID(), ShouldEqual, "value")
+	})
 
-	Convey("id set", t, func() {
-		Convey("when not", func() {
-			fvA := NewIDVal(crisp.Set{})
-			fsA1 := NewIDSet(iso, &fvA)
+	Convey("new id val", t, func() {
+		Convey("when empty", func() {
+			val, _ := NewIDVal("value", crisp.Set{}, nil)
+			So(val, ShouldResemble, &IDVal{
+				uuid:   "value",
+				u:      crisp.Set{},
+				idSets: map[id.ID]IDSet{},
+			})
+		})
 
-			not := fsA1.Not()
-			So(not.parent, ShouldEqual, &fvA)
-			So(not.uuid, ShouldEqual, fsA1.uuid)
-			So(not.set(0.1), ShouldEqual, 0.9)
+		Convey("when id sets", func() {
+			u, err := crisp.NewSet(0, 1, 0.5)
+			So(err, ShouldBeNil)
+
+			f1 := func(float64) float64 { return 1 }
+			f2 := func(float64) float64 { return 2 }
+			val, _ := NewIDVal("value", u, map[id.ID]Set{
+				"set #1": f1,
+				"set #2": f2,
+			})
+
+			So(val.uuid, ShouldEqual, "value")
+			So(val.u, ShouldResemble, u)
+			So(val.idSets, ShouldHaveLength, 2)
+
+			So(val.idSets["set #1"].parent, ShouldEqual, val)
+			So(val.idSets["set #1"].set, ShouldEqual, f1)
+			So(val.idSets["set #1"].uuid, ShouldEqual, "set #1")
+
+			So(val.idSets["set #2"].parent, ShouldEqual, val)
+			So(val.idSets["set #2"].set, ShouldEqual, f2)
+			So(val.idSets["set #2"].uuid, ShouldEqual, "set #2")
 		})
 	})
-}
 
-func TestNewIDVal(t *testing.T) {
-	Convey("id val", t, func() {
-		fvA := NewIDVal(crisp.Set{})
-		fsA1 := NewIDSet(nil, &fvA)
-
-		So(fsA1.parent, ShouldEqual, &fvA)
-	})
-}
-
-func TestCheckIDs(t *testing.T) {
-	fvA := NewIDValCustom("a", crisp.Set{})
-	fsA1 := NewIDSetCustom("a1", nil, &fvA)
-	fsA2 := NewIDSetCustom("a2", nil, &fvA)
-
-	fvB := NewIDValCustom("", crisp.Set{})
-	fsB1 := NewIDSetCustom("b1", nil, &fvB)
-
-	fvC := NewIDValCustom("c", crisp.Set{})
-	fsC1 := NewIDSetCustom("", nil, &fvC)
-
-	fvABis := NewIDValCustom("a", crisp.Set{})
-	fsABis1 := NewIDSetCustom("a-bis-1", nil, &fvABis)
-
-	fvATer := NewIDValCustom("a-ter", crisp.Set{})
-	fsATer1 := NewIDSetCustom("a1", nil, &fvATer)
-
-	Convey("id val", t, func() {
-		Convey("when ok", func() {
-			So(checkIDs([]IDSet{fsA1, fsA2}), ShouldBeNil)
+	Convey("flatten", t, func() {
+		val, _ := NewIDVal("value", crisp.Set{}, map[id.ID]Set{
+			"set #1": nil,
+			"set #2": nil,
 		})
 
-		Convey("when same id val uuid", func() {
-			So(checkIDs([]IDSet{fsA1, fsA2, fsABis1}), ShouldBeError, "values: id `a` already defined")
-		})
-
-		Convey("when same id set uuid", func() {
-			So(checkIDs([]IDSet{fsA1, fsA2, fsATer1}), ShouldBeError, "sets: id `a1` already defined")
-		})
-
-		Convey("when no id val uuid", func() {
-			So(checkIDs([]IDSet{fsA1, fsA2, fsB1}), ShouldBeError, "values: id required")
-		})
-
-		Convey("when no id set uuid", func() {
-			So(checkIDs([]IDSet{fsA1, fsA2, fsC1}), ShouldBeError, "sets: id required")
-		})
+		So(val.idSets, ShouldResemble, val.idSets) // just check for same address
 	})
 }
