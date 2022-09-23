@@ -59,10 +59,7 @@ Fuzzy values and fuzzy sets are defined as :
   * a membership method `fuzzy.Set`
   * its parent `fuzzy.IDVal`
 
-*Notes* :
-
-* every identifier shall be unique in a `fuzzy.Engine`
-* `fuzzy.IDVal` and `fuzzy.IDSet` can be defined using a random generated ID or a custom one
+*Notes* : every identifier shall be unique in a `fuzzy.Engine`
 
 ### Define fuzzy inputs / outputs
 
@@ -287,15 +284,15 @@ The result contains a crisp value for each fuzzy output value defined.
 ```go
 // Evaluate all the rules of the engine
 result, err := engine.Evaluate(fuzzy.DataInput{
-  "a": 1,
-  "b": 0.05,
+  fvA: 1,
+  fvB: 0.05,
 })
 if err != nil {
   return err
 }
 
 // result = fuzzy.DataOutput{
-//   "c": <crisp result>,
+//   fvC: <crisp result>,
 // }
 ```
 
@@ -334,15 +331,15 @@ The result contains a crisp value for each `fuzzy.IDVal` output value defined.
 ```go
 // Evaluation of the rules of each engines
 result, err := system.Evaluate(fuzzy.DataInput{
-  "a": 1,
-  "b": 0.05,
+  fvA: 1,
+  fvB: 0.05,
 })
 if err != nil {
   return err
 }
 
 // result = fuzzy.DataOutput{
-//   "c": <crisp result>,
+//   fvC: <crisp result>,
 // }
 ```
 
