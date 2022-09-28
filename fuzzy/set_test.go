@@ -290,9 +290,11 @@ func TestNewSet(t *testing.T) {
 	Convey("gauss", t, func() {
 		Convey("when ok", func() {
 			checkSet(NewSetGauss(1.0, 5.0), map[float64]float64{
-				1.0: 0.0,
-				5.0: 1.0,
-				9.0: 0.0,
+				1: 0.0,
+				3: 0.13,
+				5: 1.0,
+				7: 0.13,
+				9: 0.0,
 			})
 		})
 	})

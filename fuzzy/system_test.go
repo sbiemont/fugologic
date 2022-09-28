@@ -3,20 +3,10 @@ package fuzzy
 import (
 	"testing"
 
-	"fugologic/crisp"
 	"fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
-
-// Create a fuzzy value, a fuzzy set and link both
-func newTestVal(val, set id.ID) (*IDVal, IDSet) {
-	fuzzySet := func(x float64) float64 { return x }
-	fv, _ := NewIDVal(val, crisp.Set{}, map[id.ID]Set{
-		set: fuzzySet,
-	})
-	return fv, fv.Get(set)
-}
 
 func TestSystem(t *testing.T) {
 	fvA, fsA1 := newTestVal("a", "a1")

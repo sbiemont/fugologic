@@ -29,7 +29,7 @@ func (is IDSet) Not() IDSet {
 
 // Evaluate fetches the right input and returns the Set value
 func (is IDSet) Evaluate(input DataInput) (float64, error) {
-	x, err := input.find(is)
+	x, err := input.value(is)
 	if err != nil {
 		return 0, err
 	}
@@ -76,6 +76,11 @@ func NewIDVal(
 // ID returns the identifier
 func (iv IDVal) ID() id.ID {
 	return iv.uuid
+}
+
+// U retrieves the crisp data universe
+func (iv IDVal) U() crisp.Set {
+	return iv.u
 }
 
 // Get fuzzy set without checking content

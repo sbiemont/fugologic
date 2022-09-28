@@ -2,6 +2,7 @@ package fuzzy
 
 import (
 	"fugologic/crisp"
+	"math"
 )
 
 // Defuzzification method definition
@@ -85,8 +86,8 @@ func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 type Aggregation func(float64, float64) float64
 
 var (
-	AggregationUnion        Aggregation = union
-	AggregationIntersection Aggregation = intersection
+	AggregationUnion        Aggregation = math.Max
+	AggregationIntersection Aggregation = math.Min
 )
 
 // defuzzer is responsible for collecting rule's results and to defuzz
@@ -106,7 +107,7 @@ func newDefuzzer(fct Defuzzification, agg Aggregation, results []IDSet) defuzzer
 }
 
 // defuzz the values
-func (dfz defuzzer) defuzz() (DataOutput, error) {
+func (dfz defuzzer) defuzz() DataOutput {
 	// Group IDSet by IDVal parent
 	groups := make(map[*IDVal][]IDSet)
 	universes := make(map[*IDVal]crisp.Set)
@@ -122,7 +123,7 @@ func (dfz defuzzer) defuzz() (DataOutput, error) {
 		aggregation := dfz.aggregate(group)
 		values[idVal] = dfz.fct(aggregation, universes[idVal])
 	}
-	return values, nil
+	return values
 }
 
 // aggregate all sets into one (helper function): s = s1 U s2 U .. U sN

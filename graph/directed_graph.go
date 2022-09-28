@@ -59,7 +59,7 @@ func (dg DirectedGraph) dfs(from *Node, colors map[*Node]color) bool {
 	colors[from] = grey
 
 	for _, to := range dg.edges[from] {
-		// If `to`is also grey => loop
+		// If `to` is also grey => loop
 		// If `to` is not processed and there is a back edge in subtree rooted with `to` => loop
 		if colors[to] == grey || (colors[to] == white && dg.dfs(to, colors)) {
 			return true

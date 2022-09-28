@@ -1,6 +1,6 @@
 # fugologic
 
-Fugologic is a naive implementation of a fuzzy logic system.
+Fugologic is a basic implementation of a fuzzy logic system.
 
 ## Getting started
 
@@ -70,8 +70,8 @@ Ensure that the crisp interval of the fuzzy value covers all the fuzzy sets inte
 ```go
 // Fuzzy value "a"
 // Fuzzy sets "a1", "a2"
-setA, _ := crisp.NewSet(-3, 3, 0.1)
-fvA := fuzzy.NewIDVal("a", setA, map[id.ID]Set{
+crispA, _ := crisp.NewSet(-3, 3, 0.1)
+fvA := fuzzy.NewIDVal("a", crispA, map[id.ID]Set{
   "a1": fuzzy.NewSetTriangular(-3, -1, 1),
   "a2": fuzzy.NewSetTriangular(-1, 1, 3),
 })

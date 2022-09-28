@@ -8,12 +8,57 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestDefinition(t *testing.T) {
-	Convey("new id val", t, func() {
-		val, _ := NewIDVal("value", crisp.Set{}, nil)
-		So(val.ID(), ShouldEqual, "value")
-	})
+func TestIDSet(t *testing.T) {
+	Convey("accessors", t, func() {
+		Convey("when id()", func() {
+			item := IDSet{
+				uuid: "set #1",
+			}
+			So(item.ID(), ShouldEqual, "set #1")
+		})
 
+		Convey("when not()", func() {
+			item := IDSet{
+				set: func(float64) float64 { return 0.9 },
+			}
+
+			So(item.set(0), ShouldEqual, 0.9)
+			So(item.Not().set(0), ShouldAlmostEqual, 0.1, 1e-9)
+		})
+
+		Convey("when evaluate()", func() {
+			parent := &IDVal{
+				uuid: "val #1",
+			}
+			item := IDSet{
+				uuid:   "set #1",
+				set:    func(x float64) float64 { return x },
+				parent: parent,
+			}
+
+			Convey("when ok", func() {
+				eval, err := item.Evaluate(DataInput{
+					parent: 42.42,
+				})
+				So(err, ShouldBeNil)
+				So(eval, ShouldEqual, 42.42)
+			})
+
+			Convey("when ko", func() {
+				parent2 := &IDVal{
+					uuid: "val #2",
+				}
+				eval, err := item.Evaluate(DataInput{
+					parent2: 42.42,
+				})
+				So(err, ShouldBeError, "input: cannot find data for id val `val #1` (id set `set #1`)")
+				So(eval, ShouldBeZeroValue)
+			})
+		})
+	})
+}
+
+func TestIDVal(t *testing.T) {
 	Convey("new id val", t, func() {
 		Convey("when empty", func() {
 			val, _ := NewIDVal("value", crisp.Set{}, nil)
@@ -47,14 +92,52 @@ func TestDefinition(t *testing.T) {
 			So(val.idSets["set #2"].set, ShouldEqual, f2)
 			So(val.idSets["set #2"].uuid, ShouldEqual, "set #2")
 		})
+
+		Convey("when ok", func() {
+			val, _ := NewIDVal("value", crisp.Set{}, map[id.ID]Set{
+				"set #1": nil,
+				"set #2": nil,
+			})
+
+			So(val.idSets, ShouldResemble, val.idSets) // just check for same address
+		})
 	})
 
-	Convey("flatten", t, func() {
-		val, _ := NewIDVal("value", crisp.Set{}, map[id.ID]Set{
+	Convey("accessors", t, func() {
+		cset, err := crisp.NewSet(0, 1, 0.1)
+		So(err, ShouldBeNil)
+		val, _ := NewIDVal("value", cset, map[id.ID]Set{
 			"set #1": nil,
 			"set #2": nil,
 		})
 
-		So(val.idSets, ShouldResemble, val.idSets) // just check for same address
+		Convey("when id()", func() {
+			So(val.ID(), ShouldEqual, "value")
+		})
+
+		Convey("when u()", func() {
+			cset, err := crisp.NewSetN(0, 1, 11)
+			So(err, ShouldBeNil)
+			So(val.U(), ShouldResemble, cset)
+		})
+
+		Convey("when get()", func() {
+			So(val.Get("set #1").uuid, ShouldEqual, "set #1")
+			So(val.Get("set #2").uuid, ShouldEqual, "set #2")
+			So(val.Get("set #3").uuid, ShouldBeEmpty)
+		})
+
+		Convey("when fetch()", func() {
+			v1, ok1 := val.Fetch("set #1")
+			v2, ok2 := val.Fetch("set #2")
+			v3, ok3 := val.Fetch("set #3")
+
+			So(ok1, ShouldBeTrue)
+			So(v1.uuid, ShouldEqual, "set #1")
+			So(ok2, ShouldBeTrue)
+			So(v2.uuid, ShouldEqual, "set #2")
+			So(ok3, ShouldBeFalse)
+			So(v3.uuid, ShouldBeEmpty)
+		})
 	})
 }
