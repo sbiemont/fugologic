@@ -22,7 +22,7 @@ if err != nil{
 }
 ```
 
-It can also be defined with n values (x min, xmax, n values)
+It can also be defined with n values (x min, x max, n values)
 
 ```go
 // 4 values in [0.0 ; 0.3]
@@ -158,22 +158,28 @@ Simplest case : the expression has only one premise and no connector (directly u
 exp := fsA1
 ```
 
+*Note* : a fuzzy set can be complemented using the `Not` function
+
+```go
+exp := fsA1.Not()
+```
+
 An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
 
-For example : `A1 and B1 and C1`.
+For example : `A1 and B1 and not(C1)`.
 
 ```go
 // Using a builder
-// A1 and B1 and C1
-exp := bld.If(fsA1).And(fsB1).And(fsC1)
+// A1 and B1 and not(C1)
+exp := bld.If(fsA1).And(fsB1).And(fsC1.Not())
 ```
 
 Or in a more explicit way
 
 ```go
 // Using explicit syntax
-// A1 and B1 and C1
-exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd)
+// A1 and B1 and not(C1)
+exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1.Not()}, fuzzy.ConnectorZadehAnd)
 ```
 
 At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
@@ -205,12 +211,6 @@ A consequence is just a list of `fuzzy.IDSet`.
 #### Write a rule
 
 Combine the several items previously seen to describe the rules.
-
-*Note* : a fuzzy set can be complemented using the `Not` function
-
-```go
-fsA1.Not()
-```
 
 The first method is useful when describing rules directly in the code (using a builder)
 
@@ -366,7 +366,7 @@ classDiagram
     + Defuzz()
   }
   class DataInput {
-    - find()
+    - value()
   }
   class System {
     + Evaluate()
