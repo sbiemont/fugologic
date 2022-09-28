@@ -57,8 +57,7 @@ func TestDefuzzerDefuzz(t *testing.T) {
 	Convey("add", t, func() {
 		Convey("when empty", func() {
 			defuzzer := newDefuzzer(nil, AggregationUnion, nil)
-			result, err := defuzzer.defuzz()
-			So(err, ShouldBeNil)
+			result := defuzzer.defuzz()
 			So(result, ShouldBeEmpty)
 		})
 
@@ -66,8 +65,7 @@ func TestDefuzzerDefuzz(t *testing.T) {
 			defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion, []IDSet{
 				fvA.Get("a1"), fvA.Get("a2"), fvB.Get("b1"), fvB.Get("b2"),
 			})
-			result, err := defuzzer.defuzz()
-			So(err, ShouldBeNil)
+			result := defuzzer.defuzz()
 			So(result, ShouldResemble, DataOutput{
 				fvA: 0,
 				fvB: 0,

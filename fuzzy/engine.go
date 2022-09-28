@@ -46,7 +46,7 @@ func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 
 	// Apply defuzzification
 	dfz := newDefuzzer(eng.defuzz, eng.agg, evaluatedIDSets)
-	return dfz.defuzz()
+	return dfz.defuzz(), nil
 }
 
 // FlattenIO gather and flatten all IDSet from rules' expressions
@@ -64,15 +64,14 @@ func checkIDs(idSets []IDSet) error {
 		idVals[idSet.parent] = struct{}{}
 	}
 
-	// Extract all IDSets of IDVals and compare them
-	var vals []id.Identifiable
+	// Extract all ids of IDVals and compare them
+	uniqueIDs := make(map[id.ID]struct{})
 	for idVal := range idVals {
-		vals = append(vals, idVal)
-	}
-
-	// Check all
-	if err := id.NewChecker(vals).Check(); err != nil {
-		return fmt.Errorf("values: %s", err)
+		uuid := idVal.ID()
+		if _, exists := uniqueIDs[uuid]; exists {
+			return fmt.Errorf("values: id `%s` already defined", uuid)
+		}
+		uniqueIDs[uuid] = struct{}{}
 	}
 
 	return nil

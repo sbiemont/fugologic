@@ -33,8 +33,8 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 			return nil, err
 		}
 
-		newOutput = mergeData(newOutput, output)
-		newInput = mergeData(newInput, output)
+		newOutput = newOutput.merge(output)
+		newInput = newInput.merge(output)
 	}
 
 	return newOutput, nil

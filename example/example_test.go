@@ -1,8 +1,12 @@
 package example
 
 import (
+	"fmt"
+	"os"
+	"strings"
 	"testing"
 
+	"encoding/csv"
 	"fugologic/builder"
 	"fugologic/crisp"
 	"fugologic/fuzzy"
@@ -13,8 +17,8 @@ import (
 
 func customValues() (*fuzzy.IDVal, *fuzzy.IDVal, *fuzzy.IDVal) {
 	// Input #A
-	setDiff, _ := crisp.NewSetN(-2, 2, 40)
-	fzDiff, _ := fuzzy.NewIDVal("diff/consigne", setDiff, map[id.ID]fuzzy.Set{
+	crispDiff, _ := crisp.NewSetN(-2, 2, 40)
+	fzDiff, _ := fuzzy.NewIDVal("diff/consigne", crispDiff, map[id.ID]fuzzy.Set{
 		"--": fuzzy.NewSetStepDown(-2, -0.5),
 		"-":  fuzzy.NewSetTriangular(-2, -0.5, 0),
 		"0":  fuzzy.NewSetTriangular(-0.5, 0, 0.5),
@@ -23,8 +27,8 @@ func customValues() (*fuzzy.IDVal, *fuzzy.IDVal, *fuzzy.IDVal) {
 	})
 
 	// Input #B
-	setDt, _ := crisp.NewSetN(-0.2, 0.2, 40)
-	fzDt, _ := fuzzy.NewIDVal("temp/dt", setDt, map[id.ID]fuzzy.Set{
+	crispDt, _ := crisp.NewSetN(-0.2, 0.2, 40)
+	fzDt, _ := fuzzy.NewIDVal("temp/dt", crispDt, map[id.ID]fuzzy.Set{
 		"--": fuzzy.NewSetStepDown(-0.2, -0.1),
 		"-":  fuzzy.NewSetTriangular(-0.2, -0.1, 0),
 		"0":  fuzzy.NewSetTriangular(-0.1, 0, 0.1),
@@ -33,8 +37,8 @@ func customValues() (*fuzzy.IDVal, *fuzzy.IDVal, *fuzzy.IDVal) {
 	})
 
 	// Output #C
-	setForce, _ := crisp.NewSetN(-4, 4, 80)
-	fzForce, _ := fuzzy.NewIDVal("force", setForce, map[id.ID]fuzzy.Set{
+	crispForce, _ := crisp.NewSetN(-4, 4, 80)
+	fzForce, _ := fuzzy.NewIDVal("force", crispForce, map[id.ID]fuzzy.Set{
 		"--": fuzzy.NewSetStepDown(-4, -1),
 		"-":  fuzzy.NewSetTriangular(-2, -1, 0),
 		"0":  fuzzy.NewSetTriangular(-1, 0, 1),
@@ -107,4 +111,57 @@ func TestExample(t *testing.T) {
 			fvForce: -1.3498557846383932,
 		})
 	})
+
+	Convey("full values", t, func() {
+		engine, errEngine := bld.Engine()
+		So(errEngine, ShouldBeNil)
+
+		var result [][3]float64
+		for _, diff := range fvDiff.U().Values() {
+			for _, dt := range fvDt.U().Values() {
+				data, errEval := engine.Evaluate(fuzzy.DataInput{
+					fvDiff: diff,
+					fvDt:   dt,
+				})
+				So(errEval, ShouldBeNil)
+
+				force := data[fvForce]
+				result = append(result, [3]float64{diff, dt, force})
+			}
+		}
+
+		So(export(result), ShouldBeNil)
+	})
+}
+
+func export(values [][3]float64) error {
+	f, errCreate := os.Create("./data.csv")
+	if errCreate != nil {
+		return errCreate
+	}
+
+	fltToStr := func(flt float64) string {
+		return strings.Replace(fmt.Sprintf("%.3f", flt), ".", ",", 1)
+	}
+
+	writer := csv.NewWriter(f)
+	var data = [][]string{
+		{"diff", "dt", "force"},
+	}
+
+	// Convert data into strings
+	for _, row := range values {
+		data = append(data, []string{
+			fltToStr(row[0]),
+			fltToStr(row[1]),
+			fltToStr(row[2]),
+		})
+	}
+
+	errWrite := writer.WriteAll(data)
+	if errWrite != nil {
+		return errWrite
+	}
+
+	return nil
 }

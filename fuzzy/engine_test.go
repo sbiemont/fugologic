@@ -44,7 +44,7 @@ func customValues() (*IDVal, *IDVal, *IDVal) {
 }
 
 // Custom engine for testing
-func customEngine() (Engine, *IDVal, *IDVal, *IDVal) {
+func customEngine() (Engine, *IDVal, *IDVal, *IDVal, error) {
 	fvDiff, fvDt, fvCh := customValues()
 
 	// Rules
@@ -93,8 +93,7 @@ func customEngine() (Engine, *IDVal, *IDVal, *IDVal) {
 	}
 
 	engine, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
-	So(err, ShouldBeNil)
-	return engine, fvDiff, fvDt, fvCh
+	return engine, fvDiff, fvDt, fvCh, err
 }
 
 func TestEngineCheck(t *testing.T) {
@@ -230,7 +229,8 @@ func TestEvaluate(t *testing.T) {
 		}
 
 		// Check engine method
-		check := func(engine Engine, fvDiff, fvDt, fvCh *IDVal) {
+		check := func(engine Engine, fvDiff, fvDt, fvCh *IDVal, err error) {
+			So(err, ShouldBeNil)
 			for _, tt := range tests {
 				result, errEngine := engine.Evaluate(map[*IDVal]float64{
 					fvDiff: tt.inputDiff,
@@ -247,8 +247,11 @@ func TestEvaluate(t *testing.T) {
 }
 
 func BenchmarkEngineNTimes(b *testing.B) {
-	const evaluations = 1000
-	engine, fvDiff, fvDt, _ := customEngine()
+	const evaluations = 2000
+	engine, fvDiff, fvDt, _, err := customEngine()
+	if err != nil {
+		b.FailNow()
+	}
 
 	// Evaluate n times the system
 	for i := 0; i < evaluations; i++ {
@@ -260,17 +263,23 @@ func BenchmarkEngineNTimes(b *testing.B) {
 }
 
 func BenchmarkEngineMatrix(b *testing.B) {
-	engine, fvDiff, fvDt, _ := customEngine()
+	engine, fvDiff, fvDt, _, err := customEngine()
+	if err != nil {
+		b.FailNow()
+	}
 
 	// Evaluate all possible values of the system
-	diffValues := fvDiff.u.Values()
-	dtValues := fvDt.u.Values()
+	diffValues := fvDiff.U().Values()
+	dtValues := fvDt.U().Values()
 	for _, diff := range diffValues {
 		for _, dt := range dtValues {
-			engine.Evaluate(DataInput{
+			_, err := engine.Evaluate(DataInput{
 				fvDiff: diff,
 				fvDt:   dt,
 			})
+			if err != nil {
+				b.FailNow()
+			}
 		}
 	}
 }
