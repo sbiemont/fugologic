@@ -92,33 +92,31 @@ var (
 
 // defuzzer is responsible for collecting rule's results and to defuzz
 type defuzzer struct {
-	agg     Aggregation     // Aggregation of result fuzzy sets
-	fct     Defuzzification // Defuzzification method
-	results []IDSet         // From Val ID to list of result Set
+	agg Aggregation     // Aggregation of result fuzzy sets
+	fct Defuzzification // Defuzzification method
 }
 
 // newDefuzzer builds a new Defuzzer instance
-func newDefuzzer(fct Defuzzification, agg Aggregation, results []IDSet) defuzzer {
+func newDefuzzer(fct Defuzzification, agg Aggregation) defuzzer {
 	return defuzzer{
-		fct:     fct,
-		agg:     agg,
-		results: results,
+		fct: fct,
+		agg: agg,
 	}
 }
 
 // defuzz the values
-func (dfz defuzzer) defuzz() DataOutput {
+func (dfz defuzzer) defuzz(iss []IDSet) DataOutput {
 	// Group IDSet by IDVal parent
 	groups := make(map[*IDVal][]IDSet)
 	universes := make(map[*IDVal]crisp.Set)
-	for _, idSet := range dfz.results {
+	for _, idSet := range iss {
 		idVal := idSet.parent
 		groups[idVal] = append(groups[idVal], idSet)
 		universes[idVal] = idVal.u
 	}
 
 	// For each group, apply defuzz
-	values := make(DataOutput, len(dfz.results))
+	values := make(DataOutput, len(iss))
 	for idVal, group := range groups {
 		aggregation := dfz.aggregate(group)
 		values[idVal] = dfz.fct(aggregation, universes[idVal])

@@ -13,34 +13,6 @@ var defuzzificationNone Defuzzification = func(_ Set, _ crisp.Set) float64 {
 	return 0
 }
 
-func TestDefuzzerAdd(t *testing.T) {
-	newSet := func() Set { return func(x float64) float64 { return x } }
-
-	fvA, _ := NewIDVal("a", crisp.Set{}, map[id.ID]Set{
-		"a1": newSet(),
-		"a2": newSet(),
-	})
-
-	Convey("new", t, func() {
-		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil, AggregationUnion, nil)
-			So(defuzzer.results, ShouldBeEmpty)
-		})
-
-		Convey("when ok", func() {
-			defuzzer := newDefuzzer(DefuzzificationCentroid, AggregationUnion, []IDSet{
-				fvA.Get("a1"),
-				fvA.Get("a2"),
-			})
-			So(defuzzer.fct, ShouldEqual, DefuzzificationCentroid)
-			So(defuzzer.agg, ShouldEqual, AggregationUnion)
-			So(defuzzer.results, ShouldHaveLength, 2)
-			So(defuzzer.results[0].uuid, ShouldEqual, "a1")
-			So(defuzzer.results[1].uuid, ShouldEqual, "a2")
-		})
-	})
-}
-
 func TestDefuzzerDefuzz(t *testing.T) {
 	setA, _ := crisp.NewSet(1, 4, 0.1)
 	fvA, _ := NewIDVal("a", setA, map[id.ID]Set{
@@ -56,19 +28,31 @@ func TestDefuzzerDefuzz(t *testing.T) {
 
 	Convey("add", t, func() {
 		Convey("when empty", func() {
-			defuzzer := newDefuzzer(nil, AggregationUnion, nil)
-			result := defuzzer.defuzz()
+			defuzzer := newDefuzzer(nil, AggregationUnion)
+			result := defuzzer.defuzz(nil)
 			So(result, ShouldBeEmpty)
 		})
 
 		Convey("when ok", func() {
-			defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion, []IDSet{
-				fvA.Get("a1"), fvA.Get("a2"), fvB.Get("b1"), fvB.Get("b2"),
+			Convey("when several values", func() {
+				defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion)
+				result := defuzzer.defuzz([]IDSet{
+					fvA.Get("a1"), fvA.Get("a2"), fvB.Get("b1"), fvB.Get("b2"),
+				})
+				So(result, ShouldResemble, DataOutput{
+					fvA: 0,
+					fvB: 0,
+				})
 			})
-			result := defuzzer.defuzz()
-			So(result, ShouldResemble, DataOutput{
-				fvA: 0,
-				fvB: 0,
+
+			Convey("when one value", func() {
+				defuzzer := newDefuzzer(defuzzificationNone, AggregationUnion)
+				result := defuzzer.defuzz([]IDSet{
+					fvA.Get("a1"), fvA.Get("a2"),
+				})
+				So(result, ShouldResemble, DataOutput{
+					fvA: 0,
+				})
 			})
 		})
 	})
