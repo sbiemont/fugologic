@@ -12,33 +12,42 @@ import (
 func customValues() (*IDVal, *IDVal, *IDVal) {
 	// Input #1
 	setDiff, _ := crisp.NewSet(-2, 2, 0.1)
-	fzDiff, _ := NewIDVal("diff/consigne", setDiff, map[id.ID]Set{
-		"--": NewSetStepDown(-2, -0.5),
-		"-":  NewSetTriangular(-2, -0.5, 0),
-		"0":  NewSetTriangular(-0.5, 0, 0.5),
-		"+":  NewSetTriangular(0, 0.5, 2),
-		"++": NewSetStepUp(0.5, 2),
+	fsDiff, _ := NewIDSets(map[id.ID]SetBuilder{
+		"--": &StepDown{-2, -0.5},
+		"-":  &Triangular{-2, -0.5, 0},
+		"0":  &Triangular{-0.5, 0, 0.5},
+		"+":  &Triangular{0, 0.5, 2},
+		"++": &StepUp{0.5, 2},
 	})
+	fzDiff, _ := NewIDVal("diff/consigne", setDiff, fsDiff)
+
+	sets, _ := NewIDSets(map[id.ID]SetBuilder{
+		"--": &Gauss{},
+	})
+	fzDiff2, _ := NewIDVal("diff/consigne", setDiff, sets)
+	_ = fzDiff2
 
 	// Input #2
 	setDt, _ := crisp.NewSet(-0.2, 0.2, 0.01)
-	fzDt, _ := NewIDVal("temp/dt", setDt, map[id.ID]Set{
-		"--": NewSetStepDown(-0.2, -0.1),
-		"-":  NewSetTriangular(-0.2, -0.1, 0),
-		"0":  NewSetTriangular(-0.1, 0, 0.1),
-		"+":  NewSetTriangular(0, 0.1, 0.2),
-		"++": NewSetStepUp(0.1, 0.2),
+	fsDt, _ := NewIDSets(map[id.ID]SetBuilder{
+		"--": &StepDown{-0.2, -0.1},
+		"-":  &Triangular{-0.2, -0.1, 0},
+		"0":  &Triangular{-0.1, 0, 0.1},
+		"+":  &Triangular{0, 0.1, 0.2},
+		"++": &StepUp{0.1, 0.2},
 	})
+	fzDt, _ := NewIDVal("temp/dt", setDt, fsDt)
 
 	// Output
 	setCh, _ := crisp.NewSet(-4, 4, 0.1)
-	fzCh, _ := NewIDVal("force", setCh, map[id.ID]Set{
-		"--": NewSetStepDown(-4, -1),
-		"-":  NewSetTriangular(-2, -1, 0),
-		"0":  NewSetTriangular(-1, 0, 1),
-		"+":  NewSetTriangular(0, 1, 2),
-		"++": NewSetStepUp(1, 4),
+	fsCh, _ := NewIDSets(map[id.ID]SetBuilder{
+		"--": &StepDown{-4, -1},
+		"-":  &Triangular{-2, -1, 0},
+		"0":  &Triangular{-1, 0, 1},
+		"+":  &Triangular{0, 1, 2},
+		"++": &StepUp{1, 4},
 	})
+	fzCh, _ := NewIDVal("force", setCh, fsCh)
 
 	return fzDiff, fzDt, fzCh
 }
@@ -138,22 +147,25 @@ func TestEvaluate(t *testing.T) {
 	Convey("custom minimalistic test", t, func() {
 		// Definitions
 		setA, _ := crisp.NewSet(1, 4, 0.1)
-		fvA, _ := NewIDVal("a", setA, map[id.ID]Set{
-			"a1": NewSetTriangular(1, 2, 3),
-			"a2": NewSetTriangular(2, 3, 4),
+		fsA, _ := NewIDSets(map[id.ID]SetBuilder{
+			"a1": Triangular{1, 2, 3},
+			"a2": Triangular{2, 3, 4},
 		})
+		fvA, _ := NewIDVal("a", setA, fsA)
 
 		setB, _ := crisp.NewSet(2, 5, 0.1)
-		fvB, _ := NewIDVal("b", setB, map[id.ID]Set{
-			"b1": NewSetTriangular(2, 3, 4),
-			"b2": NewSetTriangular(3, 4, 5),
+		fsB, _ := NewIDSets(map[id.ID]SetBuilder{
+			"b1": Triangular{2, 3, 4},
+			"b2": Triangular{3, 4, 5},
 		})
+		fvB, _ := NewIDVal("b", setB, fsB)
 
 		setC, _ := crisp.NewSet(11, 14, 0.1)
-		fvC, _ := NewIDVal("c", setC, map[id.ID]Set{
-			"c1": NewSetTriangular(11, 12, 13),
-			"c2": NewSetTriangular(12, 13, 14),
+		fsC, _ := NewIDSets(map[id.ID]SetBuilder{
+			"c1": Triangular{11, 12, 13},
+			"c2": Triangular{12, 13, 14},
 		})
+		fvC, _ := NewIDVal("c", setC, fsC)
 
 		// Rules
 		// a1 & b1 -> c1
@@ -174,8 +186,9 @@ func TestEvaluate(t *testing.T) {
 		// Evaluate engine
 		result, errEval := engine.Evaluate(dataIn)
 		So(errEval, ShouldBeNil)
-		So(result, ShouldNotBeNil)
-		So(result[fvC], ShouldEqual, 12.5)
+		So(result, ShouldResemble, DataOutput{
+			fvC: 12.5,
+		})
 	})
 
 	Convey("custom evaluate", t, func() {

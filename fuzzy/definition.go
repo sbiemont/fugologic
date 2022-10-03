@@ -56,7 +56,7 @@ func NewIDVal(
 	iv := &IDVal{
 		uuid:   uuid,
 		u:      u,
-		idSets: make(map[id.ID]IDSet),
+		idSets: make(map[id.ID]IDSet, len(sets)),
 	}
 
 	// Convert to id set and check for empty id

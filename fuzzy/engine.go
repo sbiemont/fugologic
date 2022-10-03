@@ -45,8 +45,8 @@ func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 	}
 
 	// Apply defuzzification
-	dfz := newDefuzzer(eng.defuzz, eng.agg, evaluatedIDSets)
-	return dfz.defuzz(), nil
+	dfz := newDefuzzer(eng.defuzz, eng.agg)
+	return dfz.defuzz(evaluatedIDSets), nil
 }
 
 // FlattenIO gather and flatten all IDSet from rules' expressions
