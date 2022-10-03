@@ -18,7 +18,7 @@ It is defined as `crisp.Set` (x min, x max, dx)
 // Each values from 0.0 to 0.3 every 0.1 => [0.0, 0.1, 0.2, 0.3]
 set, err := crisp.NewSet(0.0, 0.3, 0.1)
 if err != nil{
-  // Error if the crisp set is badly defined
+  return err
 }
 ```
 
@@ -28,7 +28,7 @@ It can also be defined with n values (x min, x max, n values)
 // 4 values in [0.0 ; 0.3]
 set, err := crisp.NewSetN(0.0, 0.3, 4)
 if err != nil{
-  // Error if the crisp set is badly defined
+  return err
 }
 ```
 
@@ -39,12 +39,21 @@ Several methods are proposed, like :
 
 method | description
 ------ | -----------
-`NewSetGauss`      | Gaussian
-`NewSetGbell`      | Generalized bell-shaped
-`NewSetTrapezoid`  | Trapezoïdal
-`NewSetTriangular` | Triangular
-`NewSetStepUp`     | Step up (S shape)
-`NewSetStepDown`   | Step down (Z shape)
+`Gauss`      | Gaussian
+`Gbell`      | Generalized bell-shaped
+`Trapezoid`  | Trapezoïdal
+`Triangular` | Triangular
+`StepUp`     | Step up (S shape)
+`StepDown`   | Step down (Z shape)
+
+Initialise a builder and call `New` to get the `fuzzy.Set` and check for errors
+
+```go
+set, err := Triangular{A: 1, B: 2, C: 3}.New()
+if err != nil {
+  return err
+}
+```
 
 ### Fuzzy values definition
 
@@ -52,12 +61,11 @@ Fuzzy values and fuzzy sets are defined as :
 
 * `fuzzy.IDVal`: a fuzzy value that contains,
   * an identifier `id.ID`
-  * a list of `fuzzy.IDSet` (only required for engine checks)
-  * a `crisp.Set` interval of values (only required for defuzzification)
-* `fuzzy.IDSet`: fuzzy set that contains,
-  * an identifier `id.ID` (only required for errors)
-  * a membership method `fuzzy.Set`
-  * its parent `fuzzy.IDVal`
+  * a `crisp.Set` interval of values (required for defuzzification)
+  * a list of `fuzzy.IDSet` ; and each on contains,
+    * an identifier `id.ID`
+    * a membership method `fuzzy.Set`
+    * its `fuzzy.IDVal` parent
 
 *Notes* : every identifier shall be unique in a `fuzzy.Engine`
 
@@ -68,22 +76,25 @@ First, create a fuzzy value and link it to a list of fuzzy sets.
 Ensure that the crisp interval of the fuzzy value covers all the fuzzy sets intervals.
 
 ```go
-// Fuzzy value "a"
 // Fuzzy sets "a1", "a2"
-crispA, _ := crisp.NewSet(-3, 3, 0.1)
-fvA := fuzzy.NewIDVal("a", crispA, map[id.ID]Set{
-  "a1": fuzzy.NewSetTriangular(-3, -1, 1),
-  "a2": fuzzy.NewSetTriangular(-1, 1, 3),
+// Use the builder or create them manually
+fsA, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+  "a1": fuzzy.Triangular{-3, -1, 1},
+  "a2": fuzzy.Trapezoid{-1, 1, 3, 5},
 })
 
-// Retrieve build fuzzy sets using their ids
-fsA1 := fvA.Get("a1")
-fsA2 := fvA.Get("a2")
+// Fuzzy value "a"
+crispA, _ := crisp.NewSet(-3, 5, 0.1)
+fvA, _ := fuzzy.NewIDVal("a", crispA, fsA)
+
+// Retrieve fuzzy sets using their ids
+fsA1 := fvA.Get("a1") // or use: fsA["a1"]
+fsA2 := fvA.Get("a2") // or use: fsA["a2"]
 
 // Or fetch a fuzzy set and its presence
 // - fsUnknown is empty
 // - ok is false
-fsUnknown, ok := fvA.Fetch("unknown")
+fsUnknown, ok := fvA.Fetch("unknown") // or use: fsUnknown, ok := fs["unknown"]
 ```
 
 Create other inputs and outputs the same way.
@@ -317,7 +328,6 @@ engine2, _ := fuzzy.NewEngine(rules2, AggregationUnion, DefuzzificationProd)
 // Create and evaluate the system
 system, err := fuzzy.NewSystem([]Engine{engine1, engine2})
 if err != nil {
-  // An error occurred, check the rules
   return err
 }
 ```

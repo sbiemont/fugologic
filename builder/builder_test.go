@@ -122,9 +122,9 @@ func TestAdd(t *testing.T) {
 }
 
 func TestEngine(t *testing.T) {
-	fvA,fsA1 := newTestVal("a", "a1")
-	fvB,fsB1 := newTestVal("b", "b1")
-	fvC,fsC1 := newTestVal("c", "c1")
+	fvA, fsA1 := newTestVal("a", "a1")
+	fvB, fsB1 := newTestVal("b", "b1")
+	fvC, fsC1 := newTestVal("c", "c1")
 
 	Convey("engine", t, func() {
 		bld := NewBuilderMamdani()

@@ -14,9 +14,10 @@ func checkSet(fs Set, expected map[float64]float64) {
 }
 
 func TestSetNot(t *testing.T) {
-	fs1 := NewSetTrapezoid(10, 15, 25, 30)
-
 	Convey("complement", t, func() {
+		fs1, err := Trapezoid{10, 15, 25, 30}.New()
+		So(err, ShouldBeNil)
+
 		complement := fs1.Complement()
 		checkSet(complement, map[float64]float64{
 			5:    1,
@@ -35,8 +36,10 @@ func TestSetNot(t *testing.T) {
 func TestSetUnion(t *testing.T) {
 	Convey("union", t, func() {
 		Convey("when trapezoids", func() {
-			fs1 := NewSetTrapezoid(10, 15, 25, 30)
-			fs2 := NewSetTrapezoid(25, 30, 40, 45)
+			fs1, err1 := Trapezoid{10, 15, 25, 30}.New()
+			fs2, err2 := Trapezoid{25, 30, 40, 45}.New()
+			So(err1, ShouldBeNil)
+			So(err2, ShouldBeNil)
 
 			fs3 := fs1.Union(fs2)
 			checkSet(fs3, map[float64]float64{
@@ -55,8 +58,10 @@ func TestSetUnion(t *testing.T) {
 func TestSetIntersection(t *testing.T) {
 	Convey("intersection", t, func() {
 		Convey("when trapezoids", func() {
-			fs1 := NewSetTrapezoid(10, 15, 25, 30)
-			fs2 := NewSetTrapezoid(25, 30, 40, 45)
+			fs1, err1 := Trapezoid{10, 15, 25, 30}.New()
+			fs2, err2 := Trapezoid{25, 30, 40, 45}.New()
+			So(err1, ShouldBeNil)
+			So(err2, ShouldBeNil)
 
 			fs3 := fs1.Intersection(fs2)
 			checkSet(fs3, map[float64]float64{
@@ -77,7 +82,9 @@ func TestSetIntersection(t *testing.T) {
 func TestSetMin(t *testing.T) {
 	Convey("min", t, func() {
 		Convey("when trapezoid", func() {
-			fs := NewSetTrapezoid(10, 15, 25, 30).Min(0.42)
+			fs, err := Trapezoid{10, 15, 25, 30}.New()
+			So(err, ShouldBeNil)
+			fs = fs.Min(0.42)
 
 			checkSet(fs, map[float64]float64{
 				10:   0,
@@ -91,7 +98,8 @@ func TestSetMin(t *testing.T) {
 
 		Convey("when triangular", func() {
 			newSet := func() Set {
-				return NewSetTriangular(10, 20, 30)
+				set, _ := Triangular{10, 20, 30}.New()
+				return set
 			}
 
 			Convey("when in ]0 ; 1[", func() {
@@ -130,7 +138,9 @@ func TestSetMin(t *testing.T) {
 func TestSetMultiply(t *testing.T) {
 	Convey("multiply", t, func() {
 		Convey("when trapezoid", func() {
-			fs := NewSetTrapezoid(10, 15, 25, 30).Multiply(0.42)
+			fs, err := Trapezoid{10, 15, 25, 30}.New()
+			So(err, ShouldBeNil)
+			fs = fs.Multiply(0.42)
 
 			checkSet(fs, map[float64]float64{
 				10:   0,
@@ -144,7 +154,8 @@ func TestSetMultiply(t *testing.T) {
 
 		Convey("when triangular", func() {
 			newSet := func() Set {
-				return NewSetTriangular(10, 20, 30)
+				set, _ := Triangular{10, 20, 30}.New()
+				return set
 			}
 
 			Convey("when in ]0 ; 1[", func() {
@@ -200,165 +211,6 @@ func TestSetAggregate(t *testing.T) {
 		Convey("when min", func() {
 			fs := fs1.aggregate(fs2, math.Min)
 			So(fs(1), ShouldEqual, 2) // Min(2, 101)
-		})
-	})
-}
-
-func TestNewSet(t *testing.T) {
-	Convey("triangular", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetTriangular(0.0, 0.5, 1.0), map[float64]float64{
-				0.0:  0.0,
-				0.25: 0.5,
-				0.5:  1.0,
-				0.75: 0.5,
-				1.0:  0.0,
-			})
-		})
-
-		Convey("when a=b", func() {
-			checkSet(NewSetTriangular(0.0, 0.0, 1.0), map[float64]float64{
-				0.0:  1.0,
-				0.25: 0.75,
-				0.5:  0.5,
-				0.75: 0.25,
-				1.0:  0.0,
-			})
-		})
-
-		Convey("when b=c", func() {
-			checkSet(NewSetTriangular(0.0, 1.0, 1.0), map[float64]float64{
-				0.0:  0.0,
-				0.25: 0.25,
-				0.5:  0.5,
-				0.75: 0.75,
-				1.0:  1.0,
-			})
-		})
-	})
-
-	Convey("trapezoid", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetTrapezoid(0.0, 0.25, 0.75, 1.0), map[float64]float64{
-				0.0:   0.0,
-				0.125: 0.5,
-				0.25:  1.0,
-				0.5:   1.0,
-				0.75:  1.0,
-				0.875: 0.5,
-				1.0:   0.0,
-			})
-		})
-
-		Convey("when a=b", func() {
-			checkSet(NewSetTrapezoid(0.0, 0.0, 0.75, 1.0), map[float64]float64{
-				0.0:   1.0,
-				0.125: 1.0,
-				0.25:  1.0,
-				0.5:   1.0,
-				0.75:  1.0,
-				0.875: 0.5,
-				1.0:   0.0,
-			})
-		})
-
-		Convey("when c=d", func() {
-			checkSet(NewSetTrapezoid(0.0, 0.25, 1.0, 1.0), map[float64]float64{
-				0.0:   0.0,
-				0.125: 0.5,
-				0.25:  1.0,
-				0.5:   1.0,
-				0.75:  1.0,
-				0.875: 1.0,
-				1.0:   1.0,
-			})
-		})
-
-		Convey("when a=b and c=d", func() {
-			checkSet(NewSetTrapezoid(0.0, 0.0, 1.0, 1.0), map[float64]float64{
-				0.0:   1.0,
-				0.125: 1.0,
-				0.25:  1.0,
-				0.5:   1.0,
-				0.75:  1.0,
-				0.875: 1.0,
-				1.0:   1.0,
-			})
-		})
-	})
-
-	Convey("gauss", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetGauss(1.0, 5.0), map[float64]float64{
-				1: 0.0,
-				3: 0.13,
-				5: 1.0,
-				7: 0.13,
-				9: 0.0,
-			})
-		})
-	})
-
-	Convey("g bell", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetGbell(2.0, 4.0, 6.0), map[float64]float64{
-				1.0:  0.0,
-				5.0:  1.0,
-				7.0:  1.0,
-				10.0: 0.0,
-			})
-		})
-	})
-
-	Convey("step up", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetStepUp(2.0, 4.0), map[float64]float64{
-				1.0: 0.0,
-				2.0: 0.0,
-				2.5: 0.25,
-				3.0: 0.5,
-				3.5: 0.75,
-				4.0: 1.0,
-				5.0: 1.0,
-			})
-		})
-
-		Convey("when a=b", func() {
-			checkSet(NewSetStepUp(2.0, 2.0), map[float64]float64{
-				1.0: 0.0,
-				2.0: 1.0,
-				2.5: 1.0,
-				3.0: 1.0,
-				3.5: 1.0,
-				4.0: 1.0,
-				5.0: 1.0,
-			})
-		})
-	})
-
-	Convey("step down", t, func() {
-		Convey("when ok", func() {
-			checkSet(NewSetStepDown(2.0, 4.0), map[float64]float64{
-				1.0: 1.0,
-				2.0: 1.0,
-				2.5: 0.75,
-				3.0: 0.5,
-				3.5: 0.25,
-				4.0: 0.0,
-				5.0: 0.0,
-			})
-		})
-
-		Convey("when a=b", func() {
-			checkSet(NewSetStepDown(2.0, 2.0), map[float64]float64{
-				1.0: 1.0,
-				2.0: 1.0,
-				2.5: 0.0,
-				3.0: 0.0,
-				3.5: 0.0,
-				4.0: 0.0,
-				5.0: 0.0,
-			})
 		})
 	})
 }

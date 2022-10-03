@@ -127,8 +127,8 @@ func (dfz defuzzer) defuzz(iss []IDSet) DataOutput {
 // aggregate all sets into one (helper function): s = s1 U s2 U .. U sN
 func (dfz defuzzer) aggregate(iss []IDSet) Set {
 	result := iss[0].set
-	for _, val := range iss[1:] {
-		result = result.aggregate(val.set, dfz.agg)
+	for _, idSet := range iss[1:] {
+		result = result.aggregate(idSet.set, dfz.agg)
 	}
 	return result
 }

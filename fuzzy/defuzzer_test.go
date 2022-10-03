@@ -15,15 +15,19 @@ var defuzzificationNone Defuzzification = func(_ Set, _ crisp.Set) float64 {
 
 func TestDefuzzerDefuzz(t *testing.T) {
 	setA, _ := crisp.NewSet(1, 4, 0.1)
+	fsA1, _ := Triangular{1, 2, 3}.New()
+	fsA2, _ := Triangular{2, 3, 4}.New()
 	fvA, _ := NewIDVal("a", setA, map[id.ID]Set{
-		"a1": NewSetTriangular(1, 2, 3).Min(0.25),
-		"a2": NewSetTriangular(2, 3, 4).Min(0.75),
+		"a1": fsA1.Min(0.25),
+		"a2": fsA2.Min(0.75),
 	})
 
 	setB, _ := crisp.NewSet(11, 14, 0.1)
+	fsB1, _ := Triangular{11, 12, 13}.New()
+	fsB2, _ := Triangular{12, 13, 14}.New()
 	fvB, _ := NewIDVal("b", setB, map[id.ID]Set{
-		"b1": NewSetTriangular(11, 12, 13).Min(0.1),
-		"b2": NewSetTriangular(12, 13, 14).Min(0.9),
+		"b1": fsB1.Min(0.1),
+		"b2": fsB2.Min(0.9),
 	})
 
 	Convey("add", t, func() {
@@ -63,11 +67,11 @@ func TestDefuzzification(t *testing.T) {
 		dx := 0.01
 		universe, _ := crisp.NewSet(0, 50, 0.1)
 
-		fs1 := NewSetTrapezoid(10, 15, 25, 30)
-		fs2 := NewSetTrapezoid(25, 30, 40, 45)
+		fs1, _ := Trapezoid{10, 15, 25, 30}.New()
+		fs2, _ := Trapezoid{25, 30, 40, 45}.New()
 
 		Convey("when triangular", func() {
-			fs := NewSetTriangular(10, 20, 30)
+			fs, _ := Triangular{10, 20, 30}.New()
 
 			defuzz := DefuzzificationCentroid(fs, universe)
 			So(defuzz, ShouldAlmostEqual, 20, dx)
@@ -99,9 +103,11 @@ func TestDefuzzification(t *testing.T) {
 
 		Convey("when custom #1", func() {
 			Convey("when min", func() {
-				fs1 := NewSetTrapezoid(0, 1, 4, 5).Min(0.3)
-				fs2 := NewSetTrapezoid(3, 4, 6, 7).Min(0.5)
-				fs3 := NewSetTrapezoid(5, 6, 7, 8)
+				fs1, _ := Trapezoid{0, 1, 4, 5}.New()
+				fs2, _ := Trapezoid{3, 4, 6, 7}.New()
+				fs3, _ := Trapezoid{5, 6, 7, 8}.New()
+				fs1 = fs1.Min(0.3)
+				fs2 = fs2.Min(0.5)
 
 				universe, _ := crisp.NewSet(0, 8, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
@@ -112,9 +118,11 @@ func TestDefuzzification(t *testing.T) {
 			})
 
 			Convey("when multiply", func() {
-				fs1 := NewSetTrapezoid(0, 1, 4, 5).Multiply(0.3)
-				fs2 := NewSetTrapezoid(3, 4, 6, 7).Multiply(0.5)
-				fs3 := NewSetTrapezoid(5, 6, 7, 8)
+				fs1, _ := Trapezoid{0, 1, 4, 5}.New()
+				fs2, _ := Trapezoid{3, 4, 6, 7}.New()
+				fs3, _ := Trapezoid{5, 6, 7, 8}.New()
+				fs1 = fs1.Multiply(0.3)
+				fs2 = fs2.Multiply(0.5)
 
 				universe, _ := crisp.NewSet(0, 8, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
@@ -127,9 +135,12 @@ func TestDefuzzification(t *testing.T) {
 
 		Convey("when custom #2", func() {
 			Convey("when truncate", func() {
-				fs1 := NewSetTrapezoid(0, 2, 8, 12).Min(0.9)
-				fs2 := NewSetTrapezoid(5, 7, 12, 14).Min(0.5)
-				fs3 := NewSetTrapezoid(12, 13, 18, 19).Min(0.1)
+				fs1, _ := Trapezoid{0, 2, 8, 12}.New()
+				fs2, _ := Trapezoid{5, 7, 12, 14}.New()
+				fs3, _ := Trapezoid{12, 13, 18, 19}.New()
+				fs1 = fs1.Min(0.9)
+				fs2 = fs2.Min(0.5)
+				fs3 = fs3.Min(0.1)
 
 				universe, _ := crisp.NewSet(0, 20, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
@@ -140,9 +151,12 @@ func TestDefuzzification(t *testing.T) {
 			})
 
 			Convey("when multiply", func() {
-				fs1 := NewSetTrapezoid(0, 2, 8, 12).Multiply(0.9)
-				fs2 := NewSetTrapezoid(5, 7, 12, 14).Multiply(0.5)
-				fs3 := NewSetTrapezoid(12, 13, 18, 19).Multiply(0.1)
+				fs1, _ := Trapezoid{0, 2, 8, 12}.New()
+				fs2, _ := Trapezoid{5, 7, 12, 14}.New()
+				fs3, _ := Trapezoid{12, 13, 18, 19}.New()
+				fs1 = fs1.Multiply(0.9)
+				fs2 = fs2.Multiply(0.5)
+				fs3 = fs3.Multiply(0.1)
 
 				universe, _ := crisp.NewSet(0, 20, 0.1)
 				union := fs1.Union(fs2).Union(fs3)
@@ -156,9 +170,12 @@ func TestDefuzzification(t *testing.T) {
 
 	Convey("smallest, largest max", t, func() {
 		Convey("when triangular", func() {
-			fs1 := NewSetTriangular(1, 2, 3)
-			fs2 := NewSetTriangular(2, 3, 4)
-			universe, _ := crisp.NewSet(0, 5, 0.25)
+			fs1, err1 := Triangular{1, 2, 3}.New()
+			fs2, err2 := Triangular{2, 3, 4}.New()
+			So(err1, ShouldBeNil)
+			So(err2, ShouldBeNil)
+			universe, errU := crisp.NewSet(0, 5, 0.25)
+			So(errU, ShouldBeNil)
 
 			xsm, xlm := defuzzificationMaximums(fs1.Union(fs2), universe)
 			So(xsm, ShouldEqual, 2)
@@ -166,7 +183,7 @@ func TestDefuzzification(t *testing.T) {
 		})
 
 		Convey("when trapezoid", func() {
-			fs1 := NewSetTrapezoid(1, 2, 3, 4)
+			fs1, _ := Trapezoid{1, 2, 3, 4}.New()
 			universe, _ := crisp.NewSet(0, 5, 0.25)
 
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
@@ -175,7 +192,8 @@ func TestDefuzzification(t *testing.T) {
 		})
 
 		Convey("when trapezoid with ymax", func() {
-			fs1 := NewSetTrapezoid(1, 2, 3, 4).Min(0.6)
+			fs1, _ := Trapezoid{1, 2, 3, 4}.New()
+			fs1 = fs1.Min(0.6)
 			universe, _ := crisp.NewSet(0, 5, 0.1)
 
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
@@ -184,7 +202,8 @@ func TestDefuzzification(t *testing.T) {
 		})
 
 		Convey("when smallest/largest of maxs", func() {
-			fs1 := NewSetTrapezoid(1, 2, 3, 4).Min(0.6)
+			fs1, _ := Trapezoid{1, 2, 3, 4}.New()
+			fs1 = fs1.Min(0.6)
 			universe, _ := crisp.NewSet(0, 5, 0.1)
 
 			xsm := DefuzzificationSmallestOfMaxs(fs1, universe)
