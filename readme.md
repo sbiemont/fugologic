@@ -88,13 +88,13 @@ crispA, _ := crisp.NewSet(-3, 5, 0.1)
 fvA, _ := fuzzy.NewIDVal("a", crispA, fsA)
 
 // Retrieve fuzzy sets using their ids
-fsA1 := fvA.Get("a1") // or use: fsA["a1"]
-fsA2 := fvA.Get("a2") // or use: fsA["a2"]
+fsA1 := fvA.Get("a1")
+fsA2 := fvA.Get("a2")
 
 // Or fetch a fuzzy set and its presence
 // - fsUnknown is empty
 // - ok is false
-fsUnknown, ok := fvA.Fetch("unknown") // or use: fsUnknown, ok := fs["unknown"]
+fsUnknown, ok := fvA.Fetch("unknown")
 ```
 
 Create other inputs and outputs the same way.
@@ -270,7 +270,6 @@ Create an engine from the builder
 // Using a builder
 engine, err := bld.Engine()
 if err != nil {
-  // An error occurred, check the rules
   return err
 }
 ```
@@ -281,7 +280,6 @@ Or create an engine manually with custom methods
 // Using explicit syntax
 engine, err := fuzzy.NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 if err != nil {
-  // An error occurred, check the rules
   return err
 }
 ```

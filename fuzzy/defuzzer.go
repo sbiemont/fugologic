@@ -11,20 +11,7 @@ type Defuzzification func(fs Set, u crisp.Set) float64
 
 var (
 	// DefuzzificationCentroid is Sum(µ(xi)*xi) / Sum(µ(xi))
-	DefuzzificationCentroid Defuzzification = func(fs Set, u crisp.Set) float64 {
-		var mx, m float64
-		for _, x := range u.Values() {
-			y := fs(x)
-			mx += y * x
-			m += y
-		}
-
-		if m == 0 {
-			return 0
-		}
-
-		return mx / m
-	}
+	DefuzzificationCentroid Defuzzification = defuzzificationCentroid
 
 	// DefuzzificationSmallestOfMaxs returns the smallest of maximums
 	DefuzzificationSmallestOfMaxs Defuzzification = func(fs Set, u crisp.Set) float64 {
@@ -44,6 +31,21 @@ var (
 		return xLargestMax
 	}
 )
+
+func defuzzificationCentroid(fs Set, u crisp.Set) float64 {
+	var mx, m float64
+	for _, x := range u.Values() {
+		y := fs(x)
+		mx += y * x
+		m += y
+	}
+
+	if m == 0 {
+		return 0
+	}
+
+	return mx / m
+}
 
 // defuzzificationMaximums returns the smallest of maximums and the largest of maximums
 // E.g:
