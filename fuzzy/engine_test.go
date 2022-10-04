@@ -144,6 +144,65 @@ func TestEngineCheck(t *testing.T) {
 }
 
 func TestEvaluate(t *testing.T) {
+	Convey("rules with same output", t, func() {
+		// Pressure
+		setPressure, errPressure := crisp.NewSet(0, 5, 0.1)
+		So(errPressure, ShouldBeNil)
+		fsPressure, errFsPressure := NewIDSets(map[id.ID]SetBuilder{
+			"high":    StepUp{2, 3},
+			"average": Trapezoid{1.4, 1.9, 2.2, 2.6},
+		})
+		So(errFsPressure, ShouldBeNil)
+		fvPressure, errFvPressure := NewIDVal("pressure", setPressure, fsPressure)
+		So(errFvPressure, ShouldBeNil)
+
+		// Temperature
+		setTemperature, errTemperature := crisp.NewSet(12, 22, 0.1)
+		So(errTemperature, ShouldBeNil)
+		fsTemperature, errFsTemperature := NewIDSets(map[id.ID]SetBuilder{
+			"high": StepUp{16, 19},
+		})
+		So(errFsTemperature, ShouldBeNil)
+		fvTemperature, errFvTemperature := NewIDVal("temperature", setTemperature, fsTemperature)
+		So(errFvTemperature, ShouldBeNil)
+
+		// Valve
+		setValve, errValve := crisp.NewSet(0, 70, 0.1)
+		So(errValve, ShouldBeNil)
+		fsValve, errFsValve := NewIDSets(map[id.ID]SetBuilder{
+			"wide":    Triangular{30, 40, 50},
+			"average": Triangular{20, 30, 40},
+		})
+		So(errFsValve, ShouldBeNil)
+		fvValve, errFvValve := NewIDVal("valve wide open", setValve, fsValve)
+		So(errFvValve, ShouldBeNil)
+
+		// Rules
+		// p.high & t.hight -> v.wide
+		// p.average & t.hight -> v.average
+		and := ConnectorZadehAnd
+		imply := ImplicationMin
+		tHigh := fvTemperature.Get("high")
+		rules := []Rule{
+			NewRule(NewExpression([]Premise{fvPressure.Get("high"), tHigh}, and), imply, []IDSet{fvValve.Get("wide")}),
+			NewRule(NewExpression([]Premise{fvPressure.Get("average"), tHigh}, and), imply, []IDSet{fvValve.Get("average")}),
+		}
+
+		// Evaluate engine
+		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
+		So(errEngine, ShouldBeNil)
+
+		// Evaluate engine
+		result, errEval := engine.Evaluate(DataInput{
+			fvPressure:    2.5,
+			fvTemperature: 17,
+		})
+		So(errEval, ShouldBeNil)
+		So(result, ShouldResemble, DataOutput{
+			fvValve: 35.73264090043862,
+		})
+	})
+
 	Convey("custom minimalistic test", t, func() {
 		// Definitions
 		setA, _ := crisp.NewSet(1, 4, 0.1)
