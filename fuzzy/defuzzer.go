@@ -110,18 +110,16 @@ func newDefuzzer(fct Defuzzification, agg Aggregation) defuzzer {
 func (dfz defuzzer) defuzz(iss []IDSet) DataOutput {
 	// Group IDSet by IDVal parent
 	groups := make(map[*IDVal][]IDSet)
-	universes := make(map[*IDVal]crisp.Set)
 	for _, idSet := range iss {
 		idVal := idSet.parent
 		groups[idVal] = append(groups[idVal], idSet)
-		universes[idVal] = idVal.u
 	}
 
 	// For each group, apply defuzz
 	values := make(DataOutput, len(iss))
 	for idVal, group := range groups {
 		aggregation := dfz.aggregate(group)
-		values[idVal] = dfz.fct(aggregation, universes[idVal])
+		values[idVal] = dfz.fct(aggregation, idVal.u)
 	}
 	return values
 }
