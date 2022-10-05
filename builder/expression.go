@@ -23,22 +23,22 @@ func (exp expression) connect(premise fuzzy.Premise, cnt fuzzy.Connector) expres
 
 // And connects the current expression and a premise with the AND connector of the builder
 func (exp expression) And(premise fuzzy.Premise) expression {
-	return exp.connect(premise, exp.bld.and)
+	return exp.connect(premise, exp.bld.cnt.And)
 }
 
 // Or connects the current expression and a premise with the OR connector of the builder
 func (exp expression) Or(premise fuzzy.Premise) expression {
-	return exp.connect(premise, exp.bld.or)
+	return exp.connect(premise, exp.bld.cnt.Or)
 }
 
 // NOr connects the current expression and a premise with the NOT-OR connector of the builder
 func (exp expression) NOr(premise fuzzy.Premise) expression {
-	return exp.connect(premise, exp.bld.nor)
+	return exp.connect(premise, exp.bld.cnt.NOr)
 }
 
 // NAnd connects the current expression and a premise with the NOT-AND connector of the builder
 func (exp expression) NAnd(premise fuzzy.Premise) expression {
-	return exp.connect(premise, exp.bld.nand)
+	return exp.connect(premise, exp.bld.cnt.NAnd)
 }
 
 // Then describes the consequence of an implication AND stores the rule into the builder

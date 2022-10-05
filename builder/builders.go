@@ -5,24 +5,14 @@ import "fugologic/fuzzy"
 // NewBuilderMamdani sets the default configuration for Mamdani inference system
 func NewBuilderMamdani() Builder {
 	return NewBuilder(
-		fuzzy.ConnectorZadehAnd,
-		fuzzy.ConnectorZadehOr,
-		fuzzy.ConnectorZadehNand,
-		fuzzy.ConnectorZadehNor,
+		Connector{
+			And:  fuzzy.ConnectorZadehAnd,
+			Or:   fuzzy.ConnectorZadehOr,
+			XOr:  fuzzy.ConnectorZadehXOr,
+			NAnd: fuzzy.ConnectorZadehNAnd,
+			NOr:  fuzzy.ConnectorZadehNOr,
+		},
 		fuzzy.ImplicationMin,
-		fuzzy.AggregationUnion,
-		fuzzy.DefuzzificationCentroid,
-	)
-}
-
-// NewBuilderSugeno sets the default configuration for Takagi-Sugeno inference system
-func NewBuilderSugeno() Builder {
-	return NewBuilder(
-		fuzzy.ConnectorZadehAnd,
-		fuzzy.ConnectorZadehOr,
-		fuzzy.ConnectorZadehNand,
-		fuzzy.ConnectorZadehNor,
-		fuzzy.ImplicationProd,
 		fuzzy.AggregationUnion,
 		fuzzy.DefuzzificationCentroid,
 	)

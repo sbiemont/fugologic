@@ -21,22 +21,22 @@ var (
 	// Zadeh OR = max
 	ConnectorZadehOr Connector = math.Max
 	// Zadeh XOR = a+b-2*min(a,b)
-	ConnectorZadehXor Connector = func(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
+	ConnectorZadehXOr Connector = func(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
 	// Zadeh NAND = 1-min(a,b)
-	ConnectorZadehNand Connector = func(a, b float64) float64 { return 1 - math.Min(a, b) }
+	ConnectorZadehNAnd Connector = func(a, b float64) float64 { return 1 - math.Min(a, b) }
 	// Zadeh NOR = 1-max(a,b)
-	ConnectorZadehNor Connector = func(a, b float64) float64 { return 1 - math.Max(a, b) }
+	ConnectorZadehNOr Connector = func(a, b float64) float64 { return 1 - math.Max(a, b) }
 
 	// Hyperbolic AND = a*b
 	ConnectorHyperbolicAnd Connector = func(a, b float64) float64 { return a * b }
 	// Hyperbolic OR = a+b-a*b
 	ConnectorHyperbolicOr Connector = func(a, b float64) float64 { return a + b - a*b }
 	// Hyperbolic XOR = a+b-2*a*b
-	ConnectorHyperbolicXor Connector = func(a, b float64) float64 { return a + b - 2*a*b }
+	ConnectorHyperbolicXOr Connector = func(a, b float64) float64 { return a + b - 2*a*b }
 	// Hyperbolic NAND = 1-a*b
-	ConnectorHyperbolicNand Connector = func(a, b float64) float64 { return 1 - a*b }
+	ConnectorHyperbolicNAnd Connector = func(a, b float64) float64 { return 1 - a*b }
 	// Hyperbolic OR = 1-a-b+a*b
-	ConnectorHyperbolicNor Connector = func(a, b float64) float64 { return 1 - a - b + a*b }
+	ConnectorHyperbolicNOr Connector = func(a, b float64) float64 { return 1 - a - b + a*b }
 )
 
 // Expression connects a list of premises. Eg.: A or B or C

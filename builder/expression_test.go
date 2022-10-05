@@ -26,10 +26,10 @@ func TestExpression(t *testing.T) {
 
 	Convey("evaluate", t, func() {
 		bld := NewBuilder(
-			fuzzy.ConnectorZadehAnd,
-			fuzzy.ConnectorZadehOr,
-			nil,
-			nil,
+			Connector{
+				And: fuzzy.ConnectorZadehAnd,
+				Or:  fuzzy.ConnectorZadehOr,
+			},
 			fuzzy.ImplicationMin,
 			fuzzy.AggregationUnion,
 			fuzzy.DefuzzificationCentroid,

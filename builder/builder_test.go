@@ -29,10 +29,10 @@ func TestIf(t *testing.T) {
 	Convey("if", t, func() {
 		Convey("when zadeh connectors", func() {
 			bld := NewBuilder(
-				fuzzy.ConnectorZadehAnd,
-				fuzzy.ConnectorZadehOr,
-				nil,
-				nil,
+				Connector{
+					And: fuzzy.ConnectorZadehAnd,
+					Or:  fuzzy.ConnectorZadehOr,
+				},
 				nil,
 				nil,
 				nil,
@@ -57,10 +57,10 @@ func TestIf(t *testing.T) {
 		Convey("when connectors hyberbolic", func() {
 			// (A and B and C) or (D and E)
 			bld := NewBuilder(
-				fuzzy.ConnectorHyperbolicAnd,
-				fuzzy.ConnectorHyperbolicOr,
-				nil,
-				nil,
+				Connector{
+					And: fuzzy.ConnectorHyperbolicAnd,
+					Or:  fuzzy.ConnectorHyperbolicOr,
+				},
 				nil,
 				nil,
 				nil,
@@ -89,7 +89,7 @@ func TestIf(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	Convey("explicit add rule", t, func() {
-		bld := NewBuilder(nil, nil, nil, nil, nil, nil, nil)
+		bld := NewBuilder(Connector{}, nil, nil, nil)
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1

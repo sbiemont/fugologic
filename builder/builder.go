@@ -4,12 +4,17 @@ import (
 	"fugologic/fuzzy"
 )
 
+type Connector struct {
+	And  fuzzy.Connector
+	Or   fuzzy.Connector
+	XOr  fuzzy.Connector
+	NOr  fuzzy.Connector
+	NAnd fuzzy.Connector
+}
+
 // Builder groups custom connector and implication
 type Builder struct {
-	and    fuzzy.Connector
-	or     fuzzy.Connector
-	nor    fuzzy.Connector
-	nand   fuzzy.Connector
+	cnt    Connector
 	impl   fuzzy.Implication
 	agg    fuzzy.Aggregation
 	defuzz fuzzy.Defuzzification
@@ -19,19 +24,13 @@ type Builder struct {
 
 // NewBuilder creates a builder with a default configuration
 func NewBuilder(
-	and fuzzy.Connector,
-	or fuzzy.Connector,
-	nand fuzzy.Connector,
-	nor fuzzy.Connector,
+	cnt Connector,
 	impl fuzzy.Implication,
 	agg fuzzy.Aggregation,
 	defuzz fuzzy.Defuzzification,
 ) Builder {
 	return Builder{
-		and:    and,
-		or:     or,
-		nand:   nand,
-		nor:    nor,
+		cnt:    cnt,
 		impl:   impl,
 		agg:    agg,
 		defuzz: defuzz,
