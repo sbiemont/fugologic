@@ -56,11 +56,13 @@ func (sys System) reorder() (System, error) {
 
 	// Returns true if a common IDVal is found
 	hasCommon := func(a, b []IDSet) bool {
+		idVals := make(map[*IDVal]struct{})
 		for _, a1 := range a {
-			for _, b1 := range b {
-				if a1.parent == b1.parent {
-					return true
-				}
+			idVals[a1.parent] = struct{}{}
+		}
+		for _, b1 := range b {
+			if _, exists := idVals[b1.parent]; exists {
+				return true
 			}
 		}
 		return false
