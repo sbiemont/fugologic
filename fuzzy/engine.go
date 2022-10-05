@@ -59,10 +59,7 @@ func (eng Engine) io() ([]IDSet, []IDSet) {
 // Get all unique IDVal, check them and their whole IDSet
 func checkIDs(idSets []IDSet) error {
 	// Extract all unique IDVal
-	var idVals = make(map[*IDVal]struct{})
-	for _, idSet := range idSets {
-		idVals[idSet.parent] = struct{}{}
-	}
+	idVals := IDSets(idSets).extractIDVal()
 
 	// Extract all ids of IDVals and compare them
 	uniqueIDs := make(map[id.ID]struct{})

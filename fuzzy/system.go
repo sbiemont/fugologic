@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"fugologic/graph"
+	"fugologic/id"
 )
 
 // System groups engines and evaluate them all
@@ -55,35 +56,45 @@ func (sys System) reorder() (System, error) {
 	}
 
 	// Returns true if a common IDVal is found
-	hasCommon := func(a, b []IDSet) bool {
-		idVals := make(map[*IDVal]struct{})
-		for _, a1 := range a {
-			idVals[a1.parent] = struct{}{}
-		}
-		for _, b1 := range b {
-			if _, exists := idVals[b1.parent]; exists {
+	hasCommon := func(a, b map[*IDVal]struct{}) bool {
+		for b1 := range b {
+			if _, exists := a[b1]; exists {
 				return true
 			}
 		}
 		return false
 	}
 
+	// Compute inputs / outputs of all engines
+	type inouts struct {
+		inputs  map[*IDVal]struct{}
+		outputs map[*IDVal]struct{}
+	}
+	savedIO := make(map[id.ID]inouts)
+	for _, eng := range sys {
+		in, out := eng.io()
+		savedIO[eng.uuid] = inouts{
+			inputs:  IDSets(in).extractIDVal(),
+			outputs: IDSets(out).extractIDVal(),
+		}
+	}
+
 	// Add edges
 	for i, iEng := range sys {
 		// Edge at the current engine
-		iInputs, iOutputs := iEng.io()
-		if hasCommon(iOutputs, iInputs) {
+		iIO := savedIO[iEng.uuid]
+		if hasCommon(iIO.outputs, iIO.inputs) {
 			addEdge(i, i)
 		}
 
 		// Edges with the other engines
 		for j := i + 1; j < len(sys); j++ {
 			jEng := sys[j]
-			jInputs, jOutputs := jEng.io()
-			if hasCommon(iOutputs, jInputs) {
+			jIO := savedIO[jEng.uuid]
+			if hasCommon(iIO.outputs, jIO.inputs) {
 				addEdge(i, j)
 			}
-			if hasCommon(jOutputs, iInputs) {
+			if hasCommon(jIO.outputs, iIO.inputs) {
 				addEdge(j, i)
 			}
 		}
