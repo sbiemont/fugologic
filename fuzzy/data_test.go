@@ -52,19 +52,19 @@ func TestMergeData(t *testing.T) {
 	fvC, _ := newTestVal("c", "c1")
 	fvD, _ := newTestVal("d", "d1")
 
-	empty := Data{}
-	filled1 := Data{
+	empty := dataIO{}
+	filled1 := dataIO{
 		fvA: 1,
 		fvB: 2,
 	}
-	filled2 := Data{
+	filled2 := dataIO{
 		fvC: 3,
 		fvD: 4,
 	}
 
 	Convey("merge", t, func() {
 		Convey("when empty", func() {
-			So(empty.merge(Data{}), ShouldBeEmpty)
+			So(empty.merge(dataIO{}), ShouldBeEmpty)
 		})
 
 		Convey("when merge with empty", func() {
@@ -73,17 +73,17 @@ func TestMergeData(t *testing.T) {
 		})
 
 		Convey("when ok", func() {
-			So(filled1.merge(filled2), ShouldResemble, Data{
+			So(filled1.merge(filled2), ShouldResemble, dataIO{
 				fvA: 1,
 				fvB: 2,
 				fvC: 3,
 				fvD: 4,
 			})
-			So(filled1, ShouldResemble, Data{ // filled1: unchanged
+			So(filled1, ShouldResemble, dataIO{ // filled1: unchanged
 				fvA: 1,
 				fvB: 2,
 			})
-			So(filled2, ShouldResemble, Data{ // filled2: unchanged
+			So(filled2, ShouldResemble, dataIO{ // filled2: unchanged
 				fvC: 3,
 				fvD: 4,
 			})
