@@ -15,29 +15,41 @@ type Premise interface {
 type Connector func(a, b float64) float64
 
 // https://commons.wikimedia.org/wiki/Fuzzy_operator
-var (
-	// Zadeh AND = min
-	ConnectorZadehAnd Connector = math.Min
-	// Zadeh OR = max
-	ConnectorZadehOr Connector = math.Max
-	// Zadeh XOR = a+b-2*min(a,b)
-	ConnectorZadehXOr Connector = func(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
-	// Zadeh NAND = 1-min(a,b)
-	ConnectorZadehNAnd Connector = func(a, b float64) float64 { return 1 - math.Min(a, b) }
-	// Zadeh NOR = 1-max(a,b)
-	ConnectorZadehNOr Connector = func(a, b float64) float64 { return 1 - math.Max(a, b) }
+type Operator struct {
+	And  Connector
+	Or   Connector
+	XOr  Connector
+	NAnd Connector
+	NOr  Connector
+}
 
+// OperatorZadeh defines a list of Zadeh connectors
+var OperatorZadeh = Operator{
+	// Zadeh AND = min
+	And: math.Min,
+	// Zadeh OR = max
+	Or: math.Max,
+	// Zadeh XOR = a+b-2*min(a,b)
+	XOr: func(a, b float64) float64 { return a + b - 2*math.Min(a, b) },
+	// Zadeh NAND = 1-AND = 1-min(a,b)
+	NAnd: func(a, b float64) float64 { return 1 - math.Min(a, b) },
+	// Zadeh NOR = 1-OR = 1-max(a,b)
+	NOr: func(a, b float64) float64 { return 1 - math.Max(a, b) },
+}
+
+// OperatorHyperbolic defines a list of hyperbolic connectors
+var OperatorHyperbolic = Operator{
 	// Hyperbolic AND = a*b
-	ConnectorHyperbolicAnd Connector = func(a, b float64) float64 { return a * b }
+	And: func(a, b float64) float64 { return a * b },
 	// Hyperbolic OR = a+b-a*b
-	ConnectorHyperbolicOr Connector = func(a, b float64) float64 { return a + b - a*b }
+	Or: func(a, b float64) float64 { return a + b - a*b },
 	// Hyperbolic XOR = a+b-2*a*b
-	ConnectorHyperbolicXOr Connector = func(a, b float64) float64 { return a + b - 2*a*b }
-	// Hyperbolic NAND = 1-a*b
-	ConnectorHyperbolicNAnd Connector = func(a, b float64) float64 { return 1 - a*b }
-	// Hyperbolic OR = 1-a-b+a*b
-	ConnectorHyperbolicNOr Connector = func(a, b float64) float64 { return 1 - a - b + a*b }
-)
+	XOr: func(a, b float64) float64 { return a + b - 2*a*b },
+	// Hyperbolic NAND = 1-AND = 1-a*b
+	NAnd: func(a, b float64) float64 { return 1 - a*b },
+	// Hyperbolic NOR = 1-OR = 1-a-b+a*b
+	NOr: func(a, b float64) float64 { return 1 - a - b + a*b },
+}
 
 // Expression connects a list of premises. Eg.: A or B or C
 // Eg.:

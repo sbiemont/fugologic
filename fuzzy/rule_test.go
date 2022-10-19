@@ -52,10 +52,10 @@ func TestFlattenIDSets(t *testing.T) {
 	})
 
 	Convey("flatten id sets", t, func() {
-		expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd)       // A and B
-		expCD := NewExpression([]Premise{fsC1, fsD1}, ConnectorZadehAnd)       // C and D
-		expABCD := NewExpression([]Premise{expAB, expCD}, ConnectorZadehOr)    // (A and B) or (C and D)
-		expABCDE := NewExpression([]Premise{expABCD, fsE1}, ConnectorZadehAnd) // ((A and B) or (C and D)) and E
+		expAB := NewExpression([]Premise{fsA1, fsB1}, OperatorZadeh.And)       // A and B
+		expCD := NewExpression([]Premise{fsC1, fsD1}, OperatorZadeh.And)       // C and D
+		expABCD := NewExpression([]Premise{expAB, expCD}, OperatorZadeh.Or)    // (A and B) or (C and D)
+		expABCDE := NewExpression([]Premise{expABCD, fsE1}, OperatorZadeh.And) // ((A and B) or (C and D)) and E
 
 		result := flattenIDSets(nil, []Premise{expABCDE})
 		So(result, ShouldHaveLength, 5)
@@ -129,8 +129,8 @@ func TestRule(t *testing.T) {
 
 		Convey("when several inputs", func() {
 			// (A and B) or C => D
-			expAB := NewExpression([]Premise{fsA1, fsB1}, ConnectorZadehAnd)
-			expABC := NewExpression([]Premise{expAB, fsC1}, ConnectorZadehAnd)
+			expAB := NewExpression([]Premise{fsA1, fsB1}, OperatorZadeh.And)
+			expABC := NewExpression([]Premise{expAB, fsC1}, OperatorZadeh.And)
 			rule := NewRule(expABC, ImplicationProd, []IDSet{fsD1})
 			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID(), fsB1.ID(), fsC1.ID()})
 		})

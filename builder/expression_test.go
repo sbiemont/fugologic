@@ -26,9 +26,9 @@ func TestExpression(t *testing.T) {
 
 	Convey("evaluate", t, func() {
 		bld := NewBuilder(
-			Connector{
-				And: fuzzy.ConnectorZadehAnd,
-				Or:  fuzzy.ConnectorZadehOr,
+			fuzzy.Operator{
+				And: fuzzy.OperatorZadeh.And,
+				Or:  fuzzy.OperatorZadeh.Or,
 			},
 			fuzzy.ImplicationMin,
 			fuzzy.AggregationUnion,
@@ -37,11 +37,11 @@ func TestExpression(t *testing.T) {
 
 		expAB := expression{
 			bld:   &bld,
-			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorZadehAnd),
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh.And),
 		}
 		expCD := expression{
 			bld:   &bld,
-			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.ConnectorZadehAnd),
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.OperatorZadeh.And),
 		}
 
 		Convey("and", func() {
