@@ -67,38 +67,43 @@ func customEngine() (Engine, *IDVal, *IDVal, *IDVal, error) {
 	//          |  0 |  + |  + |  0 |  - |  - |
 	//          |  + |  0 |  0 |  - | -- | -- |
 	//          | ++ |  - |  - | -- | -- | -- |
-	and := ConnectorZadehAnd
-	implies := ImplicationMin
+
+	// Helper: a and b => c
+	newRule := func(a, b, c id.ID) Rule {
+		return NewRule(
+			NewExpression([]Premise{fvDiff.Get(a), fvDt.Get(b)}, ConnectorZadehAnd), ImplicationMin, []IDSet{fvCh.Get(c)},
+		)
+	}
 	rules := []Rule{
-		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("++")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("++")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("++")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("+")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("--"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("+")}),
+		newRule("--", "--", "++"),
+		newRule("--", "-", "++"),
+		newRule("--", "0", "++"),
+		newRule("--", "+", "+"),
+		newRule("--", "++", "+"),
 
-		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("++")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("++")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("+")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("0")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("-"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("0")}),
+		newRule("-", "--", "++"),
+		newRule("-", "-", "++"),
+		newRule("-", "0", "+"),
+		newRule("-", "+", "0"),
+		newRule("-", "++", "0"),
 
-		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("+")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("+")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("0")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("-")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("0"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("-")}),
+		newRule("0", "--", "+"),
+		newRule("0", "-", "+"),
+		newRule("0", "0", "0"),
+		newRule("0", "+", "-"),
+		newRule("0", "++", "-"),
 
-		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("0")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("0")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("-")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("--")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("+"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("--")}),
+		newRule("+", "--", "0"),
+		newRule("+", "-", "0"),
+		newRule("+", "0", "-"),
+		newRule("+", "+", "--"),
+		newRule("+", "++", "--"),
 
-		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("--")}, and), implies, []IDSet{fvCh.Get("-")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("-")}, and), implies, []IDSet{fvCh.Get("-")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("0")}, and), implies, []IDSet{fvCh.Get("--")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("+")}, and), implies, []IDSet{fvCh.Get("--")}),
-		NewRule(NewExpression([]Premise{fvDiff.Get("++"), fvDt.Get("++")}, and), implies, []IDSet{fvCh.Get("--")}),
+		newRule("++", "--", "-"),
+		newRule("++", "-", "-"),
+		newRule("++", "0", "--"),
+		newRule("++", "+", "--"),
+		newRule("++", "++", "--"),
 	}
 
 	engine, err := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
@@ -181,11 +186,11 @@ func TestEvaluate(t *testing.T) {
 		// p.high & t.hight -> v.wide
 		// p.average & t.hight -> v.average
 		and := ConnectorZadehAnd
-		imply := ImplicationMin
-		tHigh := fvTemperature.Get("high")
+		exp1 := NewExpression([]Premise{fvPressure.Get("high"), fvTemperature.Get("high")}, and)
+		exp2 := NewExpression([]Premise{fvPressure.Get("average"), fvTemperature.Get("high")}, and)
 		rules := []Rule{
-			NewRule(NewExpression([]Premise{fvPressure.Get("high"), tHigh}, and), imply, []IDSet{fvValve.Get("wide")}),
-			NewRule(NewExpression([]Premise{fvPressure.Get("average"), tHigh}, and), imply, []IDSet{fvValve.Get("average")}),
+			NewRule(exp1, ImplicationMin, []IDSet{fvValve.Get("wide")}),
+			NewRule(exp2, ImplicationMin, []IDSet{fvValve.Get("average")}),
 		}
 
 		// Evaluate engine
@@ -316,6 +321,72 @@ func TestEvaluate(t *testing.T) {
 
 		check(customEngine())
 	})
+
+	// https://athena.ecs.csus.edu/~gordonvs/180/WeeklyNotes/03A_FuzzyLogic.pdf
+	Convey("inverted pendulum", t, func() {
+		// Definitions
+		setA, _ := crisp.NewSet(-3, 3, 0.1)
+		fsA, _ := NewIDSets(map[id.ID]SetBuilder{
+			"-": StepDown{-2, 0},
+			"0": Triangular{-2, 0, 2},
+			"+": StepUp{0, 2},
+		})
+		fvA, _ := NewIDVal("t", setA, fsA)
+
+		setB, _ := crisp.NewSet(-6, 6, 0.1)
+		fsB, _ := NewIDSets(map[id.ID]SetBuilder{
+			"-": StepDown{-5, 0},
+			"0": Triangular{-5, 0, 5},
+			"+": StepUp{0, 5},
+		})
+		fvB, _ := NewIDVal("dt", setB, fsB)
+
+		setC, _ := crisp.NewSet(-18, 18, 0.1)
+		fsC, _ := NewIDSets(map[id.ID]SetBuilder{
+			"--": StepDown{-16, -8},
+			"-":  Triangular{-16, -8, 0},
+			"0":  Triangular{-8, 0, 8},
+			"+":  Triangular{0, 8, 16},
+			"++": StepUp{8, 16},
+		})
+		fvC, _ := NewIDVal("force", setC, fsC)
+
+		// Rules
+		// a and b => c
+		newRule := func(a, b, c id.ID) Rule {
+			return NewRule(
+				NewExpression([]Premise{fvA.Get(a), fvB.Get(b)}, ConnectorZadehAnd), ImplicationMin, []IDSet{fvC.Get(c)},
+			)
+		}
+		rules := []Rule{
+			newRule("+", "+", "++"),
+			newRule("+", "0", "+"),
+			newRule("+", "-", "0"),
+
+			newRule("0", "+", "+"),
+			newRule("0", "0", "0"),
+			newRule("0", "-", "-"),
+
+			newRule("-", "+", "0"),
+			newRule("-", "0", "-"),
+			newRule("-", "-", "--"),
+		}
+
+		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
+		So(errEngine, ShouldBeNil)
+
+		dataIn := DataInput{
+			fvA: -1.5,
+			fvB: 2.0,
+		}
+
+		// Evaluate engine
+		result, errEval := engine.Evaluate(dataIn)
+		So(errEval, ShouldBeNil)
+		So(result, ShouldResemble, DataOutput{
+			fvC: -2.0201342281879104,
+		})
+	})
 }
 
 func BenchmarkEngineNTimes(b *testing.B) {
@@ -332,6 +403,19 @@ func BenchmarkEngineNTimes(b *testing.B) {
 			fvDt:   -0.1,
 		})
 	}
+}
+
+func BenchmarkEngine(b *testing.B) {
+	engine, fvDiff, fvDt, _, err := customEngine()
+	if err != nil {
+		b.FailNow()
+	}
+
+	// Evaluate n times the system
+	engine.Evaluate(map[*IDVal]float64{
+		fvDiff: -1,
+		fvDt:   -0.1,
+	})
 }
 
 func BenchmarkEngineMatrix(b *testing.B) {

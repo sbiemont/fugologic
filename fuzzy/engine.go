@@ -3,6 +3,8 @@ package fuzzy
 import (
 	"fmt"
 	"fugologic/id"
+
+	"golang.org/x/sync/errgroup"
 )
 
 // Engine is responsible for evaluating all rules and defuzzing
@@ -30,23 +32,35 @@ func NewEngine(r []Rule, agg Aggregation, defuzz Defuzzification) (Engine, error
 	}, nil
 }
 
-// Evalute rules and defuzz result
+// Evalute rules (in parallel) and defuzz result
 func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
-	var evaluatedIDSets []IDSet
-	for _, rule := range eng.rules {
-		// Evaluate rule
-		idSets, err := rule.evaluate(input)
-		if err != nil {
-			return nil, err
-		}
+	evaluatedIDSets := make([][]IDSet, len(eng.rules)) // prepare results for go routines
+	var grp errgroup.Group
+	for i, rule := range eng.rules {
+		iCpy := i
+		ruleCpy := rule
+		grp.Go(func() error {
+			var errEval error
+			evaluatedIDSets[iCpy], errEval = ruleCpy.evaluate(input)
+			return errEval
+		})
+	}
 
-		// Push result into the defuzzer
-		evaluatedIDSets = append(evaluatedIDSets, idSets...)
+	// Wait for all evaluations
+	err := grp.Wait()
+	if err != nil {
+		return nil, err
+	}
+
+	// Push result into the defuzzer
+	var flattenIDSets []IDSet
+	for _, idSets := range evaluatedIDSets {
+		flattenIDSets = append(flattenIDSets, idSets...)
 	}
 
 	// Apply defuzzification
 	dfz := newDefuzzer(eng.defuzz, eng.agg)
-	return dfz.defuzz(evaluatedIDSets), nil
+	return dfz.defuzz(flattenIDSets), nil
 }
 
 // FlattenIO gather and flatten all IDSet from rules' expressions
