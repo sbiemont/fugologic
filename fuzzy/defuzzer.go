@@ -30,6 +30,9 @@ var (
 		_, xLargestMax := defuzzificationMaximums(fs, u)
 		return xLargestMax
 	}
+
+	// DefuzzificationBisector calculates the position under the curve where the areas on both sides are equal
+	DefuzzificationBisector Defuzzification = defuzzificationBisector
 )
 
 func defuzzificationCentroid(fs Set, u crisp.Set) float64 {
@@ -82,6 +85,20 @@ func defuzzificationMaximums(fs Set, u crisp.Set) (float64, float64) {
 		}
 	}
 	return xSmallestMax, xLargestMax
+}
+
+func defuzzificationBisector(fs Set, u crisp.Set) float64 {
+	values := u.Values()
+	var left, right float64 // areas
+	i := 0                  // left index (and result)
+	j := len(values) - 1    // right index
+	for ; i < j; i++ {      // move forward from start
+		left += fs(values[i])               // increase left area
+		for ; right <= left && i < j; j-- { // move backward from end
+			right += fs(values[j]) // increase right area
+		}
+	}
+	return values[i]
 }
 
 // Aggregation represents the aggregation of 2 fuzzy set (for merging all result sets)
