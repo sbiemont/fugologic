@@ -126,8 +126,7 @@ Or create a custom builder by setting the default configuration :
 
 ```go
 bld := builder.NewBuilder(
-  fuzzy.ConnectorZadehAnd,
-  fuzzy.ConnectorZadehOr,
+  fuzzy.OperatorZadeh,
   fuzzy.ImplicationMin,
   fuzzy.AggregationUnion,
   fuzzy.DefuzzificationCentroid,
@@ -136,12 +135,9 @@ bld := builder.NewBuilder(
 
 type | example | description
 ---- | ------- | -----------
-**`fuzzy.Connector`** ||connect several rule premises together to create an expression
-|| `ConnectorZadehAnd` | Zadeh "and" connector
-|| `ConnectorZadehOr` | Zadeh "or" connector
-|| ...
-|| `ConnectorHyperbolicAnd` | Hyperbolic "and" connector
-|| `ConnectorHyperbolicOr` | Hyperbolic "or" connector
+**`fuzzy.Operator`** || connect several rule premises together to create an expression
+|| `OperatorZadeh` | Zadeh `And`, `Or`, `XOr`, `NAnd`, `NOr` connectors
+|| `OperatorHyperbolic` | Hyperbolic `And`, `Or`, `XOr`, `NAnd`, `NOr` connectors
 || ...
 **`fuzzy.Implication`** || propagates the expression results into consequences
 || `ImplicationMin` | Mamdani implication minimum
@@ -152,7 +148,8 @@ type | example | description
 || `AggregationIntersection` | intersection
 || ...
 **`fuzzy.Defuzzification`** || extracts one value from the aggregated results
-|| `DefuzzificationCentroid` | centroïd
+|| `DefuzzificationCentroid` | centroïd: center of gravity
+|| `DefuzzificationBisector` | bisector: position under the curve where the areas on both sides are equal
 || `DefuzzificationSmallestOfMaxs` | if several `y` maximums are found, get the one with the smallest `x`
 || `DefuzzificationMiddleOfMaxs` | if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
 || `DefuzzificationLargestOfMaxs` | if several `y` maximums are found, get the one with the largest `x`
@@ -160,7 +157,7 @@ type | example | description
 
 #### Describe an input expression
 
-Select the input `fuzzy.IDSet` and link them using a `fuzzy.Connector`.
+Select the input `fuzzy.IDSet` and link them using a `fuzzy.Operator`.
 
 Simplest case : the expression has only one premise and no connector (directly use the fuzzy set)
 
@@ -175,7 +172,7 @@ exp := fsA1
 exp := fsA1.Not()
 ```
 
-An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
+An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Operator`.
 
 For example : `A1 and B1 and not(C1)`.
 
@@ -190,7 +187,7 @@ Or in a more explicit way
 ```go
 // Using explicit syntax
 // A1 and B1 and not(C1)
-exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1.Not()}, fuzzy.ConnectorZadehAnd)
+exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1.Not()}, fuzzy.OperatorZadeh.And)
 ```
 
 At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
@@ -206,9 +203,9 @@ Or in a more explicit way
 
 ```go
 // Using explicit syntax
-expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.ConnectorZadehAnd) // A1 and B1 and C1
-expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.ConnectorZadehAnd)        // D1 and E1
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.ConnectorZadehOr)        // (A1 and B1 and C1) or (D1 and E1)
+expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.OperatorZadeh.And) // A1 and B1 and C1
+expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.OperatorZadeh.And)        // D1 and E1
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.OperatorZadeh.Or)        // (A1 and B1 and C1) or (D1 and E1)
 ```
 
 #### Describe an implication
@@ -245,7 +242,7 @@ Connectors can be explicitely choosen, unlike for the first method.
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
   fuzzy.NewRule(
-    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.ConnectorZadehAnd), // expression
+    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh.And), // expression
     fuzzy.ImplicationMin,                                                      // implication
     []fuzzy.IDSet{fsC1},                                                       // consequence
   ),
