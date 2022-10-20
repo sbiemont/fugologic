@@ -133,8 +133,17 @@ func TestDefuzzification(t *testing.T) {
 			})
 		})
 
+		Convey("when simple trapezoid", func() {
+			u, _ := crisp.NewSet(-10, 10, 0.1)
+			fs, _ := Trapezoid{-10, -8, -4, 7}.New()
+
+			defuzz := DefuzzificationCentroid(fs, u)
+			So(defuzz, ShouldAlmostEqual, -3.2857, dx)
+			So(fs(defuzz), ShouldAlmostEqual, 0.935, dx)
+		})
+
 		Convey("when custom #2", func() {
-			Convey("when truncate", func() {
+			Convey("when min", func() {
 				fs1, _ := Trapezoid{0, 2, 8, 12}.New()
 				fs2, _ := Trapezoid{5, 7, 12, 14}.New()
 				fs3, _ := Trapezoid{12, 13, 18, 19}.New()
@@ -245,6 +254,12 @@ func TestDefuzzification(t *testing.T) {
 			xsm, xlm := defuzzificationMaximums(fs1.Union(fs2), universe)
 			So(xsm, ShouldEqual, 2)
 			So(xlm, ShouldEqual, 3)
+
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1.Union(fs2), universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1.Union(fs2), universe)
+			So(xsm, ShouldEqual, 2)
+			So(xlm, ShouldEqual, 3)
 		})
 
 		Convey("when trapezoid", func() {
@@ -252,6 +267,12 @@ func TestDefuzzification(t *testing.T) {
 			universe, _ := crisp.NewSet(0, 5, 0.25)
 
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
+			So(xsm, ShouldEqual, 2)
+			So(xlm, ShouldEqual, 3)
+
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1, universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1, universe)
 			So(xsm, ShouldEqual, 2)
 			So(xlm, ShouldEqual, 3)
 		})
@@ -264,15 +285,10 @@ func TestDefuzzification(t *testing.T) {
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
 			So(xsm, ShouldEqual, 1.6)
 			So(xlm, ShouldAlmostEqual, 3.3)
-		})
 
-		Convey("when smallest/largest of maxs", func() {
-			fs1, _ := Trapezoid{1, 2, 3, 4}.New()
-			fs1 = fs1.Min(0.6)
-			universe, _ := crisp.NewSet(0, 5, 0.1)
-
-			xsm := DefuzzificationSmallestOfMaxs(fs1, universe)
-			xlm := DefuzzificationLargestOfMaxs(fs1, universe)
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1, universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1, universe)
 			So(xsm, ShouldEqual, 1.6)
 			So(xlm, ShouldAlmostEqual, 3.3)
 		})
