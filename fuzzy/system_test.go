@@ -1,6 +1,7 @@
 package fuzzy
 
 import (
+	"sort"
 	"testing"
 
 	"fugologic/id"
@@ -19,7 +20,7 @@ func TestSystem(t *testing.T) {
 
 	defuzz := defuzzificationNone
 	agg := AggregationUnion
-	and := ConnectorZadehAnd
+	and := OperatorZadeh.And
 	so := ImplicationMin
 
 	// A and B => C
@@ -108,7 +109,7 @@ func TestSystem(t *testing.T) {
 				Convey("when ok", func() {
 					system, err := NewSystem([]Engine{eng1, eng2, eng3})
 					So(err, ShouldBeNil)
-					So(enginesIDs(system), ShouldResemble, []id.ID{eng2.uuid, eng1.uuid, eng3.uuid})
+					So(enginesIDs(system), ShouldResemble, []id.ID{eng1.uuid, eng2.uuid, eng3.uuid})
 				})
 			})
 		})
@@ -121,5 +122,8 @@ func enginesIDs(sys System) []id.ID {
 	for _, engine := range sys {
 		ids = append(ids, engine.uuid)
 	}
+	sort.Slice(ids, func(i, j int) bool {
+		return ids[i] < ids[j]
+	})
 	return ids
 }

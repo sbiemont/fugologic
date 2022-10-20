@@ -4,14 +4,14 @@ import (
 	"fmt"
 )
 
-// Data is a generic type to manipulate input/output values
+// dataIO is a generic type to manipulate input/output values
 // It represents couples of IDVal identifier and crisp value
-type Data map[*IDVal]float64
+type dataIO map[*IDVal]float64
 
 // merge both data results and return a new filled structure
-func (dt Data) merge(dt2 Data) Data {
-	result := Data{}
-	m := func(data Data) {
+func (dt dataIO) merge(dt2 dataIO) dataIO {
+	result := dataIO{}
+	m := func(data dataIO) {
 		for k, v := range data {
 			result[k] = v
 		}
@@ -23,18 +23,18 @@ func (dt Data) merge(dt2 Data) Data {
 }
 
 // DataOutput represents the system output
-type DataOutput Data
+type DataOutput dataIO
 
 func (dout DataOutput) merge(dout2 DataOutput) DataOutput {
-	result := Data(dout).merge(Data(dout2))
+	result := dataIO(dout).merge(dataIO(dout2))
 	return DataOutput(result)
 }
 
 // DataInput gives access to the input data system
-type DataInput Data
+type DataInput dataIO
 
 func (din DataInput) merge(dout DataOutput) DataInput {
-	result := Data(din).merge(Data(dout))
+	result := dataIO(din).merge(dataIO(dout))
 	return DataInput(result)
 }
 

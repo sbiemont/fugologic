@@ -141,3 +141,30 @@ func TestIDVal(t *testing.T) {
 		})
 	})
 }
+
+func TestIDSets(t *testing.T) {
+	Convey("id sets", t, func() {
+		Convey("extract id vals", func() {
+			// Prepare data
+			a, errA := NewIDVal("a", crisp.Set{}, map[id.ID]Set{
+				"a1": nil,
+				"a2": nil,
+			})
+			So(errA, ShouldBeNil)
+
+			b, errB := NewIDVal("b", crisp.Set{}, map[id.ID]Set{
+				"b1": nil,
+			})
+			So(errB, ShouldBeNil)
+
+			// Check
+			So(IDSets{}.extractIDVal(), ShouldBeEmpty)
+			So(IDSets{a.Get("a1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{a: {}})
+			So(IDSets{b.Get("b1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{b: {}})
+			So(IDSets{a.Get("a1"), a.Get("a2"), b.Get("b1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{
+				a: {},
+				b: {},
+			})
+		})
+	})
+}

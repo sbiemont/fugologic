@@ -36,6 +36,18 @@ func (is IDSet) Evaluate(input DataInput) (float64, error) {
 	return is.set(x), nil
 }
 
+// IDSets is an helper for managing a list of IDSet
+type IDSets []IDSet
+
+// Extract unique IDVal from the list of IDSet
+func (iss IDSets) extractIDVal() map[*IDVal]struct{} {
+	result := make(map[*IDVal]struct{})
+	for _, idSet := range iss {
+		result[idSet.parent] = struct{}{}
+	}
+	return result
+}
+
 // IDVal represents a static Val with an ID and a set of crisp values
 type IDVal struct {
 	uuid   id.ID

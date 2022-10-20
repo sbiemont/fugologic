@@ -30,7 +30,7 @@ func TestExpression(t *testing.T) {
 
 	Convey("new expression", t, func() {
 		Convey("when empty", func() {
-			exp := NewExpression([]Premise{}, ConnectorZadehAnd)
+			exp := NewExpression([]Premise{}, OperatorZadeh.And)
 			result, err := exp.Evaluate(DataInput{})
 			So(err, ShouldBeError, "expression: at least 1 premise expected")
 			So(result, ShouldBeZeroValue)
@@ -53,14 +53,14 @@ func TestExpression(t *testing.T) {
 			}
 
 			Convey("when connector AND", func() {
-				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorZadehAnd)
+				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, OperatorZadeh.And)
 				result, err := exp.Evaluate(dataIn)
 				So(err, ShouldBeNil)
 				So(result, ShouldEqual, 1*2) // min(1, 2, 3)*2
 			})
 
 			Convey("when connector OR", func() {
-				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorZadehOr)
+				exp := NewExpression([]Premise{fsA1, fsB1, fsC1}, OperatorZadeh.Or)
 				result, err := exp.Evaluate(dataIn)
 				So(err, ShouldBeNil)
 				So(result, ShouldEqual, 3*2) // max(1, 2, 3)*2
@@ -76,9 +76,9 @@ func TestExpression(t *testing.T) {
 				fvE: 5,
 			}
 
-			expABC := NewExpression([]Premise{fsA1, fsB1, fsC1}, ConnectorZadehAnd)
-			expDE := NewExpression([]Premise{fsD1, fsE1}, ConnectorZadehAnd)
-			exp := NewExpression([]Premise{expABC, expDE}, ConnectorZadehOr)
+			expABC := NewExpression([]Premise{fsA1, fsB1, fsC1}, OperatorZadeh.And)
+			expDE := NewExpression([]Premise{fsD1, fsE1}, OperatorZadeh.And)
+			exp := NewExpression([]Premise{expABC, expDE}, OperatorZadeh.Or)
 
 			result, err := exp.Evaluate(dataIn)
 			So(err, ShouldBeNil)

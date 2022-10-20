@@ -133,8 +133,17 @@ func TestDefuzzification(t *testing.T) {
 			})
 		})
 
+		Convey("when simple trapezoid", func() {
+			u, _ := crisp.NewSet(-10, 10, 0.1)
+			fs, _ := Trapezoid{-10, -8, -4, 7}.New()
+
+			defuzz := DefuzzificationCentroid(fs, u)
+			So(defuzz, ShouldAlmostEqual, -3.2857, dx)
+			So(fs(defuzz), ShouldAlmostEqual, 0.935, dx)
+		})
+
 		Convey("when custom #2", func() {
-			Convey("when truncate", func() {
+			Convey("when min", func() {
 				fs1, _ := Trapezoid{0, 2, 8, 12}.New()
 				fs2, _ := Trapezoid{5, 7, 12, 14}.New()
 				fs3, _ := Trapezoid{12, 13, 18, 19}.New()
@@ -151,6 +160,7 @@ func TestDefuzzification(t *testing.T) {
 			})
 
 			Convey("when multiply", func() {
+				// https://www.mathworks.com/help/fuzzy/defuzzification-methods.html
 				fs1, _ := Trapezoid{0, 2, 8, 12}.New()
 				fs2, _ := Trapezoid{5, 7, 12, 14}.New()
 				fs3, _ := Trapezoid{12, 13, 18, 19}.New()
@@ -168,6 +178,70 @@ func TestDefuzzification(t *testing.T) {
 		})
 	})
 
+	Convey("bisector", t, func() {
+		// https://www.mathworks.com/help/fuzzy/defuzzification-methods.html
+		dx := 0.01
+
+		Convey("when multiply", func() {
+			fs1, _ := Trapezoid{0, 2, 8, 12}.New()
+			fs2, _ := Trapezoid{5, 7, 12, 14}.New()
+			fs3, _ := Trapezoid{12, 13, 18, 19}.New()
+			fs1 = fs1.Multiply(0.9)
+			fs2 = fs2.Multiply(0.5)
+			fs3 = fs3.Multiply(0.1)
+
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+			union := fs1.Union(fs2).Union(fs3)
+
+			defuzz := DefuzzificationBisector(union, universe)
+			So(defuzz, ShouldAlmostEqual, 6.3, dx)
+			So(union(defuzz), ShouldEqual, 0.9)
+		})
+
+		Convey("when truncate", func() {
+			fs1, _ := Trapezoid{0, 2, 8, 12}.New()
+			fs2, _ := Trapezoid{5, 7, 12, 14}.New()
+			fs3, _ := Trapezoid{12, 13, 18, 19}.New()
+			fs1 = fs1.Min(0.9)
+			fs2 = fs2.Min(0.5)
+			fs3 = fs3.Min(0.1)
+
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+			union := fs1.Union(fs2).Union(fs3)
+
+			defuzz := DefuzzificationBisector(union, universe)
+			So(defuzz, ShouldAlmostEqual, 6.5, dx)
+			So(union(defuzz), ShouldEqual, 0.9)
+		})
+
+		Convey("when constant", func() {
+			constant := func(float64) float64 { return 0.42 }
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+
+			defuzz := DefuzzificationBisector(constant, universe)
+			So(defuzz, ShouldEqual, 10)             // middle point [0 ; 20]
+			So(constant(defuzz), ShouldEqual, 0.42) // constant
+		})
+
+		Convey("when left", func() {
+			fs1, _ := StepDown{0, 0.2}.New()
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+
+			defuzz := DefuzzificationBisector(fs1, universe)
+			So(defuzz, ShouldAlmostEqual, 0.1, dx)
+			So(fs1(defuzz), ShouldAlmostEqual, 0.5, dx)
+		})
+
+		Convey("when right", func() {
+			fs1, _ := StepUp{19.8, 20}.New()
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+
+			defuzz := DefuzzificationBisector(fs1, universe)
+			So(defuzz, ShouldAlmostEqual, 19.9, dx)
+			So(fs1(defuzz), ShouldAlmostEqual, 0.5, dx)
+		})
+	})
+
 	Convey("smallest, largest max", t, func() {
 		Convey("when triangular", func() {
 			fs1, err1 := Triangular{1, 2, 3}.New()
@@ -180,6 +254,12 @@ func TestDefuzzification(t *testing.T) {
 			xsm, xlm := defuzzificationMaximums(fs1.Union(fs2), universe)
 			So(xsm, ShouldEqual, 2)
 			So(xlm, ShouldEqual, 3)
+
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1.Union(fs2), universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1.Union(fs2), universe)
+			So(xsm, ShouldEqual, 2)
+			So(xlm, ShouldEqual, 3)
 		})
 
 		Convey("when trapezoid", func() {
@@ -187,6 +267,12 @@ func TestDefuzzification(t *testing.T) {
 			universe, _ := crisp.NewSet(0, 5, 0.25)
 
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
+			So(xsm, ShouldEqual, 2)
+			So(xlm, ShouldEqual, 3)
+
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1, universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1, universe)
 			So(xsm, ShouldEqual, 2)
 			So(xlm, ShouldEqual, 3)
 		})
@@ -199,15 +285,10 @@ func TestDefuzzification(t *testing.T) {
 			xsm, xlm := defuzzificationMaximums(fs1, universe)
 			So(xsm, ShouldEqual, 1.6)
 			So(xlm, ShouldAlmostEqual, 3.3)
-		})
 
-		Convey("when smallest/largest of maxs", func() {
-			fs1, _ := Trapezoid{1, 2, 3, 4}.New()
-			fs1 = fs1.Min(0.6)
-			universe, _ := crisp.NewSet(0, 5, 0.1)
-
-			xsm := DefuzzificationSmallestOfMaxs(fs1, universe)
-			xlm := DefuzzificationLargestOfMaxs(fs1, universe)
+			// Same checks
+			xsm = DefuzzificationSmallestOfMaxs(fs1, universe)
+			xlm = DefuzzificationLargestOfMaxs(fs1, universe)
 			So(xsm, ShouldEqual, 1.6)
 			So(xlm, ShouldAlmostEqual, 3.3)
 		})
