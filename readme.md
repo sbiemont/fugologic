@@ -2,6 +2,65 @@
 
 Fugologic is a basic implementation of a fuzzy logic system.
 
+## TL;DR
+
+Define fuzzy values, create the rules and evaluate them.
+
+* Describe complex rules manually or using a builder
+* Describe simple rules using specific methods (like the [fuzzy associative matrix](https://en.wikipedia.org/wiki/Fuzzy_associative_matrix))
+
+```go
+// Create a crisp set, fuzzy sets and a fuzzy value
+// Input HP [0 ; 100]
+crispHP, _ := crisp.NewSetN(0, 100, 1000)
+fsHP, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+  "Very low HP":  fuzzy.StepDown{A: 0, B: 20},
+  "Low HP":       fuzzy.Trapezoid{A: 0, B: 20, C: 40, D: 60},
+  "Medium HP":    fuzzy.Triangular{A: 50, B: 50, C: 60},
+  "High HP":      fuzzy.Trapezoid{A: 40, B: 60, C: 80, D: 100},
+  "Very high HP": fuzzy.StepUp{A: 80, B: 100},
+})
+fvHP, _ := fuzzy.NewIDVal("HP", crispHP, fsHP)
+
+// Create other fuzzy values the same way
+// fvFP [0 ; 100]: "Very weak FP", "Weak FP", "Medium FP", "High FP", "Very high FP"
+// fvAct [-10 ; 10]: "Retreat!", "Defend", "Attack", "Full attack!"
+
+// Express all rules using the "fuzzy associative matrix"
+// if <HP> and <FP> then <Act>
+//
+// HP/FP => Act | Very low HP | Low HP   | Medium HP | High HP      | Very high HP
+// -------------|-------------|----------|-----------|--------------|-------------
+// Very weak FP | Retreat!    | Retreat! | Defend    | Defend       | Defend
+// Weak FP      | Retreat!    | Defend   | Defend    | Attack       | Attack
+// Medium FP    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
+// High FP      | Retreat!    | Defend   | Attack    | Attack       | Full attack!
+// Very high FP | Defend      | Attack   | Attack    | Full attack! | Full attack!
+bld := NewFuzzyAssoMatrixMamdani()
+_ = bld.
+  Asso(fvHP, fvFP, fvAct).
+  Matrix(
+    []id.ID{"Very low HP", "Low HP", "Medium HP", "High HP", "Very high HP"},
+    map[id.ID][]id.ID{
+      "Very weak FP": {"Retreat!", "Retreat!", "Defend", "Defend", "Defend"},
+      "Weak FP":      {"Retreat!", "Defend", "Defend", "Attack", "Attack"},
+      "Medium FP":    {"Retreat!", "Defend", "Attack", "Attack", "Full attack!"},
+      "High FP":      {"Retreat!", "Defend", "Attack", "Attack", "Full attack!"},
+      "Very high FP": {"Defend", "Attack", "Attack", "Full attack!", "Full attack!"},
+    },
+  )
+
+// Create an engine and evaluate it
+engine, _ := bld.Engine()
+result, _ := engine.Evaluate(fuzzy.DataInput{
+  fvA: 0.05,
+  fvB: 0.3,
+})
+
+// Manage output
+return result[fvC]
+```
+
 ## Getting started
 
 For more example, see [/fugologic/example/example_test.go](https://github.com/sbiemont/fugologic/blob/master/example/example_test.go)
@@ -218,21 +277,11 @@ A consequence is just a list of `fuzzy.IDSet`.
 
 #### Write a rule
 
-Combine the several items previously seen to describe the rules.
+Combine several items previously seen to describe the rules.
 
-The first method is useful when describing rules directly in the code (using a builder)
+#### Write a rule manually
 
-*Note* : the builder that creates a rule stores it.
-
-```go
-// Using a builder, the rule is stored in the builder
-// A1 and B1 => C1
-bld.If(fsA1).And(fsB1).Then(fsC1)
-// Describe other rules the same way
-// ...
-```
-
-The second method can be used to easily generate rules manually.
+This method can be used to easily generate rules manually.
 Connectors can be explicitely choosen, unlike for the first method.
 
 *Note* : create a list of rules to use it afterwards.
@@ -251,6 +300,63 @@ rules := []fuzzy.Rule{
   //  * A2 and B1 => C1
   //  * A2 and B2 => C2
 }
+```
+
+#### Write a rule using a builder
+
+This method is useful when describing rules directly in the code (using a builder)
+
+*Note* : the builder that creates a rule stores it.
+
+```go
+// Using a builder, the rule is stored in the builder
+// A1 and B1 => C1
+bld.If(fsA1).And(fsB1).Then(fsC1)
+// Describe other rules the same way
+// ...
+```
+
+#### Write a rule using the fuzzy associative matrix
+
+This method allows compact description of all rules using a
+[fuzzy associative matrix](https://en.wikipedia.org/wiki/Fuzzy_associative_matrix)
+
+*Notes* :
+
+* it can only be used to express rules like `if <a> and <b> then <c>` in a tabular form
+* the first operand describe the rows values
+* the second operand describes the columns values
+* the last operand if the result of value of the row #i and the column #j
+
+```go
+// Rules
+// Express all rules using a "fuzzy associative matrix"
+//
+// if <a> and <b> then <c>
+//
+//          |  <a>         |
+//          |--------------|
+//          | a1 | a2 | a3 |
+// ---------|----|----|----|
+// <b> | b1 | c1 | c2 | c3 |
+//     | b2 | c2 | c3 | c4 |
+//     | b3 | c3 | c4 | c5 |
+//     | b4 | c4 | c5 | c6 |
+//     | b5 | c5 | c6 | c7 |
+bld := NewFuzzyAssoMatrixMamdani()
+err = bld.
+  Asso(fvA, fvB, fvC).
+  Matrix(
+    []id.ID{"a1", "a2", "a3"},
+    map[id.ID][]id.ID{
+      "b1": {"c1", "c2", "c3"},
+      "b2": {"c2", "c3", "c4"},
+      "b3": {"c3", "c4", "c5"},
+      "b4": {"c4", "c5", "c6"},
+      "b5": {"c5", "c6", "c7"},
+    },
+  )
+So(err ShouldBeNil)
 ```
 
 ### Create an engine

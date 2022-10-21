@@ -11,3 +11,13 @@ func NewBuilderMamdani() Builder {
 		fuzzy.DefuzzificationCentroid,
 	)
 }
+
+// NewFuzzyAssoMatrixMamdani sets the default configuration for a fuzzy associative matrix builder
+func NewFuzzyAssoMatrixMamdani() FuzzyAssoMatrix {
+	return NewFuzzyAssoMatrix(
+		fuzzy.OperatorZadeh.And,
+		fuzzy.ImplicationMin,
+		fuzzy.AggregationUnion,
+		fuzzy.DefuzzificationCentroid,
+	)
+}
