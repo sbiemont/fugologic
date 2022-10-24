@@ -12,7 +12,7 @@ import (
 type FuzzyAssoMatrix struct {
 	cfg famConfig
 
-	rules []fuzzy.Rule // stores internal rules (like the builder)
+	rules []fuzzy.Rule // stores internal rules
 }
 
 // famConfig gathers data for processing the rules
@@ -48,25 +48,6 @@ func (fam *FuzzyAssoMatrix) add(rule fuzzy.Rule) {
 // Engine builds an engine from the configuration
 func (fam FuzzyAssoMatrix) Engine() (fuzzy.Engine, error) {
 	return fuzzy.NewEngine(fam.rules, fam.cfg.agg, fam.cfg.defuzz)
-}
-
-// famExpression is an internal structure to store redundant information
-type famExpression struct {
-	val *fuzzy.IDVal
-	ids []id.ID
-}
-
-// ifExpression is an internal structure to store builder + first part of the rule
-type ifExpression struct {
-	fam   *FuzzyAssoMatrix
-	ifExp famExpression
-}
-
-// andExpression is an internal structure to store builder + first part of the rule + second part of the rule
-type andExpression struct {
-	fam    *FuzzyAssoMatrix
-	ifExp  famExpression
-	andExp famExpression
 }
 
 type famValues struct {

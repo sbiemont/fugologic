@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"fmt"
 	"testing"
 
 	"fugologic/crisp"
@@ -28,7 +29,7 @@ func TestIf(t *testing.T) {
 
 	Convey("if", t, func() {
 		Convey("when zadeh connectors", func() {
-			bld := NewBuilder(
+			bld := NewFuzzyLogic(
 				fuzzy.OperatorZadeh,
 				nil,
 				nil,
@@ -53,7 +54,7 @@ func TestIf(t *testing.T) {
 
 		Convey("when connectors hyberbolic", func() {
 			// (A and B and C) or (D and E)
-			bld := NewBuilder(
+			bld := NewFuzzyLogic(
 				fuzzy.Operator{
 					And: fuzzy.OperatorHyperbolic.And,
 					Or:  fuzzy.OperatorHyperbolic.Or,
@@ -86,7 +87,7 @@ func TestIf(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	Convey("explicit add rule", t, func() {
-		bld := NewBuilder(fuzzy.Operator{}, nil, nil, nil)
+		bld := NewFuzzyLogic(fuzzy.Operator{}, nil, nil, nil)
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
@@ -105,7 +106,7 @@ func TestAdd(t *testing.T) {
 		_, fsB1 := newTestVal("b", "b1")
 		_, fsC1 := newTestVal("c", "c1")
 
-		bld := NewBuilderMamdani()
+		bld := NewFuzzyLogicMamdani()
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
@@ -124,7 +125,7 @@ func TestEngine(t *testing.T) {
 	fvC, fsC1 := newTestVal("c", "c1")
 
 	Convey("engine", t, func() {
-		bld := NewBuilderMamdani()
+		bld := NewFuzzyLogicMamdani()
 		bld.If(fsA1).Then(fsC1)
 		bld.If(fsB1).Then(fsC1)
 
@@ -140,5 +141,79 @@ func TestEngine(t *testing.T) {
 			fvC: 0,
 		})
 		So(err, ShouldBeNil)
+	})
+}
+
+func TestFlExpression(t *testing.T) {
+	fvA, fsA1 := newTestVal("a", "a1")
+	fvB, fsB1 := newTestVal("b", "b1")
+	fvC, fsC1 := newTestVal("c", "c1")
+	fvD, fsD1 := newTestVal("d", "d1")
+	fvE, fsE1 := newTestVal("e", "e1")
+
+	input := fuzzy.DataInput{
+		fvA: 1,
+		fvB: 2,
+		fvC: 3,
+		fvD: 4,
+		fvE: 5,
+	}
+
+	Convey("evaluate", t, func() {
+		bld := NewFuzzyLogic(
+			fuzzy.Operator{
+				And: fuzzy.OperatorZadeh.And,
+				Or:  fuzzy.OperatorZadeh.Or,
+			},
+			fuzzy.ImplicationMin,
+			fuzzy.AggregationUnion,
+			fuzzy.DefuzzificationCentroid,
+		)
+
+		expAB := flExpression{
+			fl:    &bld,
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh.And),
+		}
+		expCD := flExpression{
+			fl:    &bld,
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.OperatorZadeh.And),
+		}
+
+		Convey("and", func() {
+			exp := expAB.And(expCD)
+
+			res, err := exp.Evaluate(input)
+			So(err, ShouldBeNil)
+			So(res, ShouldEqual, 1)
+
+			Convey("then", func() {
+				exp.Then(fsE1) // only checks the "then" call
+				engine, _ := bld.Engine()
+				res, err := engine.Evaluate(input)
+				So(err, ShouldBeNil)
+				fmt.Print(res)
+				So(res, ShouldResemble, fuzzy.DataOutput{
+					fvE: 0,
+				})
+			})
+		})
+
+		Convey("or", func() {
+			exp := expAB.Or(expCD)
+			res, err := exp.Evaluate(input)
+			So(err, ShouldBeNil)
+			So(res, ShouldEqual, 3)
+
+			Convey("then", func() {
+				exp.Then(fsE1) // only checks the "then" call
+				engine, _ := bld.Engine()
+				res, err := engine.Evaluate(input)
+				So(err, ShouldBeNil)
+				fmt.Print(res)
+				So(res, ShouldResemble, fuzzy.DataOutput{
+					fvE: 0,
+				})
+			})
+		})
 	})
 }

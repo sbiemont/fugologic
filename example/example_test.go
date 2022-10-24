@@ -50,7 +50,7 @@ func TestMinimalist(t *testing.T) {
 			// --|---|----|----|
 			// a | - | ## | ** |
 			//   | + | ** | ## |
-			bld := builder.NewBuilderMamdani()
+			bld := builder.NewFuzzyLogicMamdani()
 			bld.If(fvA.Get("-")).And(fvB.Get("N")).Then(fvC.Get("##"))
 			bld.If(fvA.Get("-")).And(fvB.Get("P")).Then(fvC.Get("**"))
 			bld.If(fvA.Get("+")).And(fvB.Get("N")).Then(fvC.Get("**"))
@@ -188,7 +188,7 @@ func TestExample(t *testing.T) {
 
 		Convey("when using a builder", func() {
 			// Builder
-			bld := builder.NewBuilderMamdani()
+			bld := builder.NewFuzzyLogicMamdani()
 
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("--")).Then(fvForce.Get("++"))
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("-")).Then(fvForce.Get("++"))

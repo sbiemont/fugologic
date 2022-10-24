@@ -2,9 +2,9 @@ package builder
 
 import "fugologic/fuzzy"
 
-// NewBuilderMamdani sets the default configuration for Mamdani inference system
-func NewBuilderMamdani() Builder {
-	return NewBuilder(
+// NewFuzzyLogicMamdani sets the default configuration for Mamdani inference system
+func NewFuzzyLogicMamdani() FuzzyLogic {
+	return NewFuzzyLogic(
 		fuzzy.OperatorZadeh,
 		fuzzy.ImplicationMin,
 		fuzzy.AggregationUnion,

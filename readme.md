@@ -36,7 +36,7 @@ fvHP, _ := fuzzy.NewIDVal("HP", crispHP, fsHP)
 // Medium FP    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
 // High FP      | Retreat!    | Defend   | Attack    | Attack       | Full attack!
 // Very high FP | Defend      | Attack   | Attack    | Full attack! | Full attack!
-bld := NewFuzzyAssoMatrixMamdani()
+bld := builder.NewFuzzyAssoMatrixMamdani()
 _ = bld.
   Asso(fvHP, fvFP, fvAct).
   Matrix(
@@ -178,13 +178,13 @@ The rule builder is optional but helps creating simple rules, and then, an engin
 Create a new builder using predefined configuration :
 
 ```go
-bld := NewBuilderMamdani()
+bld := builder.NewFuzzyLogicMamdani()
 ```
 
 Or create a custom builder by setting the default configuration :
 
 ```go
-bld := builder.NewBuilder(
+bld := builder.NewFuzzyLogic(
   fuzzy.OperatorZadeh,
   fuzzy.ImplicationMin,
   fuzzy.AggregationUnion,
@@ -343,7 +343,7 @@ This method allows compact description of all rules using a
 //     | b3 | c3 | c4 | c5 |
 //     | b4 | c4 | c5 | c6 |
 //     | b5 | c5 | c6 | c7 |
-bld := NewFuzzyAssoMatrixMamdani()
+bld := builder.NewFuzzyAssoMatrixMamdani()
 err = bld.
   Asso(fvA, fvB, fvC).
   Matrix(
