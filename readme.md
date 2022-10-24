@@ -53,12 +53,12 @@ _ = bld.
 // Create an engine and evaluate it
 engine, _ := bld.Engine()
 result, _ := engine.Evaluate(fuzzy.DataInput{
-  fvA: 0.05,
-  fvB: 0.3,
+  fvHP: 75,
+  fvFP: 30,
 })
 
 // Manage output
-return result[fvC]
+return result[fvAct]
 ```
 
 ## Getting started
