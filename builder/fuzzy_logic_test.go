@@ -106,7 +106,7 @@ func TestAdd(t *testing.T) {
 		_, fsB1 := newTestVal("b", "b1")
 		_, fsC1 := newTestVal("c", "c1")
 
-		bld := NewFuzzyLogicMamdani()
+		bld := Mamdani().FuzzyLogic()
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
@@ -125,7 +125,7 @@ func TestEngine(t *testing.T) {
 	fvC, fsC1 := newTestVal("c", "c1")
 
 	Convey("engine", t, func() {
-		bld := NewFuzzyLogicMamdani()
+		bld := Mamdani().FuzzyLogic()
 		bld.If(fsA1).Then(fsC1)
 		bld.If(fsB1).Then(fsC1)
 

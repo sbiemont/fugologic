@@ -36,7 +36,7 @@ fvHP, _ := fuzzy.NewIDVal("HP", crispHP, fsHP)
 // Medium FP    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
 // High FP      | Retreat!    | Defend   | Attack    | Attack       | Full attack!
 // Very high FP | Defend      | Attack   | Attack    | Full attack! | Full attack!
-bld := builder.NewFuzzyAssoMatrixMamdani()
+bld := builder.Mamdani().FuzzyAssoMatrix()
 _ = bld.
   Asso(fvHP, fvFP, fvAct).
   Matrix(
@@ -96,14 +96,14 @@ if err != nil{
 A membership function is defined as a `fuzzy.Set`.
 Several methods are proposed, like :
 
-method | description
------- | -----------
-`Gauss`      | Gaussian
-`Gbell`      | Generalized bell-shaped
-`Trapezoid`  | Trapezoïdal
-`Triangular` | Triangular
-`StepUp`     | Step up (S shape)
-`StepDown`   | Step down (Z shape)
+method | description | shape
+------ | ----------- | -----
+`Gauss`      | Gaussian                | ▁/⁀\▁
+`Gbell`      | Generalized bell-shaped | ▁/⁀\▁
+`Trapezoid`  | Trapezoïdal             | ▁/▔\▁
+`Triangular` | Triangular              | ▁/\▁
+`StepUp`     | Step up (S shape)       | ▁/▔
+`StepDown`   | Step down (Z shape)     | ▔\▁
 
 Initialise a builder and call `New` to get the `fuzzy.Set` and check for errors
 
@@ -175,13 +175,26 @@ rule = A1 and B1    then          C1, D1
 
 The rule builder is optional but helps creating simple rules, and then, an engine.
 
-Create a new builder using predefined configuration :
+Use a predefined configuration, and then create a builder
 
 ```go
-bld := builder.NewFuzzyLogicMamdani()
+cfg := builder.Mamdani() // Predefined configuration
+bld := cfg.FuzzyLogic()  // Rule builder using the predefined configuration
 ```
 
-Or create a custom builder by setting the default configuration :
+Or create a custom configuration, and then create a builder
+
+```go
+cfg := builder.Config{
+  op:     fuzzy.OperatorZadeh,
+  impl:   fuzzy.ImplicationMin,
+  agg:    fuzzy.AggregationUnion,
+  defuzz: fuzzy.DefuzzificationCentroid,
+}
+bld := cfg.FuzzyLogic()
+```
+
+Or use your configuration to created the wanted builder
 
 ```go
 bld := builder.NewFuzzyLogic(
@@ -191,6 +204,8 @@ bld := builder.NewFuzzyLogic(
   fuzzy.DefuzzificationCentroid,
 )
 ```
+
+Details of the configuration parameters
 
 type | example | description
 ---- | ------- | -----------
@@ -228,10 +243,11 @@ exp := fsA1
 *Note* : a fuzzy set can be complemented using the `Not` function
 
 ```go
+// not(A1)
 exp := fsA1.Not()
 ```
 
-An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Operator`.
+An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
 
 For example : `A1 and B1 and not(C1)`.
 
@@ -279,7 +295,7 @@ A consequence is just a list of `fuzzy.IDSet`.
 
 Combine several items previously seen to describe the rules.
 
-#### Write a rule manually
+##### Write a rule manually
 
 This method can be used to easily generate rules manually.
 Connectors can be explicitely choosen, unlike for the first method.
@@ -302,7 +318,7 @@ rules := []fuzzy.Rule{
 }
 ```
 
-#### Write a rule using a builder
+##### Write a rule using a builder
 
 This method is useful when describing rules directly in the code (using a builder)
 
@@ -310,13 +326,14 @@ This method is useful when describing rules directly in the code (using a builde
 
 ```go
 // Using a builder, the rule is stored in the builder
+bld := Mamdani().FuzzyLogic()
 // A1 and B1 => C1
 bld.If(fsA1).And(fsB1).Then(fsC1)
 // Describe other rules the same way
 // ...
 ```
 
-#### Write a rule using the fuzzy associative matrix
+##### Write rules using a fuzzy associative matrix
 
 This method allows compact description of all rules using a
 [fuzzy associative matrix](https://en.wikipedia.org/wiki/Fuzzy_associative_matrix)
@@ -324,9 +341,10 @@ This method allows compact description of all rules using a
 *Notes* :
 
 * it can only be used to express rules like `if <a> and <b> then <c>` in a tabular form
-* the first operand describe the rows values
-* the second operand describes the columns values
-* the last operand if the result of value of the row #i and the column #j
+* the first operand describe the columns values
+* the second operand describes the rows values
+* the last operand if the result of value of the row #i and the column #j ;
+  an empty identifier means no rule
 
 ```go
 // Rules
@@ -343,7 +361,7 @@ This method allows compact description of all rules using a
 //     | b3 | c3 | c4 | c5 |
 //     | b4 | c4 | c5 | c6 |
 //     | b5 | c5 | c6 | c7 |
-bld := builder.NewFuzzyAssoMatrixMamdani()
+bld := builder.Mamdani().FuzzyAssoMatrix()
 err = bld.
   Asso(fvA, fvB, fvC).
   Matrix(
@@ -356,7 +374,9 @@ err = bld.
       "b5": {"c5", "c6", "c7"},
     },
   )
-So(err ShouldBeNil)
+if err != nil {
+  return err
+}
 ```
 
 ### Create an engine
@@ -365,7 +385,7 @@ A `fuzzy.Engine` evaluates a list of `fuzzy.Rule`, applies a `fuzzy.Aggregation`
 
 #### Engine new instance
 
-If the rules contains an error, the engine builder will fail.
+If the defined rules contains an error, the engine builder will return it.
 
 Create an engine from the builder
 

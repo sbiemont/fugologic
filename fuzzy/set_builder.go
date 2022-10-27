@@ -36,14 +36,17 @@ func checkSorted(name string, params ...float64) error {
 }
 
 // Gauss builder
+// https://www.mathworks.com/help/fuzzy/gaussmf.html
+// Parameters
+// - Sigma: standard deviation
+// - C: mean
+//
+// ▁/▔\▁
 type Gauss struct {
 	Sigma, C float64
 }
 
 // New Gauss membership function
-// https://www.mathworks.com/help/fuzzy/gaussmf.html
-//
-// _/¯\_
 func (set Gauss) New() (Set, error) {
 	if set.Sigma == 0 {
 		return nil, fmt.Errorf("%s: first parameter must be non zero", GAUSS)
@@ -55,14 +58,18 @@ func (set Gauss) New() (Set, error) {
 }
 
 // Gbell builder
+// https://www.mathworks.com/help/fuzzy/gbellmf.html
+// Parameters
+// - A: width of the membership function, where a larger value creates a wider membership function
+// - B: shape of the curve on either side of the central plateau, where a larger value creates a more steep transition
+// - C: center of the membership function
+//
+// ▁/▔\▁
 type Gbell struct {
 	A, B, C float64
 }
 
 // New generalized bell-shaped membership function: 1 / (1 + ((x-c)/a)^2b)
-// https://www.mathworks.com/help/fuzzy/gbellmf.html
-//
-// _/¯\_
 func (set Gbell) New() (Set, error) {
 	if set.A == 0 {
 		return nil, fmt.Errorf("%s: first parameter must be non zero", GBELL)
@@ -74,18 +81,19 @@ func (set Gbell) New() (Set, error) {
 }
 
 // Trapezoid builder
+// https://www.mathworks.com/help/fuzzy/trapmf.html
+// Parameters
+// - A: first base (left to right) of the function (y=0)
+// - B: peak of the function (y=1)
+// - C: second peak of the function (y=1)
+// - D: last base of the function (y=0)
+//
+// ▁/▔\▁
 type Trapezoid struct {
 	A, B, C, D float64
 }
 
 // New trapezoid membership function
-// https://www.mathworks.com/help/fuzzy/trapmf.html
-// - a: first base (left to right) of the function (y=0)
-// - b: peak of the function (y=1)
-// - c: second peak of the function (y=1)
-// - d: last base of the function (y=0)
-//
-// _/¯\_
 func (set Trapezoid) New() (Set, error) {
 	if err := checkSorted(TRAP, set.A, set.B, set.C, set.D); err != nil {
 		return nil, err
@@ -108,17 +116,18 @@ func (set Trapezoid) New() (Set, error) {
 }
 
 // Triangular builder
+// https://www.mathworks.com/help/fuzzy/trimf.html
+// Parameters
+// - A: first base (left to right) of the function (y=0)
+// - B: peak of the function (y=1)
+// - C: second base of the function (y=0)
+//
+// ▁/\▁
 type Triangular struct {
 	A, B, C float64
 }
 
 // New triangular membership function
-// https://www.mathworks.com/help/fuzzy/trimf.html
-// - a: first base (left to right) of the function (y=0)
-// - b: peak of the function (y=1)
-// - c: second base of the function (y=0)
-//
-// _/\_
 func (set Triangular) New() (Set, error) {
 	if err := checkSorted(TRI, set.A, set.B, set.C); err != nil {
 		return nil, err
@@ -139,15 +148,16 @@ func (set Triangular) New() (Set, error) {
 }
 
 // StepUp builder
+// Parameters
+// - A: first base (left to right) of the function (y=0)
+// - B: peak of the function (y=1)
+//
+// ▁/▔
 type StepUp struct {
 	A, B float64
 }
 
 // New step-up membership function
-// - a: first base (left to right) of the function (y=0)
-// - b: peak of the function (y=1)
-//
-// _/¯
 func (set StepUp) New() (Set, error) {
 	if err := checkSorted(STEPUP, set.A, set.B); err != nil {
 		return nil, err
@@ -167,15 +177,16 @@ func (set StepUp) New() (Set, error) {
 }
 
 // StepDown builder
+// Parameters
+// - A: peak (left to right) of the function (1)
+// - B: last base of the function (0)
+//
+// ▔\▁
 type StepDown struct {
 	A, B float64
 }
 
 // NewSetStepDown membership function
-// - a: peak (left to right) of the function (1)
-// - b: last base of the function (0)
-//
-// ¯\_
 func (set StepDown) New() (Set, error) {
 	if err := checkSorted(STEPDOWN, set.A, set.B); err != nil {
 		return nil, err

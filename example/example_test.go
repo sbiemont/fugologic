@@ -50,7 +50,7 @@ func TestMinimalist(t *testing.T) {
 			// --|---|----|----|
 			// a | - | ## | ** |
 			//   | + | ** | ## |
-			bld := builder.NewFuzzyLogicMamdani()
+			bld := builder.Mamdani().FuzzyLogic()
 			bld.If(fvA.Get("-")).And(fvB.Get("N")).Then(fvC.Get("##"))
 			bld.If(fvA.Get("-")).And(fvB.Get("P")).Then(fvC.Get("**"))
 			bld.If(fvA.Get("+")).And(fvB.Get("N")).Then(fvC.Get("**"))
@@ -69,7 +69,7 @@ func TestMinimalist(t *testing.T) {
 		})
 
 		Convey("with fam", func() {
-			bld := builder.NewFuzzyAssoMatrixMamdani()
+			bld := builder.Mamdani().FuzzyAssoMatrix()
 			err := bld.
 				Asso(fvA, fvB, fvC).
 				Matrix(
@@ -154,7 +154,7 @@ func TestExample(t *testing.T) {
 		//        | ++ |  + |  0 |  - | -- | -- |
 		Convey("when using a fuzzy associative matrix", func() {
 			// Builder
-			bld := builder.NewFuzzyAssoMatrixMamdani()
+			bld := builder.Mamdani().FuzzyAssoMatrix()
 
 			// Fuzzy associative matrix
 			errFAM := bld.Asso(fvDiff, fvDt, fvForce).
@@ -188,7 +188,7 @@ func TestExample(t *testing.T) {
 
 		Convey("when using a builder", func() {
 			// Builder
-			bld := builder.NewFuzzyLogicMamdani()
+			bld := builder.Mamdani().FuzzyLogic()
 
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("--")).Then(fvForce.Get("++"))
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("-")).Then(fvForce.Get("++"))
