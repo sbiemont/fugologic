@@ -58,7 +58,7 @@ func TestFuzzyAssoMatrix(t *testing.T) {
 		})
 		fvAct, _ := fuzzy.NewIDVal("Act", crispAct, fsAct)
 
-		bld := builder.NewFuzzyAssoMatrixMamdani()
+		bld := builder.Mamdani().FuzzyAssoMatrix()
 		bld.Asso(fvHP, fvFP, fvAct).Matrix(
 			[]id.ID{"Very low HP", "Low HP", "Medium HP", "High HP", "Very high HP"},
 			map[id.ID][]id.ID{
