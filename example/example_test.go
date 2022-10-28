@@ -1,12 +1,8 @@
 package example
 
 import (
-	"fmt"
-	"os"
-	"strings"
 	"testing"
 
-	"encoding/csv"
 	"fugologic/builder"
 	"fugologic/crisp"
 	"fugologic/fuzzy"
@@ -156,7 +152,7 @@ func TestExample(t *testing.T) {
 			// Builder
 			bld := builder.Mamdani().FuzzyAssoMatrix()
 
-			// Fuzzy associative matrix
+			// Rules
 			errFAM := bld.Asso(fvDiff, fvDt, fvForce).
 				Matrix(
 					[]id.ID{"--", "-", "0", "+", "++"},
@@ -190,6 +186,7 @@ func TestExample(t *testing.T) {
 			// Builder
 			bld := builder.Mamdani().FuzzyLogic()
 
+			// Rules
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("--")).Then(fvForce.Get("++"))
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("-")).Then(fvForce.Get("++"))
 			bld.If(fvDiff.Get("--")).And(fvDt.Get("0")).Then(fvForce.Get("++"))
@@ -242,7 +239,7 @@ func TestExample(t *testing.T) {
 				engine, errEngine := bld.Engine()
 				So(errEngine, ShouldBeNil)
 
-				var result [][3]float64
+				var result [][]float64
 				for _, diff := range fvDiff.U().Values() {
 					for _, dt := range fvDt.U().Values() {
 						data, errEval := engine.Evaluate(fuzzy.DataInput{
@@ -252,44 +249,12 @@ func TestExample(t *testing.T) {
 						So(errEval, ShouldBeNil)
 
 						force := data[fvForce]
-						result = append(result, [3]float64{diff, dt, force})
+						result = append(result, []float64{diff, dt, force})
 					}
 				}
 
-				So(export(result), ShouldBeNil)
+				So(writeCSV("./example_test.csv", []string{"diff", "dt", "force"}, result), ShouldBeNil)
 			})
 		})
 	})
-}
-
-func export(values [][3]float64) error {
-	f, errCreate := os.Create("./data.csv")
-	if errCreate != nil {
-		return errCreate
-	}
-
-	fltToStr := func(flt float64) string {
-		return strings.Replace(fmt.Sprintf("%.3f", flt), ".", ",", 1)
-	}
-
-	writer := csv.NewWriter(f)
-	var data = [][]string{
-		{"diff", "dt", "force"},
-	}
-
-	// Convert data into strings
-	for _, row := range values {
-		data = append(data, []string{
-			fltToStr(row[0]),
-			fltToStr(row[1]),
-			fltToStr(row[2]),
-		})
-	}
-
-	errWrite := writer.WriteAll(data)
-	if errWrite != nil {
-		return errWrite
-	}
-
-	return nil
 }
