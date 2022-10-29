@@ -9,6 +9,16 @@ Define fuzzy values, create the rules and evaluate them.
 * Describe complex rules manually or using a builder
 * Describe simple rules using specific methods (like the [fuzzy associative matrix](https://en.wikipedia.org/wiki/Fuzzy_associative_matrix))
 
+For example, implement the following rules
+
+HP/FP => Act | Very low HP | Low HP   | Medium HP | High HP      | Very high HP
+-------------|-------------|----------|-----------|--------------|-------------
+**Very weak FP** | Retreat!    | Retreat! | Defend    | Defend       | Defend
+**Weak FP**    | Retreat!    | Defend   | Defend    | Attack       | Attack
+**Medium FP**  | Retreat!    | Defend   | Attack    | Attack       | Full attack!
+**High FP**    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
+**Very high FP** | Defend      | Attack   | Attack    | Full attack! | Full attack!
+
 ```go
 // Create a crisp set, fuzzy sets and a fuzzy value
 // Input HP [0 ; 100]
@@ -23,19 +33,11 @@ fsHP, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 fvHP, _ := fuzzy.NewIDVal("HP", crispHP, fsHP)
 
 // Create other fuzzy values the same way
-// fvFP [0 ; 100]: "Very weak FP", "Weak FP", "Medium FP", "High FP", "Very high FP"
-// fvAct [-10 ; 10]: "Retreat!", "Defend", "Attack", "Full attack!"
+// * fvFP  [0 ; 100]:  "Very weak FP", "Weak FP", "Medium FP", "High FP", "Very high FP"
+// * fvAct [-10 ; 10]: "Retreat!", "Defend", "Attack", "Full attack!"
 
 // Express all rules using the "fuzzy associative matrix"
 // if <HP> and <FP> then <Act>
-//
-// HP/FP => Act | Very low HP | Low HP   | Medium HP | High HP      | Very high HP
-// -------------|-------------|----------|-----------|--------------|-------------
-// Very weak FP | Retreat!    | Retreat! | Defend    | Defend       | Defend
-// Weak FP      | Retreat!    | Defend   | Defend    | Attack       | Attack
-// Medium FP    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
-// High FP      | Retreat!    | Defend   | Attack    | Attack       | Full attack!
-// Very high FP | Defend      | Attack   | Attack    | Full attack! | Full attack!
 bld := builder.Mamdani().FuzzyAssoMatrix()
 _ = bld.
   Asso(fvHP, fvFP, fvAct).
@@ -63,7 +65,7 @@ return result[fvAct]
 
 ## Getting started
 
-For more example, see [/fugologic/example/example_test.go](https://github.com/sbiemont/fugologic/blob/master/example/example_test.go)
+For more examples, see [/fugologic/example/](https://github.com/sbiemont/fugologic/blob/master/example/)
 
 ## Define the system
 
@@ -186,10 +188,10 @@ Or create a custom configuration, and then create a builder
 
 ```go
 cfg := builder.Config{
-  op:     fuzzy.OperatorZadeh,
-  impl:   fuzzy.ImplicationMin,
-  agg:    fuzzy.AggregationUnion,
-  defuzz: fuzzy.DefuzzificationCentroid,
+  Optr:   fuzzy.OperatorZadeh,
+  Impl:   fuzzy.ImplicationMin,
+  Agg:    fuzzy.AggregationUnion,
+  Defuzz: fuzzy.DefuzzificationCentroid,
 }
 bld := cfg.FuzzyLogic()
 ```
@@ -346,23 +348,24 @@ This method allows compact description of all rules using a
 * the last operand if the result of value of the row #i and the column #j ;
   an empty identifier means no rule
 
+Eg.: express all rules using the following tabular form
+
+* if `a1` and `b1` then `c1`
+* if `a1` and `b2` then `c2`
+* ...
+
+| a/b => c| a1 | a2 | a3 |
+|---------|----|----|----|
+| **b1**  | c1 | c2 | c3 |
+| **b2**  | c2 | c3 | c4 |
+| **b3**  | c3 | c4 | c5 |
+| **b4**  | c4 | c5 | c6 |
+| **b5**  | c5 | c6 | c7 |
+
 ```go
-// Rules
 // Express all rules using a "fuzzy associative matrix"
-//
-// if <a> and <b> then <c>
-//
-//          |  <a>         |
-//          |--------------|
-//          | a1 | a2 | a3 |
-// ---------|----|----|----|
-// <b> | b1 | c1 | c2 | c3 |
-//     | b2 | c2 | c3 | c4 |
-//     | b3 | c3 | c4 | c5 |
-//     | b4 | c4 | c5 | c6 |
-//     | b5 | c5 | c6 | c7 |
 bld := builder.Mamdani().FuzzyAssoMatrix()
-err = bld.
+err := bld.
   Asso(fvA, fvB, fvC).
   Matrix(
     []id.ID{"a1", "a2", "a3"},
