@@ -7,12 +7,18 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
-func TestNewID(t *testing.T) {
+func TestID(t *testing.T) {
 	Convey("new id", t, func() {
 		identifier := NewID()
 		So(identifier, ShouldHaveLength, 36)
 
 		_, err := uuid.Parse(string(identifier))
 		So(err, ShouldBeNil)
+	})
+
+	Convey("empty", t, func() {
+		identifier := NewID()
+		So(identifier.Empty(), ShouldBeFalse)
+		So(ID("").Empty(), ShouldBeTrue)
 	})
 }
