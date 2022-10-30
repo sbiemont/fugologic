@@ -6,6 +6,27 @@ import (
 	. "github.com/smartystreets/goconvey/convey"
 )
 
+func TestNode(t *testing.T) {
+	Convey("new node", t, func() {
+		Convey("when simple new", func() {
+			So(NewNode(42), ShouldResemble, &Node{data: 42})
+		})
+
+		Convey("when complex new", func() {
+			type hello struct {
+				value float64
+			}
+			So(NewNode(hello{value: 42}), ShouldResemble, &Node{data: hello{value: 42}})
+			So(NewNode(&hello{value: 42}), ShouldResemble, &Node{data: &hello{value: 42}})
+		})
+	})
+
+	Convey("get data", t, func() {
+		So(Node{data: 42}.Data(), ShouldEqual, 42)
+		So(Node{data: nil}.Data(), ShouldBeNil)
+	})
+}
+
 func TestEdges(t *testing.T) {
 	a := NewNode("a")
 	b := NewNode("b")

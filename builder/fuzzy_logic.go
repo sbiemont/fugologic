@@ -86,6 +86,11 @@ func (exp flExpression) NAnd(premise fuzzy.Premise) flExpression {
 	return exp.connect(premise, exp.fl.cnt.NAnd)
 }
 
+// XOr connects the current expression and a premise with the XOR connector of the builder
+func (exp flExpression) XOr(premise fuzzy.Premise) flExpression {
+	return exp.connect(premise, exp.fl.cnt.XOr)
+}
+
 // Then describes the consequence of an implication AND stores the rule into the builder
 // At least one consequence is expected
 func (exp flExpression) Then(consequence ...fuzzy.IDSet) {
