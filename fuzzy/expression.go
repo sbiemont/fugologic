@@ -14,6 +14,7 @@ type Premise interface {
 // Connector links a list of premises
 type Connector func(a, b float64) float64
 
+// Operator defines the connectors for a predefined family
 // https://commons.wikimedia.org/wiki/Fuzzy_operator
 type Operator struct {
 	And  Connector

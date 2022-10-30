@@ -66,9 +66,9 @@ func (rule Rule) evaluate(input DataInput) ([]IDSet, error) {
 	return result, nil
 }
 
-// Inputs gather and flatten all IDSet from rules' expressions
-func (rule Rule) Inputs() []IDSet {
-	return flattenIDSets(nil, []Premise{rule.inputs})
+// IO gather and flatten all IDSet from rules' expressions
+func (rule Rule) IO() ([]IDSet, []IDSet) {
+	return flattenIDSets(nil, []Premise{rule.inputs}), rule.outputs
 }
 
 type rules []Rule
@@ -77,8 +77,9 @@ type rules []Rule
 func (r rules) io() ([]IDSet, []IDSet) {
 	var inputs, outputs []IDSet
 	for _, rule := range r {
-		inputs = append(inputs, rule.Inputs()...)
-		outputs = append(outputs, rule.outputs...)
+		in, out := rule.IO()
+		inputs = append(inputs, in...)
+		outputs = append(outputs, out...)
 	}
 	return inputs, outputs
 }
