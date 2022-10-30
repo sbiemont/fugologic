@@ -49,7 +49,7 @@ func TestIf(t *testing.T) {
 				fvE: 5,
 			})
 			So(err, ShouldBeNil)
-			So(res, ShouldEqual, 4)
+			So(res, ShouldEqual, 4) // max(min(1,2,3), min(4,5))
 		})
 
 		Convey("when connectors hyberbolic", func() {
@@ -81,6 +81,61 @@ func TestIf(t *testing.T) {
 			expected := abc + de - abc*de
 			So(err, ShouldBeNil)
 			So(res, ShouldEqual, expected)
+		})
+
+		Convey("when not-and", func() {
+			bld := NewFuzzyLogic(
+				fuzzy.OperatorZadeh,
+				nil,
+				nil,
+				nil,
+			)
+
+			// A not-and B
+			rule := bld.If(fsA1).NAnd(fsB1)
+			res, err := rule.Evaluate(fuzzy.DataInput{
+				fvA: 10,
+				fvB: 20,
+			})
+			So(err, ShouldBeNil)
+			So(res, ShouldEqual, -9) // 1-min(10,20)
+		})
+
+		Convey("when not-or", func() {
+			bld := NewFuzzyLogic(
+				fuzzy.OperatorZadeh,
+				nil,
+				nil,
+				nil,
+			)
+
+			// A not-and B
+			rule := bld.If(fsA1).NOr(fsB1)
+			res, err := rule.Evaluate(fuzzy.DataInput{
+				fvA: 10,
+				fvB: 20,
+			})
+			So(err, ShouldBeNil)
+			So(res, ShouldEqual, -19) // 1-max(10,20)
+		})
+
+		Convey("when x-or", func() {
+			bld := NewFuzzyLogic(
+				fuzzy.OperatorZadeh,
+				nil,
+				nil,
+				nil,
+			)
+
+			// A x-or B
+			rule := bld.If(fsA1).XOr(fsB1)
+			res, err := rule.Evaluate(fuzzy.DataInput{
+				fvA: 10,
+				fvB: 20,
+			})
+			So(err, ShouldBeNil)
+			So(res, ShouldEqual, 10) // 10+20-2*min(10,20)
+
 		})
 	})
 }
