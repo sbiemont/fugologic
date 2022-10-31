@@ -26,7 +26,7 @@ crispHP, _ := crisp.NewSetN(0, 100, 1000)
 fsHP, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
   "Very low HP":  fuzzy.StepDown{A: 0, B: 20},
   "Low HP":       fuzzy.Trapezoid{A: 0, B: 20, C: 40, D: 60},
-  "Medium HP":    fuzzy.Triangular{A: 50, B: 50, C: 60},
+  "Medium HP":    fuzzy.Triangular{A: 40, B: 50, C: 60},
   "High HP":      fuzzy.Trapezoid{A: 40, B: 60, C: 80, D: 100},
   "Very high HP": fuzzy.StepUp{A: 80, B: 100},
 })

@@ -1,6 +1,7 @@
 package builder
 
 import (
+	"fmt"
 	"fugologic/crisp"
 	"fugologic/fuzzy"
 	"fugologic/id"
@@ -35,13 +36,23 @@ func newTestVals(val id.ID, sets ...id.ID) *fuzzy.IDVal {
 	return fv
 }
 
-// Compact id from id-sets into string "id1.id2.id3"
-func compactIDs(actual []fuzzy.IDSet) string {
-	ids := make([]string, len(actual))
-	for i, act := range actual {
-		ids[i] = string(act.ID())
+func ids(sets []fuzzy.IDSet) []string {
+	ids := make([]string, len(sets))
+	for i, set := range sets {
+		ids[i] = string(set.ID())
 	}
-	return strings.Join(ids, ".")
+	return ids
+}
+
+// Compact id from id-sets into string "id1.id2.id3"
+func compactIDs(rules []fuzzy.Rule) []string {
+	result := make([]string, len(rules))
+	for i, rule := range rules {
+		inputs, outputs := rule.IO()
+		result[i] = fmt.Sprintf("%s=>%s", strings.Join(ids(inputs), "."), strings.Join(ids(outputs), "."))
+	}
+	sort.Strings(result)
+	return result
 }
 
 func TestFuzzyAssoMatrix(t *testing.T) {
@@ -66,22 +77,13 @@ func TestFuzzyAssoMatrix(t *testing.T) {
 				So(bld.rules, ShouldHaveLength, 6)
 
 				// Sort result because of rules random order
-				ids := []string{
-					compactIDs(bld.rules[0].Inputs()),
-					compactIDs(bld.rules[1].Inputs()),
-					compactIDs(bld.rules[2].Inputs()),
-					compactIDs(bld.rules[3].Inputs()),
-					compactIDs(bld.rules[4].Inputs()),
-					compactIDs(bld.rules[5].Inputs()),
-				}
-				sort.Strings(ids)
-				So(ids, ShouldResemble, []string{
-					"a1.b1",
-					"a1.b2",
-					"a1.b3",
-					"a2.b1",
-					"a2.b2",
-					"a2.b3",
+				So(compactIDs(bld.rules), ShouldResemble, []string{
+					"a1.b1=>c1",
+					"a1.b2=>c3",
+					"a1.b3=>c3",
+					"a2.b1=>c2",
+					"a2.b2=>c4",
+					"a2.b3=>c2",
 				})
 			})
 
@@ -100,18 +102,11 @@ func TestFuzzyAssoMatrix(t *testing.T) {
 				So(bld.rules, ShouldHaveLength, 4)
 
 				// Sort result because of rules random order
-				ids := []string{
-					compactIDs(bld.rules[0].Inputs()),
-					compactIDs(bld.rules[1].Inputs()),
-					compactIDs(bld.rules[2].Inputs()),
-					compactIDs(bld.rules[3].Inputs()),
-				}
-				sort.Strings(ids)
-				So(ids, ShouldResemble, []string{
-					"a1.b1",
-					"a1.b2",
-					"a2.b1",
-					"a2.b3",
+				So(compactIDs(bld.rules), ShouldResemble, []string{
+					"a1.b1=>c1",
+					"a1.b2=>c3",
+					"a2.b1=>c2",
+					"a2.b3=>c2",
 				})
 			})
 		})

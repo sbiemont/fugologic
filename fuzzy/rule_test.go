@@ -124,7 +124,9 @@ func TestRule(t *testing.T) {
 		Convey("when one input", func() {
 			// A => B
 			rule := NewRule(fsA1, ImplicationProd, []IDSet{fsB1})
-			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID()})
+			inputs, outputs := rule.IO()
+			So(ids(inputs), ShouldResemble, []id.ID{fsA1.ID()})
+			So(ids(outputs), ShouldResemble, []id.ID{fsB1.ID()})
 		})
 
 		Convey("when several inputs", func() {
@@ -132,7 +134,9 @@ func TestRule(t *testing.T) {
 			expAB := NewExpression([]Premise{fsA1, fsB1}, OperatorZadeh.And)
 			expABC := NewExpression([]Premise{expAB, fsC1}, OperatorZadeh.And)
 			rule := NewRule(expABC, ImplicationProd, []IDSet{fsD1})
-			So(ids(rule.Inputs()), ShouldResemble, []id.ID{fsA1.ID(), fsB1.ID(), fsC1.ID()})
+			inputs, outputs := rule.IO()
+			So(ids(inputs), ShouldResemble, []id.ID{fsA1.ID(), fsB1.ID(), fsC1.ID()})
+			So(ids(outputs), ShouldResemble, []id.ID{fsD1.ID()})
 		})
 	})
 }
