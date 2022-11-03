@@ -71,9 +71,9 @@ func TestCar(t *testing.T) {
 		}
 
 		// Fuzzy values
-		fvErr := newSymIDVal("err", 200, [4]float64{0, 0.01, 0.2, 1}, 10)
-		fvDErr := newSymIDVal("derr", 200, [4]float64{0, 0.2, 0.5, 0.9}, 50)
-		fvFrc := newSymIDVal("force", 200, [4]float64{0, 0.1, 0.3, 0.75}, 2000)
+		fvErr := newSymIDVal("err", 100, [4]float64{0, 0.05, 0.2, 1}, 10)
+		fvDErr := newSymIDVal("derr", 100, [4]float64{0, 0.05, 0.4, 1}, 10)
+		fvFrc := newSymIDVal("force", 100, [4]float64{0, 0.15, 0.6, 1}, 2000)
 
 		// Rules
 		mx := builder.Mamdani().FuzzyAssoMatrix()
@@ -110,15 +110,16 @@ func TestCar(t *testing.T) {
 		// Desired speed (in km/h) at iteration #i
 		wantedSpeed := map[int]float64{
 			0:   5,
-			100: 10,
+			100: 9,
 			200: 7.5,
 			300: 2,
-			400: 10,
-			500: 12.5,
-			525: 15,
-			550: 12.5,
-			575: 15,
+			400: 6,
+			500: 7.5,
+			525: 10,
+			550: 7.5,
+			575: 10,
 		}
+
 		car1 := car{
 			wantedSpeed: wantedSpeed[0] * TO_MS,
 			useBreaks:   false,
@@ -141,15 +142,15 @@ func TestCar(t *testing.T) {
 			evaluate(&car1)
 			evaluate(&car2)
 			fmt.Printf(
-				"[%4d] set-point: %3.2f, c1: %3.2f km/h, c2: %3.2f km/h\n",
-				i, car1.wantedSpeed*TO_KMH, car1.speed*TO_KMH, car2.speed*TO_KMH,
+				"[%4d] set-point: %3.2f, c1: %3.2f km/h, c2: %3.2f km/h, derr1: %f, derr2: %f\n",
+				i, car1.wantedSpeed*TO_KMH, car1.speed*TO_KMH, car2.speed*TO_KMH, car1.derr, car2.derr,
 			)
 
 			// Save values
-			values = append(values, []float64{car1.wantedSpeed * TO_KMH, car1.speed * TO_KMH, car2.speed * TO_KMH})
+			values = append(values, []float64{car1.wantedSpeed * TO_KMH, car1.speed * TO_KMH, car2.speed * TO_KMH, car1.derr, car2.derr})
 		}
 
 		// Export
-		So(writeCSV("./example_car_test.csv", []string{"wanted", "speed car 1", "speed car 2"}, values), ShouldBeNil)
+		So(writeCSV("./example_car_test.csv", []string{"wanted", "speed car 1", "speed car 2", "derr 1", "derr 2"}, values), ShouldBeNil)
 	})
 }

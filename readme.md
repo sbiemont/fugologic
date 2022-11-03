@@ -13,11 +13,11 @@ For example, implement the following rules
 
 HP/FP => Act | Very low HP | Low HP   | Medium HP | High HP      | Very high HP
 -------------|-------------|----------|-----------|--------------|-------------
-**Very weak FP** | Retreat!    | Retreat! | Defend    | Defend       | Defend
-**Weak FP**    | Retreat!    | Defend   | Defend    | Attack       | Attack
-**Medium FP**  | Retreat!    | Defend   | Attack    | Attack       | Full attack!
-**High FP**    | Retreat!    | Defend   | Attack    | Attack       | Full attack!
-**Very high FP** | Defend      | Attack   | Attack    | Full attack! | Full attack!
+**Very weak FP** | Retreat! | Retreat! | Defend   | Defend       | Defend
+**Weak FP**      | Retreat! | Defend   | Defend   | Attack       | Attack
+**Medium FP**    | Retreat! | Defend   | Attack   | Attack       | Full attack!
+**High FP**      | Retreat! | Defend   | Attack   | Attack       | Full attack!
+**Very high FP** | Defend   | Attack   | Attack   | Full attack! | Full attack!
 
 ```go
 // Create a crisp set, fuzzy sets and a fuzzy value
