@@ -85,4 +85,48 @@ func TestSet(t *testing.T) {
 			})
 		})
 	})
+
+	Convey("new set by changing n", t, func() {
+		Convey("when ok", func() {
+			set1, err1 := NewSetN(0, 1, 5)
+			So(err1, ShouldBeNil)
+			So(set1.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
+
+			set2, err2 := set1.N(3)
+			So(err2, ShouldBeNil)
+			So(set2.Values(), ShouldResemble, []float64{0.0, 0.5, 1.0})
+		})
+
+		Convey("when ok and change n<=1", func() {
+			set1, err1 := NewSetN(0, 1, 5)
+			So(err1, ShouldBeNil)
+			So(set1.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
+
+			set2, err2 := set1.N(1)
+			So(err2, ShouldBeError, "crisp set: n shall be >= 2")
+			So(set2, ShouldResemble, Set{})
+		})
+	})
+
+	Convey("new set by changing dx", t, func() {
+		Convey("when ok", func() {
+			set1, err1 := NewSet(0, 1, 0.25)
+			So(err1, ShouldBeNil)
+			So(set1.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
+
+			set2, err2 := set1.Dx(0.5)
+			So(err2, ShouldBeNil)
+			So(set2.Values(), ShouldResemble, []float64{0.0, 0.5, 1.0})
+		})
+
+		Convey("when ok and change n<=1", func() {
+			set1, err1 := NewSet(0, 1, 0.25)
+			So(err1, ShouldBeNil)
+			So(set1.Values(), ShouldResemble, []float64{0.0, 0.25, 0.5, 0.75, 1.0})
+
+			set2, err2 := set1.Dx(0)
+			So(err2, ShouldBeError, "crisp set: dx shall be > 0")
+			So(set2, ShouldResemble, Set{})
+		})
+	})
 }

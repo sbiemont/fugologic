@@ -66,3 +66,13 @@ func (set Set) Values() []float64 {
 	}
 	return result
 }
+
+// N creates a new set with a new number of values
+func (set Set) N(n int) (Set, error) {
+	return NewSetN(set.xmin, set.xmax, n)
+}
+
+// Dx creates a new set by changing the dx value
+func (set Set) Dx(dx float64) (Set, error) {
+	return NewSet(set.xmin, set.xmax, dx)
+}
