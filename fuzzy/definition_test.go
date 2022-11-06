@@ -158,10 +158,10 @@ func TestIDSets(t *testing.T) {
 			So(errB, ShouldBeNil)
 
 			// Check
-			So(IDSets{}.extractIDVal(), ShouldBeEmpty)
-			So(IDSets{a.Get("a1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{a: {}})
-			So(IDSets{b.Get("b1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{b: {}})
-			So(IDSets{a.Get("a1"), a.Get("a2"), b.Get("b1")}.extractIDVal(), ShouldResemble, map[*IDVal]struct{}{
+			So(IDSets{}.IDVals(), ShouldBeEmpty)
+			So(IDSets{a.Get("a1")}.IDVals(), ShouldResemble, map[*IDVal]struct{}{a: {}})
+			So(IDSets{b.Get("b1")}.IDVals(), ShouldResemble, map[*IDVal]struct{}{b: {}})
+			So(IDSets{a.Get("a1"), a.Get("a2"), b.Get("b1")}.IDVals(), ShouldResemble, map[*IDVal]struct{}{
 				a: {},
 				b: {},
 			})

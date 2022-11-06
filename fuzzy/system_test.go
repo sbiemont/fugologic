@@ -86,11 +86,19 @@ func TestSystem(t *testing.T) {
 
 					var system System = []Engine{eng1, eng2Bis, eng3}
 					So(system.checkDuplicatedOutputs(), ShouldBeError, "output `g` detected twice")
+
+					sys, errSys := NewSystem([]Engine{eng1, eng2Bis, eng3})
+					So(errSys, ShouldBeError, "output `g` detected twice")
+					So(sys, ShouldBeEmpty)
 				})
 
 				Convey("when ok", func() {
 					var system System = []Engine{eng1, eng2, eng3}
 					So(system.checkDuplicatedOutputs(), ShouldBeNil)
+
+					sys, errSys := NewSystem([]Engine{eng1, eng2, eng3})
+					So(errSys, ShouldBeNil)
+					So(sys, ShouldNotBeEmpty)
 				})
 			})
 

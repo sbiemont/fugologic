@@ -63,9 +63,9 @@ func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 	return dfz.defuzz(flattenIDSets), nil
 }
 
-// FlattenIO gather and flatten all IDSet from rules' expressions
+// IO gather and flatten all IDSet from rules' expressions
 // Return inputs and outputs IDSet
-func (eng Engine) io() ([]IDSet, []IDSet) {
+func (eng Engine) IO() ([]IDSet, []IDSet) {
 	return rules(eng.rules).io()
 }
 
@@ -73,7 +73,7 @@ func (eng Engine) io() ([]IDSet, []IDSet) {
 // Get all unique IDVal, check them and their whole IDSet
 func checkIDs(idSets []IDSet) error {
 	// Extract all unique IDVal
-	idVals := IDSets(idSets).extractIDVal()
+	idVals := IDSets(idSets).IDVals()
 
 	// Extract all ids of IDVals and compare them
 	uniqueIDs := make(map[id.ID]struct{})

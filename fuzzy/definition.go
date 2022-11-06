@@ -39,8 +39,8 @@ func (is IDSet) Evaluate(input DataInput) (float64, error) {
 // IDSets is an helper for managing a list of IDSet
 type IDSets []IDSet
 
-// Extract unique IDVal from the list of IDSet
-func (iss IDSets) extractIDVal() map[*IDVal]struct{} {
+// IDVals extract unique IDVal from the list of IDSet
+func (iss IDSets) IDVals() map[*IDVal]struct{} {
 	result := make(map[*IDVal]struct{})
 	for _, idSet := range iss {
 		result[idSet.parent] = struct{}{}
