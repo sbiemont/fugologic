@@ -72,10 +72,10 @@ func (sys System) reorder() (System, error) {
 	}
 	savedIO := make(map[id.ID]inouts)
 	for _, eng := range sys {
-		in, out := eng.io()
+		in, out := eng.IO()
 		savedIO[eng.uuid] = inouts{
-			inputs:  IDSets(in).extractIDVal(),
-			outputs: IDSets(out).extractIDVal(),
+			inputs:  IDSets(in).IDVals(),
+			outputs: IDSets(out).IDVals(),
 		}
 	}
 
@@ -118,7 +118,7 @@ func (sys System) reorder() (System, error) {
 func (sys System) outputs() []IDSet {
 	var result []IDSet
 	for _, eng := range sys {
-		_, outputs := eng.io()
+		_, outputs := eng.IO()
 		result = append(result, outputs...)
 	}
 	return result

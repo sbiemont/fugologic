@@ -148,7 +148,7 @@ func TestEngineCheck(t *testing.T) {
 	})
 }
 
-func TestEvaluate(t *testing.T) {
+func TestEngineEvaluate(t *testing.T) {
 	Convey("rules with same output", t, func() {
 		// Pressure
 		setPressure, errPressure := crisp.NewSet(0, 5, 0.1)
@@ -385,6 +385,32 @@ func TestEvaluate(t *testing.T) {
 		So(errEval, ShouldBeNil)
 		So(result, ShouldResemble, DataOutput{
 			fvC: -2.0201342281879104,
+		})
+	})
+}
+
+func TestEngineIO(t *testing.T) {
+	Convey("io", t, func() {
+		Convey("when empty", func() {
+			inputs, outputs := Engine{}.IO()
+			So(inputs, ShouldBeEmpty)
+			So(outputs, ShouldBeEmpty)
+		})
+
+		Convey("when ok", func() {
+			eng, inA, inB, outC, err := customEngine()
+			So(err, ShouldBeNil)
+
+			inputs, outputs := eng.IO()
+			So(inputs, ShouldHaveLength, 50)
+			So(outputs, ShouldHaveLength, 25)
+			So(IDSets(inputs).IDVals(), ShouldResemble, map[*IDVal]struct{}{
+				inA: {},
+				inB: {},
+			})
+			So(IDSets(outputs).IDVals(), ShouldResemble, map[*IDVal]struct{}{
+				outC: {},
+			})
 		})
 	})
 }
