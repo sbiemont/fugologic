@@ -2,8 +2,9 @@ package builder
 
 import (
 	"fmt"
-	"fugologic/fuzzy"
-	"fugologic/id"
+
+	"github.com/sbiemont/fugologic/fuzzy"
+	"github.com/sbiemont/fugologic/id"
 )
 
 // FuzzyAssoMatrix (or FAM) stands for "Fuzzy Associative Matrix"

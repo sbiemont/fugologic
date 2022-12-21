@@ -2,7 +2,8 @@ package fuzzy
 
 import (
 	"fmt"
-	"fugologic/id"
+
+	"github.com/sbiemont/fugologic/id"
 
 	"golang.org/x/sync/errgroup"
 )

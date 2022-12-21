@@ -1,7 +1,7 @@
 package builder
 
 import (
-	"fugologic/fuzzy"
+	"github.com/sbiemont/fugologic/fuzzy"
 )
 
 // FuzzyLogic groups custom connector and implication

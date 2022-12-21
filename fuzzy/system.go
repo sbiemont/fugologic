@@ -3,8 +3,8 @@ package fuzzy
 import (
 	"fmt"
 
-	"fugologic/graph"
-	"fugologic/id"
+	"github.com/sbiemont/fugologic/graph"
+	"github.com/sbiemont/fugologic/id"
 )
 
 // System groups engines and evaluate them all

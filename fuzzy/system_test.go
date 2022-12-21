@@ -4,7 +4,7 @@ import (
 	"sort"
 	"testing"
 
-	"fugologic/id"
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

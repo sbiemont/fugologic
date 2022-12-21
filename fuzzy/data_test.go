@@ -1,9 +1,10 @@
 package fuzzy
 
 import (
-	"fugologic/crisp"
-	"fugologic/id"
 	"testing"
+
+	"github.com/sbiemont/fugologic/crisp"
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
