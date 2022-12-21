@@ -2,12 +2,13 @@ package builder
 
 import (
 	"fmt"
-	"fugologic/crisp"
-	"fugologic/fuzzy"
-	"fugologic/id"
 	"sort"
 	"strings"
 	"testing"
+
+	"github.com/sbiemont/fugologic/crisp"
+	"github.com/sbiemont/fugologic/fuzzy"
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

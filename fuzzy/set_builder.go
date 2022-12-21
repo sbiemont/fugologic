@@ -2,8 +2,9 @@ package fuzzy
 
 import (
 	"fmt"
-	"fugologic/id"
 	"math"
+
+	"github.com/sbiemont/fugologic/id"
 )
 
 var (

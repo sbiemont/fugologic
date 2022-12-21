@@ -2,11 +2,12 @@ package example
 
 import (
 	"fmt"
-	"fugologic/builder"
-	"fugologic/crisp"
-	"fugologic/fuzzy"
-	"fugologic/id"
 	"testing"
+
+	"github.com/sbiemont/fugologic/builder"
+	"github.com/sbiemont/fugologic/crisp"
+	"github.com/sbiemont/fugologic/fuzzy"
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

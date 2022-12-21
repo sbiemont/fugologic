@@ -2,8 +2,9 @@ package fuzzy
 
 import (
 	"errors"
-	"fugologic/crisp"
-	"fugologic/id"
+
+	"github.com/sbiemont/fugologic/crisp"
+	"github.com/sbiemont/fugologic/id"
 )
 
 // IDSet represents a static Set with an ID

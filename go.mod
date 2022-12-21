@@ -1,4 +1,4 @@
-module fugologic
+module github.com/sbiemont/fugologic
 
 go 1.19
 
@@ -11,5 +11,5 @@ require (
 	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1 // indirect
 	github.com/jtolds/gls v4.20.0+incompatible // indirect
 	github.com/smartystreets/assertions v1.2.0 // indirect
-	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
+	golang.org/x/sync v0.1.0
 )

@@ -3,10 +3,10 @@ package example
 import (
 	"testing"
 
-	"fugologic/builder"
-	"fugologic/crisp"
-	"fugologic/fuzzy"
-	"fugologic/id"
+	"github.com/sbiemont/fugologic/builder"
+	"github.com/sbiemont/fugologic/crisp"
+	"github.com/sbiemont/fugologic/fuzzy"
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

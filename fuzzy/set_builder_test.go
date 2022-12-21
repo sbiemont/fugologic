@@ -1,8 +1,9 @@
 package fuzzy
 
 import (
-	"fugologic/id"
 	"testing"
+
+	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )

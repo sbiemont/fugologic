@@ -1,6 +1,6 @@
 package builder
 
-import "fugologic/fuzzy"
+import "github.com/sbiemont/fugologic/fuzzy"
 
 // Mamdani predefined configuration
 func Mamdani() Config {

@@ -1,8 +1,9 @@
 package fuzzy
 
 import (
-	"fugologic/crisp"
 	"math"
+
+	"github.com/sbiemont/fugologic/crisp"
 )
 
 // Defuzzification method definition
