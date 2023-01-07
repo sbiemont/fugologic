@@ -18,15 +18,6 @@ func TestIDSet(t *testing.T) {
 			So(item.ID(), ShouldEqual, "set #1")
 		})
 
-		Convey("when not()", func() {
-			item := IDSet{
-				set: func(float64) float64 { return 0.9 },
-			}
-
-			So(item.set(0), ShouldEqual, 0.9)
-			So(item.Not().set(0), ShouldAlmostEqual, 0.1, 1e-9)
-		})
-
 		Convey("when evaluate()", func() {
 			parent := &IDVal{
 				uuid: "val #1",

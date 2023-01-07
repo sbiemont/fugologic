@@ -89,7 +89,7 @@ func TestIf(t *testing.T) {
 			)
 
 			// A not-and B
-			exp := bld.If(fsA1).NAnd(fsB1)
+			exp := bld.If(fsA1).And(fsB1).Not()
 			res, err := exp.Evaluate(fuzzy.DataInput{
 				fvA: 10,
 				fvB: 20,
@@ -106,8 +106,8 @@ func TestIf(t *testing.T) {
 				nil,
 			)
 
-			// A not-and B
-			exp := bld.If(fsA1).NOr(fsB1)
+			// A not-or B
+			exp := bld.If(fsA1).Or(fsB1).Not()
 			res, err := exp.Evaluate(fuzzy.DataInput{
 				fvA: 10,
 				fvB: 20,

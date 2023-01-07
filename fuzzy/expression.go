@@ -20,27 +20,21 @@ type Operator interface {
 	And(a, b float64) float64
 	Or(a, b float64) float64
 	XOr(a, b float64) float64
-	NAnd(a, b float64) float64
-	NOr(a, b float64) float64
 }
 
 // OperatorZadeh defines a list of Zadeh connectors
 type OperatorZadeh struct{}
 
-func (op OperatorZadeh) And(a, b float64) float64  { return math.Min(a, b) }
-func (op OperatorZadeh) Or(a, b float64) float64   { return math.Max(a, b) }
-func (op OperatorZadeh) XOr(a, b float64) float64  { return a + b - 2*math.Min(a, b) }
-func (op OperatorZadeh) NAnd(a, b float64) float64 { return 1 - math.Min(a, b) }
-func (op OperatorZadeh) NOr(a, b float64) float64  { return 1 - math.Max(a, b) }
+func (OperatorZadeh) And(a, b float64) float64 { return math.Min(a, b) }
+func (OperatorZadeh) Or(a, b float64) float64  { return math.Max(a, b) }
+func (OperatorZadeh) XOr(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
 
 // OperatorHyperbolic defines a list of hyperbolic connectors
 type OperatorHyperbolic struct{}
 
-func (op OperatorHyperbolic) And(a, b float64) float64  { return a * b }
-func (op OperatorHyperbolic) Or(a, b float64) float64   { return a + b - a*b }
-func (op OperatorHyperbolic) XOr(a, b float64) float64  { return a + b - 2*a*b }
-func (op OperatorHyperbolic) NAnd(a, b float64) float64 { return 1 - a*b }
-func (op OperatorHyperbolic) NOr(a, b float64) float64  { return 1 - a - b + a*b }
+func (OperatorHyperbolic) And(a, b float64) float64 { return a * b }
+func (OperatorHyperbolic) Or(a, b float64) float64  { return a + b - a*b }
+func (OperatorHyperbolic) XOr(a, b float64) float64 { return a + b - 2*a*b }
 
 // Expression connects a list of premises. Eg.: A or B or C
 // Eg.:
@@ -48,8 +42,9 @@ func (op OperatorHyperbolic) NOr(a, b float64) float64  { return 1 - a - b + a*b
 //   - Expression2 = D or E
 //   - Expression3 = Expression1 and Expression2 = (A or B or C) and (D or E)
 type Expression struct {
-	premises []Premise
-	connect  Connector
+	premises   []Premise // List all premises to be connected
+	connect    Connector // Connector to be applied on the premises
+	complement bool      // Complement (false by default)
 }
 
 // NewExpression initialise a fully evaluable expression
@@ -71,6 +66,15 @@ func (exp Expression) Connect(premise Premise, connect Connector) Expression {
 
 	// Connect both premises in a new expression
 	return NewExpression([]Premise{exp, premise}, connect)
+}
+
+// Not complements the current expression
+func (exp Expression) Not() Expression {
+	return Expression{
+		premises:   exp.premises,
+		connect:    exp.connect,
+		complement: true,
+	}
 }
 
 // Evaluate the expression content
@@ -96,6 +100,11 @@ func (exp Expression) Evaluate(input DataInput) (float64, error) {
 		for _, value := range values[1:] {
 			y = exp.connect(y, value)
 		}
+	}
+
+	// Apply complement
+	if exp.complement {
+		y = 1 - y
 	}
 
 	return y, nil

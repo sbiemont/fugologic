@@ -6,7 +6,7 @@ import (
 
 // FuzzyLogic groups custom connector and implication
 type FuzzyLogic struct {
-	cnt    fuzzy.Operator
+	optr   fuzzy.Operator
 	impl   fuzzy.Implication
 	agg    fuzzy.Aggregation
 	defuzz fuzzy.Defuzzification
@@ -16,13 +16,13 @@ type FuzzyLogic struct {
 
 // NewFuzzyLogic creates a builder with a default configuration
 func NewFuzzyLogic(
-	cnt fuzzy.Operator,
+	optr fuzzy.Operator,
 	impl fuzzy.Implication,
 	agg fuzzy.Aggregation,
 	defuzz fuzzy.Defuzzification,
 ) FuzzyLogic {
 	return FuzzyLogic{
-		cnt:    cnt,
+		optr:   optr,
 		impl:   impl,
 		agg:    agg,
 		defuzz: defuzz,
@@ -68,27 +68,25 @@ func (exp flExpression) connect(premise fuzzy.Premise, cnt fuzzy.Connector) flEx
 
 // And connects the current expression and a premise with the AND connector of the builder
 func (exp flExpression) And(premise fuzzy.Premise) flExpression {
-	return exp.connect(premise, exp.fl.cnt.And)
+	return exp.connect(premise, exp.fl.optr.And)
 }
 
 // Or connects the current expression and a premise with the OR connector of the builder
 func (exp flExpression) Or(premise fuzzy.Premise) flExpression {
-	return exp.connect(premise, exp.fl.cnt.Or)
-}
-
-// NOr connects the current expression and a premise with the NOT-OR connector of the builder
-func (exp flExpression) NOr(premise fuzzy.Premise) flExpression {
-	return exp.connect(premise, exp.fl.cnt.NOr)
-}
-
-// NAnd connects the current expression and a premise with the NOT-AND connector of the builder
-func (exp flExpression) NAnd(premise fuzzy.Premise) flExpression {
-	return exp.connect(premise, exp.fl.cnt.NAnd)
+	return exp.connect(premise, exp.fl.optr.Or)
 }
 
 // XOr connects the current expression and a premise with the XOR connector of the builder
 func (exp flExpression) XOr(premise fuzzy.Premise) flExpression {
-	return exp.connect(premise, exp.fl.cnt.XOr)
+	return exp.connect(premise, exp.fl.optr.XOr)
+}
+
+// Not inverts the current expression
+func (exp flExpression) Not() flExpression {
+	return flExpression{
+		fl:    exp.fl,
+		fzExp: exp.fzExp.Not(),
+	}
 }
 
 // Then describes the consequence of an implication AND stores the rule into the builder

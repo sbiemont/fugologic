@@ -19,15 +19,6 @@ func (is IDSet) ID() id.ID {
 	return is.uuid
 }
 
-// Not returns the complement of the current IDSet
-func (is IDSet) Not() IDSet {
-	return IDSet{
-		set:    is.set.Complement(),
-		uuid:   is.uuid,
-		parent: is.parent,
-	}
-}
-
 // Evaluate fetches the right input and returns the Set value
 func (is IDSet) Evaluate(input DataInput) (float64, error) {
 	x, err := input.value(is)
