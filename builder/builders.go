@@ -5,7 +5,7 @@ import "github.com/sbiemont/fugologic/fuzzy"
 // Mamdani predefined configuration
 func Mamdani() Config {
 	return Config{
-		Optr:   fuzzy.OperatorZadeh,
+		Optr:   fuzzy.OperatorZadeh{},
 		Impl:   fuzzy.ImplicationMin,
 		Agg:    fuzzy.AggregationUnion,
 		Defuzz: fuzzy.DefuzzificationCentroid,

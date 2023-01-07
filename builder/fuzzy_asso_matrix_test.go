@@ -15,7 +15,7 @@ import (
 
 func newTestFAM() FuzzyAssoMatrix {
 	return NewFuzzyAssoMatrix(
-		fuzzy.OperatorZadeh.And,
+		fuzzy.OperatorZadeh{}.And,
 		fuzzy.ImplicationMin,
 		fuzzy.AggregationUnion,
 		fuzzy.DefuzzificationCentroid,
