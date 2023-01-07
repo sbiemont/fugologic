@@ -188,7 +188,7 @@ Or create a custom configuration, and then create a builder
 
 ```go
 cfg := builder.Config{
-  Optr:   fuzzy.OperatorZadeh,
+  Optr:   fuzzy.OperatorZadeh{},
   Impl:   fuzzy.ImplicationMin,
   Agg:    fuzzy.AggregationUnion,
   Defuzz: fuzzy.DefuzzificationCentroid,
@@ -200,7 +200,7 @@ Or use your configuration to created the wanted builder
 
 ```go
 bld := builder.NewFuzzyLogic(
-  fuzzy.OperatorZadeh,
+  fuzzy.OperatorZadeh{},
   fuzzy.ImplicationMin,
   fuzzy.AggregationUnion,
   fuzzy.DefuzzificationCentroid,
@@ -212,7 +212,7 @@ Details of the configuration parameters
 type | example | description
 ---- | ------- | -----------
 **`fuzzy.Operator`**    || connect several rule premises together to create an expression
-|| `OperatorZadeh`      | Zadeh `And`, `Or`, `XOr`,  connectors
+|| `OperatorZadeh`      | Zadeh `And`, `Or`, `XOr` connectors
 || `OperatorHyperbolic` | Hyperbolic `And`, `Or`, `XOr` connectors
 **`fuzzy.Implication`** || propagates the expression results into consequences
 || `ImplicationMin`     | Mamdani implication minimum
