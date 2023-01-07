@@ -211,25 +211,21 @@ Details of the configuration parameters
 
 type | example | description
 ---- | ------- | -----------
-**`fuzzy.Operator`** || connect several rule premises together to create an expression
-|| `OperatorZadeh` | Zadeh `And`, `Or`, `XOr`, `NAnd`, `NOr` connectors
-|| `OperatorHyperbolic` | Hyperbolic `And`, `Or`, `XOr`, `NAnd`, `NOr` connectors
-|| ...
+**`fuzzy.Operator`**    || connect several rule premises together to create an expression
+|| `OperatorZadeh`      | Zadeh `And`, `Or`, `XOr`,  connectors
+|| `OperatorHyperbolic` | Hyperbolic `And`, `Or`, `XOr` connectors
 **`fuzzy.Implication`** || propagates the expression results into consequences
-|| `ImplicationMin` | Mamdani implication minimum
-|| `ImplicationProd` | Sugeno implication product
-|| ...
-**`fuzzy.Aggregation`** || merges all coherent implications
-|| `AggregationUnion` | union
+|| `ImplicationMin`     | Mamdani implication minimum
+|| `ImplicationProd`    | Sugeno implication product
+**`fuzzy.Aggregation`**      || merges all coherent implications
+|| `AggregationUnion`        | union
 || `AggregationIntersection` | intersection
-|| ...
-**`fuzzy.Defuzzification`** || extracts one value from the aggregated results
-|| `DefuzzificationCentroid` | centroïd: center of gravity
-|| `DefuzzificationBisector` | bisector: position under the curve where the areas on both sides are equal
+**`fuzzy.Defuzzification`**        || extracts one value from the aggregated results
+|| `DefuzzificationCentroid`       | centroïd: center of gravity
+|| `DefuzzificationBisector`       | bisector: position under the curve where the areas on both sides are equal
 || `DefuzzificationSmallestOfMaxs` | if several `y` maximums are found, get the one with the smallest `x`
-|| `DefuzzificationMiddleOfMaxs` | if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
-|| `DefuzzificationLargestOfMaxs` | if several `y` maximums are found, get the one with the largest `x`
-|| ...
+|| `DefuzzificationMiddleOfMaxs`   | if several `y` maximums are found, get the point at the middle of the smallest and the largest `x`
+|| `DefuzzificationLargestOfMaxs`  | if several `y` maximums are found, get the one with the largest `x`
 
 #### Describe an input expression
 
@@ -242,47 +238,42 @@ Simplest case : the expression has only one premise and no connector (directly u
 exp := fsA1
 ```
 
-*Note* : a fuzzy set can be complemented using the `Not` function
+An expression is a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
 
-```go
-// not(A1)
-exp := fsA1.Not()
-```
-
-An expression can be a flat list of several `fuzzy.IDSet` linked with the same `fuzzy.Connector`.
-
-For example : `A1 and B1 and not(C1)`.
+For example : `A1 and B1 not C1`.
 
 ```go
 // Using a builder
-// A1 and B1 and not(C1)
-exp := bld.If(fsA1).And(fsB1).And(fsC1.Not())
+// A1 and B1 and C1
+exp := bld.If(fsA1).And(fsB1).And(fsC1)
 ```
 
 Or in a more explicit way
 
 ```go
 // Using explicit syntax
-// A1 and B1 and not(C1)
-exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1.Not()}, fuzzy.OperatorZadeh.And)
+// A1 and B1 and C1
+exp := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.OperatorZadeh{}.And)
 ```
 
-At last, an expression can be more complex like `(A1 and B1 and C1) or (D1 and E1)`.
+At last, an expression can be more complex like `(A1 and B1 and C1) not-or (D1 and E1)`.
+
+*Note* : an expression can be complemented using the `Not` function
 
 ```go
 // Using a builder
 expABC := bld.If(fsA1).And(fsB1).And(fsC1) // A1 and B1 and C1
 expDE := bld.If(fsD1).And(fsE1)            // D1 and E1
-exp := expABC.Or(expDE)                    // (A1 and B1 and C1) or (D1 and E1)
+exp := expABC.Or(expDE).Not()              // (A1 and B1 and C1) not-or (D1 and E1)
 ```
 
 Or in a more explicit way
 
 ```go
 // Using explicit syntax
-expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.OperatorZadeh.And) // A1 and B1 and C1
-expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.OperatorZadeh.And)        // D1 and E1
-exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.OperatorZadeh.Or)        // (A1 and B1 and C1) or (D1 and E1)
+expABC := fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1, fsC1}, fuzzy.OperatorZadeh{}.And) // A1 and B1 and C1
+expDE := fuzzy.NewExpression([]fuzzy.Premise{fsD1, fsE1}, fuzzy.OperatorZadeh{}.And)        // D1 and E1
+exp := fuzzy.NewExpression([]fuzzy.Premise{expABC, expDE}, fuzzy.OperatorZadeh{}.Or).Not()  // (A1 and B1 and C1) not-or (D1 and E1)
 ```
 
 #### Describe an implication
@@ -309,9 +300,9 @@ Connectors can be explicitely choosen, unlike for the first method.
 rules := []fuzzy.Rule{
   // A1 and B1 => C1
   fuzzy.NewRule(
-    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh.And), // expression
-    fuzzy.ImplicationMin,                                                      // implication
-    []fuzzy.IDSet{fsC1},                                                       // consequence
+    fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh{}.And), // expression
+    fuzzy.ImplicationMin,                                                        // implication
+    []fuzzy.IDSet{fsC1},                                                         // consequence
   ),
   // Describe other rules the same way, for example:
   //  * A1 and B2 => C2

@@ -81,7 +81,7 @@ func (exp flExpression) XOr(premise fuzzy.Premise) flExpression {
 	return exp.connect(premise, exp.fl.optr.XOr)
 }
 
-// Not inverts the current expression
+// Not complements the current expression
 func (exp flExpression) Not() flExpression {
 	return flExpression{
 		fl:    exp.fl,
