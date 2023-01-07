@@ -18,7 +18,7 @@ type FuzzyAssoMatrix struct {
 
 // famConfig gathers data for processing the rules
 type famConfig struct {
-	and    fuzzy.Connector
+	optr   fuzzy.Operator
 	impl   fuzzy.Implication
 	agg    fuzzy.Aggregation
 	defuzz fuzzy.Defuzzification
@@ -26,14 +26,14 @@ type famConfig struct {
 
 // NewFuzzyAssoMatrix create a new FAM instance
 func NewFuzzyAssoMatrix(
-	and fuzzy.Connector,
+	optr fuzzy.Operator,
 	impl fuzzy.Implication,
 	agg fuzzy.Aggregation,
 	defuzz fuzzy.Defuzzification,
 ) FuzzyAssoMatrix {
 	return FuzzyAssoMatrix{
 		cfg: famConfig{
-			and:    and,
+			optr:   optr,
 			impl:   impl,
 			agg:    agg,
 			defuzz: defuzz,
@@ -133,7 +133,7 @@ func (fv famValues) Matrix(ifSets []id.ID, andThenSets map[id.ID][]id.ID) error 
 			}
 
 			fv.fam.add(fuzzy.NewRule(
-				fuzzy.NewExpression([]fuzzy.Premise{ifSet, andSet}, fv.fam.cfg.and),
+				fuzzy.NewExpression([]fuzzy.Premise{ifSet, andSet}, fv.fam.cfg.optr.And),
 				fv.fam.cfg.impl,
 				[]fuzzy.IDSet{thenSet},
 			))

@@ -16,41 +16,25 @@ type Connector func(a, b float64) float64
 
 // Operator defines the connectors for a predefined family
 // https://commons.wikimedia.org/wiki/Fuzzy_operator
-type Operator struct {
-	And  Connector
-	Or   Connector
-	XOr  Connector
-	NAnd Connector
-	NOr  Connector
+type Operator interface {
+	And(a, b float64) float64
+	Or(a, b float64) float64
+	XOr(a, b float64) float64
 }
 
 // OperatorZadeh defines a list of Zadeh connectors
-var OperatorZadeh = Operator{
-	// Zadeh AND = min
-	And: math.Min,
-	// Zadeh OR = max
-	Or: math.Max,
-	// Zadeh XOR = a+b-2*min(a,b)
-	XOr: func(a, b float64) float64 { return a + b - 2*math.Min(a, b) },
-	// Zadeh NAND = 1-AND = 1-min(a,b)
-	NAnd: func(a, b float64) float64 { return 1 - math.Min(a, b) },
-	// Zadeh NOR = 1-OR = 1-max(a,b)
-	NOr: func(a, b float64) float64 { return 1 - math.Max(a, b) },
-}
+type OperatorZadeh struct{}
+
+func (OperatorZadeh) And(a, b float64) float64 { return math.Min(a, b) }
+func (OperatorZadeh) Or(a, b float64) float64  { return math.Max(a, b) }
+func (OperatorZadeh) XOr(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
 
 // OperatorHyperbolic defines a list of hyperbolic connectors
-var OperatorHyperbolic = Operator{
-	// Hyperbolic AND = a*b
-	And: func(a, b float64) float64 { return a * b },
-	// Hyperbolic OR = a+b-a*b
-	Or: func(a, b float64) float64 { return a + b - a*b },
-	// Hyperbolic XOR = a+b-2*a*b
-	XOr: func(a, b float64) float64 { return a + b - 2*a*b },
-	// Hyperbolic NAND = 1-AND = 1-a*b
-	NAnd: func(a, b float64) float64 { return 1 - a*b },
-	// Hyperbolic NOR = 1-OR = 1-a-b+a*b
-	NOr: func(a, b float64) float64 { return 1 - a - b + a*b },
-}
+type OperatorHyperbolic struct{}
+
+func (OperatorHyperbolic) And(a, b float64) float64 { return a * b }
+func (OperatorHyperbolic) Or(a, b float64) float64  { return a + b - a*b }
+func (OperatorHyperbolic) XOr(a, b float64) float64 { return a + b - 2*a*b }
 
 // Expression connects a list of premises. Eg.: A or B or C
 // Eg.:
@@ -58,8 +42,9 @@ var OperatorHyperbolic = Operator{
 //   - Expression2 = D or E
 //   - Expression3 = Expression1 and Expression2 = (A or B or C) and (D or E)
 type Expression struct {
-	premises []Premise
-	connect  Connector
+	premises   []Premise // List all premises to be connected
+	connect    Connector // Connector to be applied on the premises
+	complement bool      // Complement (false by default)
 }
 
 // NewExpression initialise a fully evaluable expression
@@ -81,6 +66,15 @@ func (exp Expression) Connect(premise Premise, connect Connector) Expression {
 
 	// Connect both premises in a new expression
 	return NewExpression([]Premise{exp, premise}, connect)
+}
+
+// Not complements the current expression
+func (exp Expression) Not() Expression {
+	return Expression{
+		premises:   exp.premises,
+		connect:    exp.connect,
+		complement: true,
+	}
 }
 
 // Evaluate the expression content
@@ -106,6 +100,11 @@ func (exp Expression) Evaluate(input DataInput) (float64, error) {
 		for _, value := range values[1:] {
 			y = exp.connect(y, value)
 		}
+	}
+
+	// Apply complement
+	if exp.complement {
+		y = 1 - y
 	}
 
 	return y, nil

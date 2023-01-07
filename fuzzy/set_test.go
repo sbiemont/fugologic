@@ -13,26 +13,6 @@ func checkSet(fs Set, expected map[float64]float64) {
 	}
 }
 
-func TestSetNot(t *testing.T) {
-	Convey("complement", t, func() {
-		fs1, err := Trapezoid{10, 15, 25, 30}.New()
-		So(err, ShouldBeNil)
-
-		complement := fs1.Complement()
-		checkSet(complement, map[float64]float64{
-			5:    1,
-			10:   1,
-			12.5: 0.5,
-			15:   0,
-			20:   0,
-			25:   0,
-			27.5: 0.5,
-			30:   1,
-			35:   1,
-		})
-	})
-}
-
 func TestSetUnion(t *testing.T) {
 	Convey("union", t, func() {
 		Convey("when trapezoids", func() {

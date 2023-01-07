@@ -71,7 +71,7 @@ func customEngine() (Engine, *IDVal, *IDVal, *IDVal, error) {
 	// Helper: a and b => c
 	newRule := func(a, b, c id.ID) Rule {
 		return NewRule(
-			NewExpression([]Premise{fvDiff.Get(a), fvDt.Get(b)}, OperatorZadeh.And), ImplicationMin, []IDSet{fvCh.Get(c)},
+			NewExpression([]Premise{fvDiff.Get(a), fvDt.Get(b)}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvCh.Get(c)},
 		)
 	}
 	rules := []Rule{
@@ -185,7 +185,7 @@ func TestEngineEvaluate(t *testing.T) {
 		// Rules
 		// p.high & t.hight -> v.wide
 		// p.average & t.hight -> v.average
-		and := OperatorZadeh.And
+		and := OperatorZadeh{}.And
 		exp1 := NewExpression([]Premise{fvPressure.Get("high"), fvTemperature.Get("high")}, and)
 		exp2 := NewExpression([]Premise{fvPressure.Get("average"), fvTemperature.Get("high")}, and)
 		rules := []Rule{
@@ -235,8 +235,8 @@ func TestEngineEvaluate(t *testing.T) {
 		// a1 & b1 -> c1
 		// a2 & b2 -> c2
 		rules := []Rule{
-			NewRule(NewExpression([]Premise{fvA.Get("a1"), fvB.Get("b1")}, OperatorZadeh.And), ImplicationMin, []IDSet{fvC.Get("c1")}),
-			NewRule(NewExpression([]Premise{fvA.Get("a2"), fvB.Get("b2")}, OperatorZadeh.And), ImplicationMin, []IDSet{fvC.Get("c2")}),
+			NewRule(NewExpression([]Premise{fvA.Get("a1"), fvB.Get("b1")}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get("c1")}),
+			NewRule(NewExpression([]Premise{fvA.Get("a2"), fvB.Get("b2")}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get("c2")}),
 		}
 
 		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
@@ -355,7 +355,7 @@ func TestEngineEvaluate(t *testing.T) {
 		// a and b => c
 		newRule := func(a, b, c id.ID) Rule {
 			return NewRule(
-				NewExpression([]Premise{fvA.Get(a), fvB.Get(b)}, OperatorZadeh.And), ImplicationMin, []IDSet{fvC.Get(c)},
+				NewExpression([]Premise{fvA.Get(a), fvB.Get(b)}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get(c)},
 			)
 		}
 		rules := []Rule{

@@ -20,7 +20,7 @@ func TestSystem(t *testing.T) {
 
 	defuzz := defuzzificationNone
 	agg := AggregationUnion
-	and := OperatorZadeh.And
+	and := OperatorZadeh{}.And
 	so := ImplicationMin
 
 	// A and B => C

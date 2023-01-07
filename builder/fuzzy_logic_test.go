@@ -30,7 +30,7 @@ func TestIf(t *testing.T) {
 	Convey("if", t, func() {
 		Convey("when zadeh connectors", func() {
 			bld := NewFuzzyLogic(
-				fuzzy.OperatorZadeh,
+				fuzzy.OperatorZadeh{},
 				nil,
 				nil,
 				nil,
@@ -55,10 +55,7 @@ func TestIf(t *testing.T) {
 		Convey("when connectors hyberbolic", func() {
 			// (A and B and C) or (D and E)
 			bld := NewFuzzyLogic(
-				fuzzy.Operator{
-					And: fuzzy.OperatorHyperbolic.And,
-					Or:  fuzzy.OperatorHyperbolic.Or,
-				},
+				fuzzy.OperatorHyperbolic{},
 				nil,
 				nil,
 				nil,
@@ -85,14 +82,14 @@ func TestIf(t *testing.T) {
 
 		Convey("when not-and", func() {
 			bld := NewFuzzyLogic(
-				fuzzy.OperatorZadeh,
+				fuzzy.OperatorZadeh{},
 				nil,
 				nil,
 				nil,
 			)
 
 			// A not-and B
-			exp := bld.If(fsA1).NAnd(fsB1)
+			exp := bld.If(fsA1).And(fsB1).Not()
 			res, err := exp.Evaluate(fuzzy.DataInput{
 				fvA: 10,
 				fvB: 20,
@@ -103,14 +100,14 @@ func TestIf(t *testing.T) {
 
 		Convey("when not-or", func() {
 			bld := NewFuzzyLogic(
-				fuzzy.OperatorZadeh,
+				fuzzy.OperatorZadeh{},
 				nil,
 				nil,
 				nil,
 			)
 
-			// A not-and B
-			exp := bld.If(fsA1).NOr(fsB1)
+			// A not-or B
+			exp := bld.If(fsA1).Or(fsB1).Not()
 			res, err := exp.Evaluate(fuzzy.DataInput{
 				fvA: 10,
 				fvB: 20,
@@ -121,7 +118,7 @@ func TestIf(t *testing.T) {
 
 		Convey("when x-or", func() {
 			bld := NewFuzzyLogic(
-				fuzzy.OperatorZadeh,
+				fuzzy.OperatorZadeh{},
 				nil,
 				nil,
 				nil,
@@ -142,7 +139,7 @@ func TestIf(t *testing.T) {
 
 func TestAdd(t *testing.T) {
 	Convey("explicit add rule", t, func() {
-		bld := NewFuzzyLogic(fuzzy.Operator{}, nil, nil, nil)
+		bld := NewFuzzyLogic(fuzzy.OperatorZadeh{}, nil, nil, nil)
 		So(bld.rules, ShouldBeEmpty)
 
 		// Add rule #1
@@ -216,10 +213,7 @@ func TestFlExpression(t *testing.T) {
 
 	Convey("evaluate", t, func() {
 		bld := NewFuzzyLogic(
-			fuzzy.Operator{
-				And: fuzzy.OperatorZadeh.And,
-				Or:  fuzzy.OperatorZadeh.Or,
-			},
+			fuzzy.OperatorZadeh{},
 			fuzzy.ImplicationMin,
 			fuzzy.AggregationUnion,
 			fuzzy.DefuzzificationCentroid,
@@ -227,11 +221,11 @@ func TestFlExpression(t *testing.T) {
 
 		expAB := flExpression{
 			fl:    &bld,
-			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh.And),
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsA1, fsB1}, fuzzy.OperatorZadeh{}.And),
 		}
 		expCD := flExpression{
 			fl:    &bld,
-			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.OperatorZadeh.And),
+			fzExp: fuzzy.NewExpression([]fuzzy.Premise{fsC1, fsD1}, fuzzy.OperatorZadeh{}.And),
 		}
 
 		Convey("and", func() {

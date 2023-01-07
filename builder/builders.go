@@ -5,7 +5,7 @@ import "github.com/sbiemont/fugologic/fuzzy"
 // Mamdani predefined configuration
 func Mamdani() Config {
 	return Config{
-		Optr:   fuzzy.OperatorZadeh,
+		Optr:   fuzzy.OperatorZadeh{},
 		Impl:   fuzzy.ImplicationMin,
 		Agg:    fuzzy.AggregationUnion,
 		Defuzz: fuzzy.DefuzzificationCentroid,
@@ -33,7 +33,7 @@ func (cfg Config) FuzzyLogic() FuzzyLogic {
 // FuzzyAssoMatrix returns a fuzzy-associative-matrix builder using the current configuration
 func (cfg Config) FuzzyAssoMatrix() FuzzyAssoMatrix {
 	return NewFuzzyAssoMatrix(
-		cfg.Optr.And,
+		cfg.Optr,
 		cfg.Impl,
 		cfg.Agg,
 		cfg.Defuzz,

@@ -26,13 +26,6 @@ func (fs Set) Intersection(fs2 Set) Set {
 	return fs.aggregate(fs2, math.Min)
 }
 
-// Complement of the current set
-func (fs Set) Complement() Set {
-	return func(x float64) float64 {
-		return 1.0 - fs(x)
-	}
-}
-
 // Min merges a minimum membership method
 func (fs Set) Min(k float64) Set {
 	return func(x float64) float64 {
