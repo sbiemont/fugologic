@@ -73,7 +73,7 @@ func (exp Expression) Not() Expression {
 	return Expression{
 		premises:   exp.premises,
 		connect:    exp.connect,
-		complement: true,
+		complement: !exp.complement,
 	}
 }
 
