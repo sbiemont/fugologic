@@ -52,6 +52,15 @@ func TestExpression(t *testing.T) {
 			})
 			So(err, ShouldBeNil)
 			So(result, ShouldEqual, 1-42*2)
+
+			Convey("when complement not-not", func() {
+				exp := NewExpression([]Premise{fsA1}, nil).Not().Not()
+				result, err := exp.Evaluate(DataInput{
+					fvA: 42,
+				})
+				So(err, ShouldBeNil)
+				So(result, ShouldEqual, 42*2)
+			})
 		})
 
 		Convey("when several premises", func() {
