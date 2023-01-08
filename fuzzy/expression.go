@@ -2,7 +2,6 @@ package fuzzy
 
 import (
 	"errors"
-	"math"
 )
 
 // Premise is an Expression or an IDSet
@@ -13,28 +12,6 @@ type Premise interface {
 
 // Connector links a list of premises
 type Connector func(a, b float64) float64
-
-// Operator defines the connectors for a predefined family
-// https://commons.wikimedia.org/wiki/Fuzzy_operator
-type Operator interface {
-	And(a, b float64) float64
-	Or(a, b float64) float64
-	XOr(a, b float64) float64
-}
-
-// OperatorZadeh defines a list of Zadeh connectors
-type OperatorZadeh struct{}
-
-func (OperatorZadeh) And(a, b float64) float64 { return math.Min(a, b) }
-func (OperatorZadeh) Or(a, b float64) float64  { return math.Max(a, b) }
-func (OperatorZadeh) XOr(a, b float64) float64 { return a + b - 2*math.Min(a, b) }
-
-// OperatorHyperbolic defines a list of hyperbolic connectors
-type OperatorHyperbolic struct{}
-
-func (OperatorHyperbolic) And(a, b float64) float64 { return a * b }
-func (OperatorHyperbolic) Or(a, b float64) float64  { return a + b - a*b }
-func (OperatorHyperbolic) XOr(a, b float64) float64 { return a + b - 2*a*b }
 
 // Expression connects a list of premises. Eg.: A or B or C
 // Eg.:
