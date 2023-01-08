@@ -227,6 +227,32 @@ func TestNewSet(t *testing.T) {
 			So(fs, ShouldBeNil)
 		})
 	})
+
+	Convey("sigmoid", t, func() {
+		Convey("when S shape", func() {
+			sig, err := Sigmoid{2.0, 6.0}.New()
+			So(err, ShouldBeNil)
+			checkSet(sig, map[float64]float64{
+				2:  0.0,
+				4:  0.018,
+				6:  0.5,
+				8:  0.982,
+				10: 1.0,
+			})
+		})
+
+		Convey("when Z shape", func() {
+			sig, err := Sigmoid{-2.0, 6.0}.New()
+			So(err, ShouldBeNil)
+			checkSet(sig, map[float64]float64{
+				2:  1.0,
+				4:  0.982,
+				6:  0.5,
+				8:  0.018,
+				10: 0.0,
+			})
+		})
+	})
 }
 
 func TestCheckSorted(t *testing.T) {

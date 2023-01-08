@@ -106,6 +106,7 @@ method | description | shape
 `Triangular` | Triangular              | ▁/\▁
 `StepUp`     | Step up (S shape)       | ▁/▔
 `StepDown`   | Step down (Z shape)     | ▔\▁
+`Sigmoid`    | Sigmoïdal (S or Z shape)| ▁/▔ or ▔\▁
 
 Initialise a builder and call `New` to get the `fuzzy.Set` and check for errors
 

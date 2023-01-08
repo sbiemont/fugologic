@@ -14,6 +14,7 @@ var (
 	TRI      = "tri"
 	STEPUP   = "step-up"
 	STEPDOWN = "step-down"
+	SIG      = "sig"
 )
 
 // SetBuilder helps create a new set
@@ -217,4 +218,22 @@ func NewIDSets(fsets map[id.ID]SetBuilder) (map[id.ID]Set, error) {
 		sets[uuid] = set
 	}
 	return sets, nil
+}
+
+// Sigmoid builder
+// https://fr.mathworks.com/help/fuzzy/sigmf.html
+// Parameters
+// - A: width of the transition area (positive leads to a S shape ; negative leads to a Z shape)
+// - C: center of the transition area
+//
+// ▁/▔ (with A>0) or ▔\▁ (with A<0)
+type Sigmoid struct {
+	A, C float64
+}
+
+// New sigmoid membership function
+func (set Sigmoid) New() (Set, error) {
+	return func(x float64) float64 {
+		return 1.0 / (1 + math.Exp(-set.A*(x-set.C)))
+	}, nil
 }
