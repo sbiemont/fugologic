@@ -38,6 +38,7 @@ func TestEdges(t *testing.T) {
 		edges := NewDirectedEdges()
 		edges.Add(a, b).Add(a, c) // a -> b, c
 		edges.Add(c, d, e)        // c -> d, e
+		edges.Add(c)              // c -> nil (no edge)
 
 		So(edges, ShouldResemble, DirectedEdges{
 			a: []*Node{b, c},

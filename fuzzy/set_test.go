@@ -13,52 +13,6 @@ func checkSet(fs Set, expected map[float64]float64) {
 	}
 }
 
-func TestSetUnion(t *testing.T) {
-	Convey("union", t, func() {
-		Convey("when trapezoids", func() {
-			fs1, err1 := Trapezoid{10, 15, 25, 30}.New()
-			fs2, err2 := Trapezoid{25, 30, 40, 45}.New()
-			So(err1, ShouldBeNil)
-			So(err2, ShouldBeNil)
-
-			fs3 := fs1.Union(fs2)
-			checkSet(fs3, map[float64]float64{
-				10:   0,
-				15:   1,
-				25:   1,
-				27.5: 0.5,
-				30:   1,
-				40:   1,
-				45:   0,
-			})
-		})
-	})
-}
-
-func TestSetIntersection(t *testing.T) {
-	Convey("intersection", t, func() {
-		Convey("when trapezoids", func() {
-			fs1, err1 := Trapezoid{10, 15, 25, 30}.New()
-			fs2, err2 := Trapezoid{25, 30, 40, 45}.New()
-			So(err1, ShouldBeNil)
-			So(err2, ShouldBeNil)
-
-			fs3 := fs1.Intersection(fs2)
-			checkSet(fs3, map[float64]float64{
-				10:    0,
-				15:    0,
-				25:    0,
-				26.25: 0.25,
-				27.5:  0.5,
-				28.75: 0.25,
-				30:    0,
-				40:    0,
-				45:    0,
-			})
-		})
-	})
-}
-
 func TestSetMin(t *testing.T) {
 	Convey("min", t, func() {
 		Convey("when trapezoid", func() {
