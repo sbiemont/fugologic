@@ -16,16 +16,6 @@ func (fs Set) aggregate(fs2 Set, fct func(float64, float64) float64) Set {
 	}
 }
 
-// Union of 2 sets
-func (fs Set) Union(fs2 Set) Set {
-	return fs.aggregate(fs2, math.Max)
-}
-
-// Intersection of 2 sets
-func (fs Set) Intersection(fs2 Set) Set {
-	return fs.aggregate(fs2, math.Min)
-}
-
 // Min merges a minimum membership method
 func (fs Set) Min(k float64) Set {
 	return func(x float64) float64 {

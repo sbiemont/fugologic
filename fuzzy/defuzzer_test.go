@@ -1,6 +1,7 @@
 package fuzzy
 
 import (
+	"math"
 	"testing"
 
 	"github.com/sbiemont/fugologic/crisp"
@@ -11,6 +12,17 @@ import (
 
 var defuzzificationNone Defuzzification = func(_ Set, _ crisp.Set) float64 {
 	return 0
+}
+
+func fsUnion(fs1 Set, fs ...Set) Set {
+	result := fs1
+	for _, fs2 := range fs {
+		cpy := result
+		result = func(x float64) float64 {
+			return math.Min(cpy(x), fs2(x))
+		}
+	}
+	return result
 }
 
 func TestDefuzzerDefuzz(t *testing.T) {
@@ -86,7 +98,7 @@ func TestDefuzzification(t *testing.T) {
 		})
 
 		Convey("when trapezoids", func() {
-			union := fs1.Union(fs2)
+			union := fsUnion(fs1, fs2)
 			defuzz := DefuzzificationCentroid(union, universe)
 			So(defuzz, ShouldAlmostEqual, 27.5, dx)
 			So(union(defuzz), ShouldAlmostEqual, 0.5, dx)
@@ -94,7 +106,7 @@ func TestDefuzzification(t *testing.T) {
 
 		Convey("when first if truncated", func() {
 			fsModif := fs1.Min(0.5)
-			union := fsModif.Union(fs2)
+			union := fsUnion(fsModif, fs2)
 			defuzz := DefuzzificationCentroid(union, universe)
 			So(defuzz, ShouldAlmostEqual, 29.58, dx)
 			So(union(defuzz), ShouldAlmostEqual, 0.92, dx)
@@ -102,7 +114,7 @@ func TestDefuzzification(t *testing.T) {
 
 		Convey("when second if truncated", func() {
 			fsModif := fs2.Min(0.5)
-			union := fs1.Union(fsModif)
+			union := fsUnion(fs1, fsModif)
 			defuzz := DefuzzificationCentroid(union, universe)
 			So(defuzz, ShouldAlmostEqual, 25.42, dx)
 			So(union(defuzz), ShouldAlmostEqual, 0.92, dx)
@@ -117,7 +129,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 = fs2.Min(0.5)
 
 				universe, _ := crisp.NewSet(0, 8, 0.1)
-				union := fs1.Union(fs2).Union(fs3)
+				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
 				So(defuzz, ShouldAlmostEqual, 4.81, dx)
@@ -132,7 +144,7 @@ func TestDefuzzification(t *testing.T) {
 				fs2 = fs2.Multiply(0.5)
 
 				universe, _ := crisp.NewSet(0, 8, 0.1)
-				union := fs1.Union(fs2).Union(fs3)
+				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
 				So(defuzz, ShouldAlmostEqual, 4.9530, dx)
@@ -159,7 +171,7 @@ func TestDefuzzification(t *testing.T) {
 				fs3 = fs3.Min(0.1)
 
 				universe, _ := crisp.NewSet(0, 20, 0.1)
-				union := fs1.Union(fs2).Union(fs3)
+				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
 				So(defuzz, ShouldAlmostEqual, 6.9403, dx)
@@ -176,7 +188,7 @@ func TestDefuzzification(t *testing.T) {
 				fs3 = fs3.Multiply(0.1)
 
 				universe, _ := crisp.NewSet(0, 20, 0.1)
-				union := fs1.Union(fs2).Union(fs3)
+				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
 				So(defuzz, ShouldAlmostEqual, 6.7719, dx)
@@ -198,7 +210,7 @@ func TestDefuzzification(t *testing.T) {
 			fs3 = fs3.Multiply(0.1)
 
 			universe, _ := crisp.NewSet(0, 20, 0.1)
-			union := fs1.Union(fs2).Union(fs3)
+			union := fsUnion(fs1, fs2, fs3)
 
 			defuzz := DefuzzificationBisector(union, universe)
 			So(defuzz, ShouldAlmostEqual, 6.3, dx)
@@ -214,7 +226,7 @@ func TestDefuzzification(t *testing.T) {
 			fs3 = fs3.Min(0.1)
 
 			universe, _ := crisp.NewSet(0, 20, 0.1)
-			union := fs1.Union(fs2).Union(fs3)
+			union := fsUnion(fs1, fs2, fs3)
 
 			defuzz := DefuzzificationBisector(union, universe)
 			So(defuzz, ShouldAlmostEqual, 6.5, dx)
@@ -258,14 +270,14 @@ func TestDefuzzification(t *testing.T) {
 			universe, errU := crisp.NewSet(0, 5, 0.25)
 			So(errU, ShouldBeNil)
 
-			xsm, xlm := defuzzificationMaximums(fs1.Union(fs2), universe)
+			xsm, xlm := defuzzificationMaximums(fsUnion(fs1, fs2), universe)
 			So(xsm, ShouldEqual, 2)
 			So(xlm, ShouldEqual, 3)
 
 			// Same checks
-			xsm = DefuzzificationSmallestOfMaxs(fs1.Union(fs2), universe)
-			xmm := DefuzzificationMiddleOfMaxs(fs1.Union(fs2), universe)
-			xlm = DefuzzificationLargestOfMaxs(fs1.Union(fs2), universe)
+			xsm = DefuzzificationSmallestOfMaxs(fsUnion(fs1, fs2), universe)
+			xmm := DefuzzificationMiddleOfMaxs(fsUnion(fs1, fs2), universe)
+			xlm = DefuzzificationLargestOfMaxs(fsUnion(fs1, fs2), universe)
 			So(xsm, ShouldEqual, 2)
 			So(xmm, ShouldEqual, 2.5)
 			So(xlm, ShouldEqual, 3)
