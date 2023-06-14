@@ -15,14 +15,13 @@ var defuzzificationNone Defuzzification = func(_ Set, _ crisp.Set) float64 {
 }
 
 func fsUnion(fs1 Set, fs ...Set) Set {
-	result := fs1
-	for _, fs2 := range fs {
-		cpy := result
-		result = func(x float64) float64 {
-			return math.Min(cpy(x), fs2(x))
+	return func(x float64) float64 {
+		result := fs1(x)
+		for _, fsi := range fs {
+			result = math.Max(result, fsi(x))
 		}
+		return result
 	}
-	return result
 }
 
 func TestDefuzzerDefuzz(t *testing.T) {
@@ -76,7 +75,7 @@ func TestDefuzzerDefuzz(t *testing.T) {
 
 func TestDefuzzification(t *testing.T) {
 	Convey("centroid", t, func() {
-		dx := 0.01
+		dx := 0.001
 		universe, _ := crisp.NewSet(0, 50, 0.1)
 
 		fs1, _ := Trapezoid{10, 15, 25, 30}.New()
@@ -108,16 +107,16 @@ func TestDefuzzification(t *testing.T) {
 			fsModif := fs1.Min(0.5)
 			union := fsUnion(fsModif, fs2)
 			defuzz := DefuzzificationCentroid(union, universe)
-			So(defuzz, ShouldAlmostEqual, 29.58, dx)
-			So(union(defuzz), ShouldAlmostEqual, 0.92, dx)
+			So(defuzz, ShouldAlmostEqual, 29.583, dx)
+			So(union(defuzz), ShouldAlmostEqual, 0.916, dx)
 		})
 
 		Convey("when second if truncated", func() {
 			fsModif := fs2.Min(0.5)
 			union := fsUnion(fs1, fsModif)
 			defuzz := DefuzzificationCentroid(union, universe)
-			So(defuzz, ShouldAlmostEqual, 25.42, dx)
-			So(union(defuzz), ShouldAlmostEqual, 0.92, dx)
+			So(defuzz, ShouldAlmostEqual, 25.416, dx)
+			So(union(defuzz), ShouldAlmostEqual, 0.916, dx)
 		})
 
 		Convey("when custom #1", func() {
@@ -132,7 +131,7 @@ func TestDefuzzification(t *testing.T) {
 				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
-				So(defuzz, ShouldAlmostEqual, 4.81, dx)
+				So(defuzz, ShouldAlmostEqual, 4.8038, dx)
 				So(union(defuzz), ShouldEqual, 0.5)
 			})
 
@@ -174,7 +173,7 @@ func TestDefuzzification(t *testing.T) {
 				union := fsUnion(fs1, fs2, fs3)
 
 				defuzz := DefuzzificationCentroid(union, universe)
-				So(defuzz, ShouldAlmostEqual, 6.9403, dx)
+				So(defuzz, ShouldAlmostEqual, 6.9493, dx)
 				So(union(defuzz), ShouldEqual, 0.9)
 			})
 
@@ -194,6 +193,34 @@ func TestDefuzzification(t *testing.T) {
 				So(defuzz, ShouldAlmostEqual, 6.7719, dx)
 				So(union(defuzz), ShouldEqual, 0.9)
 			})
+		})
+
+		Convey("when custom #3", func() {
+			fs1, _ := StepDown{0, 50}.New()
+			fs2, _ := Triangular{10, 50, 90}.New()
+			fs1 = fs1.Min(0.48)
+			fs2 = fs2.Min(0.29)
+
+			universe, _ := crisp.NewSet(0, 100, 0.1)
+			union := fsUnion(fs1, fs2)
+
+			defuzz := DefuzzificationCentroid(union, universe)
+			So(defuzz, ShouldAlmostEqual, 36.9881, dx)
+			So(union(defuzz), ShouldEqual, 0.29)
+		})
+
+		Convey("when custom #4", func() {
+			fs1, _ := Trapezoid{0, 4, 6, 10}.New()
+			fs2, _ := Triangular{14, 17, 20}.New()
+
+			fs1 = fs1.Min(0.9)
+			fs2 = fs2.Min(0.8)
+			union := fsUnion(fs1, fs2)
+			universe, _ := crisp.NewSet(0, 20, 0.1)
+
+			defuzz := DefuzzificationCentroid(union, universe)
+			So(defuzz, ShouldAlmostEqual, 9, dx)
+			So(union(defuzz), ShouldAlmostEqual, 0.25, dx)
 		})
 	})
 

@@ -51,7 +51,11 @@ func (fam FuzzyAssoMatrix) Engine() (fuzzy.Engine, error) {
 	return fuzzy.NewEngine(fam.rules, fam.cfg.agg, fam.cfg.defuzz)
 }
 
-type famValues struct {
+type FamAsso interface {
+	Matrix(ifSets []id.ID, andThenSets map[id.ID][]id.ID) error
+}
+
+type famAsso struct {
 	fam     *FuzzyAssoMatrix
 	ifVal   *fuzzy.IDVal
 	andVal  *fuzzy.IDVal
@@ -60,8 +64,8 @@ type famValues struct {
 
 // Asso defines the rules pattern of fuzzy values
 // if <a> and <b> then <c>
-func (fam *FuzzyAssoMatrix) Asso(ifVal, andVal, thenVal *fuzzy.IDVal) famValues {
-	return famValues{
+func (fam *FuzzyAssoMatrix) Asso(ifVal, andVal, thenVal *fuzzy.IDVal) FamAsso {
+	return famAsso{
 		fam:     fam,
 		ifVal:   ifVal,
 		andVal:  andVal,
@@ -75,7 +79,7 @@ func (fam *FuzzyAssoMatrix) Asso(ifVal, andVal, thenVal *fuzzy.IDVal) famValues 
 // - For i: values of a
 //   - For j: values of b
 //     Rule = if (a[i]) and (b[j]) then (c[i][j])
-func (fv famValues) Matrix(ifSets []id.ID, andThenSets map[id.ID][]id.ID) error {
+func (fv famAsso) Matrix(ifSets []id.ID, andThenSets map[id.ID][]id.ID) error {
 	// Fetch for id-set within an id-val
 	// Use a map to fetch data only once
 	type mapID map[id.ID]fuzzy.IDSet
