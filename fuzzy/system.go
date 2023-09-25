@@ -44,13 +44,10 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 // reorder builds a graph of engines, check the presence of cycles and flatten the created graph
 func (sys System) reorder() (System, error) {
 	// To nodes
-	nodes := make([]*graph.Node, len(sys))
-	for i, engine := range sys {
-		nodes[i] = graph.NewNode(engine)
-	}
+	nodes := graph.NewNodes(sys)
 
 	// Init graph
-	edges := graph.NewDirectedEdges()
+	edges := graph.NewDirectedEdges[Engine]()
 	addEdge := func(i, j int) {
 		edges.Add(nodes[i], nodes[j])
 	}
@@ -107,11 +104,7 @@ func (sys System) reorder() (System, error) {
 	}
 
 	// To engines
-	engines := make([]Engine, len(sys))
-	for i, node := range dg.Flatten() {
-		engines[i] = node.Data().(Engine)
-	}
-	return engines, nil
+	return dg.Flatten().Data(), nil
 }
 
 // outputs flatten all outputs of the system
