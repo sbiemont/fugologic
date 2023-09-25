@@ -5,15 +5,15 @@ import (
 )
 
 // DirectedEdges represents a root node linked to a list of other nodes
-type DirectedEdges map[*Node][]*Node
+type DirectedEdges[T any] map[*Node[T]]Nodes[T]
 
 // NewDirectedEdges initialises a new instance of DirectedEdges
-func NewDirectedEdges() DirectedEdges {
-	return make(map[*Node][]*Node)
+func NewDirectedEdges[T any]() DirectedEdges[T] {
+	return make(map[*Node[T]]Nodes[T])
 }
 
 // Add a directed edge from a root node to a list of adjacent nodes
-func (edges DirectedEdges) Add(from *Node, to ...*Node) DirectedEdges {
+func (edges DirectedEdges[T]) Add(from *Node[T], to ...*Node[T]) DirectedEdges[T] {
 	if len(to) == 0 {
 		return edges
 	}
@@ -25,20 +25,20 @@ func (edges DirectedEdges) Add(from *Node, to ...*Node) DirectedEdges {
 }
 
 // DirectedGraph represents a graph with directed edges
-type DirectedGraph struct {
-	edges DirectedEdges // edges can be empty
-	nodes []*Node       // Keep an ordered list to get a deterministic result when flatten
+type DirectedGraph[T any] struct {
+	edges DirectedEdges[T] // edges can be empty
+	nodes Nodes[T]         // Keep an ordered list to get a deterministic result when flatten
 }
 
 // NewDirectedGraph initialises a new DirectedGraph instance
-func NewDirectedGraph(nodes []*Node, edges DirectedEdges) (DirectedGraph, error) {
-	dg := DirectedGraph{
+func NewDirectedGraph[T any](nodes Nodes[T], edges DirectedEdges[T]) (DirectedGraph[T], error) {
+	dg := DirectedGraph[T]{
 		nodes: nodes,
 		edges: edges,
 	}
 
 	if dg.isCyclic() {
-		return DirectedGraph{}, errors.New("cycle(s) detected in directed graph")
+		return DirectedGraph[T]{}, errors.New("cycle(s) detected in directed graph")
 	}
 
 	return dg, nil
@@ -54,7 +54,7 @@ const (
 )
 
 // dfs (for depth-first search) finds if a back edge exists in the sub-graph rooted with node `from`
-func (dg DirectedGraph) dfs(from *Node, colors map[*Node]color) bool {
+func (dg DirectedGraph[T]) dfs(from *Node[T], colors map[*Node[T]]color) bool {
 	// `from` is being processed
 	colors[from] = grey
 
@@ -72,9 +72,9 @@ func (dg DirectedGraph) dfs(from *Node, colors map[*Node]color) bool {
 }
 
 // isCyclic returns true if there is a cycle in graph
-func (dg DirectedGraph) isCyclic() bool {
+func (dg DirectedGraph[T]) isCyclic() bool {
 	// Initialize colors
-	colors := make(map[*Node]color, len(dg.nodes))
+	colors := make(map[*Node[T]]color, len(dg.nodes))
 	for _, node := range dg.nodes {
 		colors[node] = white
 	}
@@ -90,7 +90,7 @@ func (dg DirectedGraph) isCyclic() bool {
 }
 
 // flatten recursively builds the sub-graph rooted with `from`
-func (dg DirectedGraph) flatten(from *Node, visited map[*Node]bool, flat *[]*Node) {
+func (dg DirectedGraph[T]) flatten(from *Node[T], visited map[*Node[T]]bool, flat *Nodes[T]) {
 	// Mark the current node as visited
 	visited[from] = true
 
@@ -106,15 +106,15 @@ func (dg DirectedGraph) flatten(from *Node, visited map[*Node]bool, flat *[]*Nod
 }
 
 // Flatten the graph using a topological sort
-func (dg DirectedGraph) Flatten() []*Node {
+func (dg DirectedGraph[T]) Flatten() Nodes[T] {
 	// Init (all nodes are unvisited)
-	visited := make(map[*Node]bool, len(dg.nodes))
+	visited := make(map[*Node[T]]bool, len(dg.nodes))
 	for _, node := range dg.nodes {
 		visited[node] = false
 	}
 
 	// Call the recursive to flatten all sub-graphs
-	var flat []*Node
+	var flat Nodes[T]
 	for _, node := range dg.nodes {
 		if !visited[node] {
 			dg.flatten(node, visited, &flat)
@@ -123,7 +123,7 @@ func (dg DirectedGraph) Flatten() []*Node {
 
 	// Reverse
 	n := len(flat)
-	result := make([]*Node, n)
+	result := make(Nodes[T], n)
 	for i := 0; i < n; i++ {
 		result[i] = flat[n-i-1]
 	}
@@ -131,18 +131,39 @@ func (dg DirectedGraph) Flatten() []*Node {
 }
 
 // Node is a link to a real object
-type Node struct {
-	data interface{}
+type Node[T any] struct {
+	data T
 }
 
 // NewNode builds a Node instance with data
-func NewNode(data interface{}) *Node {
-	return &Node{
+func NewNode[T any](data T) *Node[T] {
+	return &Node[T]{
 		data: data,
 	}
 }
 
 // Data returns the data contained in the node
-func (node Node) Data() interface{} {
+func (node Node[T]) Data() T {
 	return node.data
+}
+
+// Nodes is a flat list
+type Nodes[T any] []*Node[T]
+
+// NewNodes creates a list of nodes using the ordered input list
+func NewNodes[T any](input []T) Nodes[T] {
+	result := make(Nodes[T], len(input))
+	for i, in := range input {
+		result[i] = NewNode(in)
+	}
+	return result
+}
+
+// Data extract an ordered list of nodes' data
+func (nodes Nodes[T]) Data() []T {
+	result := make([]T, len(nodes))
+	for i, node := range nodes {
+		result[i] = node.Data()
+	}
+	return result
 }

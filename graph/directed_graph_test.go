@@ -9,21 +9,21 @@ import (
 func TestNode(t *testing.T) {
 	Convey("new node", t, func() {
 		Convey("when simple new", func() {
-			So(NewNode(42), ShouldResemble, &Node{data: 42})
+			So(NewNode(42), ShouldResemble, &Node[int]{data: 42})
 		})
 
 		Convey("when complex new", func() {
 			type hello struct {
 				value float64
 			}
-			So(NewNode(hello{value: 42}), ShouldResemble, &Node{data: hello{value: 42}})
-			So(NewNode(&hello{value: 42}), ShouldResemble, &Node{data: &hello{value: 42}})
+			So(NewNode(hello{value: 42}), ShouldResemble, &Node[hello]{data: hello{value: 42}})
+			So(NewNode(&hello{value: 42}), ShouldResemble, &Node[*hello]{data: &hello{value: 42}})
 		})
 	})
 
 	Convey("get data", t, func() {
-		So(Node{data: 42}.Data(), ShouldEqual, 42)
-		So(Node{data: nil}.Data(), ShouldBeNil)
+		So(Node[int]{data: 42}.Data(), ShouldEqual, 42)
+		So(Node[*int]{data: nil}.Data(), ShouldBeNil)
 	})
 }
 
@@ -35,14 +35,14 @@ func TestEdges(t *testing.T) {
 	e := NewNode("e")
 
 	Convey("add", t, func() {
-		edges := NewDirectedEdges()
+		edges := NewDirectedEdges[string]()
 		edges.Add(a, b).Add(a, c) // a -> b, c
 		edges.Add(c, d, e)        // c -> d, e
 		edges.Add(c)              // c -> nil (no edge)
 
-		So(edges, ShouldResemble, DirectedEdges{
-			a: []*Node{b, c},
-			c: []*Node{d, e},
+		So(edges, ShouldResemble, DirectedEdges[string]{
+			a: []*Node[string]{b, c},
+			c: []*Node[string]{d, e},
 		})
 	})
 }
@@ -58,8 +58,8 @@ func TestGraph(t *testing.T) {
 		g := NewNode("g")
 		h := NewNode("h")
 
-		Convey("when no edge (all independant nodes", func() {
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d, e, f, g, h}, nil)
+		Convey("when no edge (all independent nodes", func() {
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d, e, f, g, h}, nil)
 
 			Convey("cycle", func() {
 				So(err, ShouldBeNil)
@@ -67,14 +67,14 @@ func TestGraph(t *testing.T) {
 
 			Convey("topo", func() {
 				topo := dg.Flatten()
-				So(topo, ShouldResemble, []*Node{h, g, f, e, d, c, b, a})
+				So(topo, ShouldResemble, []*Node[string]{h, g, f, e, d, c, b, a})
 			})
 		})
 
 		Convey("when mini graph", func() {
-			dg, err := NewDirectedGraph([]*Node{a, b, c}, DirectedEdges{
-				a: []*Node{c},
-				b: []*Node{c},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c}, DirectedEdges[string]{
+				a: []*Node[string]{c},
+				b: []*Node[string]{c},
 			})
 
 			Convey("cycle", func() {
@@ -83,7 +83,7 @@ func TestGraph(t *testing.T) {
 
 			Convey("topo", func() {
 				topo := dg.Flatten()
-				So(topo, ShouldResemble, []*Node{b, a, c})
+				So(topo, ShouldResemble, []*Node[string]{b, a, c})
 			})
 		})
 
@@ -91,11 +91,11 @@ func TestGraph(t *testing.T) {
 			// a, b -> c
 			// d -> e, f
 			// f -> e, g, h
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d, e, f, g, h}, DirectedEdges{
-				a: []*Node{c},
-				b: []*Node{c},
-				d: []*Node{e, f},
-				f: []*Node{e, g, h},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d, e, f, g, h}, DirectedEdges[string]{
+				a: []*Node[string]{c},
+				b: []*Node[string]{c},
+				d: []*Node[string]{e, f},
+				f: []*Node[string]{e, g, h},
 			})
 
 			Convey("cycle", func() {
@@ -104,7 +104,7 @@ func TestGraph(t *testing.T) {
 
 			Convey("topo", func() {
 				topo := dg.Flatten()
-				So(topo, ShouldResemble, []*Node{d, f, h, g, e, b, a, c})
+				So(topo, ShouldResemble, []*Node[string]{d, f, h, g, e, b, a, c})
 			})
 		})
 
@@ -114,12 +114,12 @@ func TestGraph(t *testing.T) {
 		// d -> e, f
 		// e -> g
 		Convey("with order #1", func() {
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d, e, f, g, h}, DirectedEdges{
-				a: []*Node{c},
-				b: []*Node{c, e},
-				c: []*Node{g},
-				d: []*Node{e, f},
-				e: []*Node{g},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d, e, f, g, h}, DirectedEdges[string]{
+				a: []*Node[string]{c},
+				b: []*Node[string]{c, e},
+				c: []*Node[string]{g},
+				d: []*Node[string]{e, f},
+				e: []*Node[string]{g},
 			})
 
 			Convey("cycle", func() {
@@ -128,17 +128,17 @@ func TestGraph(t *testing.T) {
 
 			Convey("topo", func() {
 				topo := dg.Flatten()
-				So(topo, ShouldResemble, []*Node{h, d, f, b, e, a, c, g})
+				So(topo, ShouldResemble, []*Node[string]{h, d, f, b, e, a, c, g})
 			})
 		})
 
 		Convey("with order #2", func() {
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d, e, f, g, h}, DirectedEdges{
-				e: []*Node{g},
-				d: []*Node{e, f},
-				c: []*Node{g},
-				b: []*Node{c, e},
-				a: []*Node{c},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d, e, f, g, h}, DirectedEdges[string]{
+				e: []*Node[string]{g},
+				d: []*Node[string]{e, f},
+				c: []*Node[string]{g},
+				b: []*Node[string]{c, e},
+				a: []*Node[string]{c},
 			})
 
 			Convey("cycle", func() {
@@ -147,7 +147,7 @@ func TestGraph(t *testing.T) {
 
 			Convey("topo", func() {
 				topo := dg.Flatten()
-				So(topo, ShouldResemble, []*Node{h, d, f, b, e, a, c, g})
+				So(topo, ShouldResemble, []*Node[string]{h, d, f, b, e, a, c, g})
 			})
 		})
 	})
@@ -163,32 +163,47 @@ func TestGraph(t *testing.T) {
 			// a -> c
 			// c -> a
 			// d -> d
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d}, DirectedEdges{
-				a: []*Node{b, c},
-				b: []*Node{c},
-				c: []*Node{d, a},
-				d: []*Node{d},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d}, DirectedEdges[string]{
+				a: []*Node[string]{b, c},
+				b: []*Node[string]{c},
+				c: []*Node[string]{d, a},
+				d: []*Node[string]{d},
 			})
 
 			Convey("cycle", func() {
 				So(err, ShouldBeError, "cycle(s) detected in directed graph")
-				So(dg, ShouldResemble, DirectedGraph{})
+				So(dg, ShouldResemble, DirectedGraph[string]{})
 			})
 		})
 
 		Convey("custom #2", func() {
 			// a -> b -> c -> d -> a
-			dg, err := NewDirectedGraph([]*Node{a, b, c, d}, DirectedEdges{
-				a: []*Node{b},
-				b: []*Node{c},
-				c: []*Node{d},
-				d: []*Node{a},
+			dg, err := NewDirectedGraph([]*Node[string]{a, b, c, d}, DirectedEdges[string]{
+				a: []*Node[string]{b},
+				b: []*Node[string]{c},
+				c: []*Node[string]{d},
+				d: []*Node[string]{a},
 			})
 
 			Convey("cycle", func() {
 				So(err, ShouldBeError, "cycle(s) detected in directed graph")
-				So(dg, ShouldResemble, DirectedGraph{})
+				So(dg, ShouldResemble, DirectedGraph[string]{})
 			})
 		})
+	})
+}
+
+func TestNodes(t *testing.T) {
+	Convey("when ok", t, func() {
+		nodes := Nodes[string]{
+			NewNode("a"),
+			NewNode("b"),
+			NewNode("c"),
+		}
+		So(nodes.Data(), ShouldResemble, []string{"a", "b", "c"})
+	})
+
+	Convey("when empty", t, func() {
+		So(Nodes[int]{}.Data(), ShouldResemble, []int{})
 	})
 }

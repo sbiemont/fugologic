@@ -71,7 +71,9 @@ func customEngine() (Engine, *IDVal, *IDVal, *IDVal, error) {
 	// Helper: a and b => c
 	newRule := func(a, b, c id.ID) Rule {
 		return NewRule(
-			NewExpression([]Premise{fvDiff.Get(a), fvDt.Get(b)}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvCh.Get(c)},
+			NewExpression([]Premise{fvDiff.Get(a), fvDt.Get(b)}, OperatorZadeh{}.And),
+			ImplicationMin,
+			[]IDSet{fvCh.Get(c)},
 		)
 	}
 	rules := []Rule{
@@ -235,8 +237,16 @@ func TestEngineEvaluate(t *testing.T) {
 		// a1 & b1 -> c1
 		// a2 & b2 -> c2
 		rules := []Rule{
-			NewRule(NewExpression([]Premise{fvA.Get("a1"), fvB.Get("b1")}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get("c1")}),
-			NewRule(NewExpression([]Premise{fvA.Get("a2"), fvB.Get("b2")}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get("c2")}),
+			NewRule(
+				NewExpression([]Premise{fvA.Get("a1"), fvB.Get("b1")}, OperatorZadeh{}.And),
+				ImplicationMin,
+				[]IDSet{fvC.Get("c1")},
+			),
+			NewRule(
+				NewExpression([]Premise{fvA.Get("a2"), fvB.Get("b2")}, OperatorZadeh{}.And),
+				ImplicationMin,
+				[]IDSet{fvC.Get("c2")},
+			),
 		}
 
 		engine, errEngine := NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
@@ -355,7 +365,9 @@ func TestEngineEvaluate(t *testing.T) {
 		// a and b => c
 		newRule := func(a, b, c id.ID) Rule {
 			return NewRule(
-				NewExpression([]Premise{fvA.Get(a), fvB.Get(b)}, OperatorZadeh{}.And), ImplicationMin, []IDSet{fvC.Get(c)},
+				NewExpression([]Premise{fvA.Get(a), fvB.Get(b)}, OperatorZadeh{}.And),
+				ImplicationMin,
+				[]IDSet{fvC.Get(c)},
 			)
 		}
 		rules := []Rule{
@@ -424,7 +436,7 @@ func BenchmarkEngineNTimes(b *testing.B) {
 
 	// Evaluate n times the system
 	for i := 0; i < evaluations; i++ {
-		engine.Evaluate(map[*IDVal]float64{
+		_, _ = engine.Evaluate(map[*IDVal]float64{
 			fvDiff: -1,
 			fvDt:   -0.1,
 		})
@@ -438,7 +450,7 @@ func BenchmarkEngine(b *testing.B) {
 	}
 
 	// Evaluate n times the system
-	engine.Evaluate(map[*IDVal]float64{
+	_, _ = engine.Evaluate(map[*IDVal]float64{
 		fvDiff: -1,
 		fvDt:   -0.1,
 	})

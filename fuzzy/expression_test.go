@@ -152,7 +152,6 @@ func TestExpression(t *testing.T) {
 			So(err, ShouldBeError, "input: cannot find parent for id set `ko`")
 			So(res, ShouldBeZeroValue)
 		})
-
 	})
 
 	Convey("connect", t, func() {
