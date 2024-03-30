@@ -2,7 +2,6 @@ package example
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/sbiemont/fugologic/builder"
@@ -95,15 +94,6 @@ func TestCar(t *testing.T) {
 		// Engine
 		eng, _ := mx.Engine()
 		var values [][]float64
-
-		srf, err := builder.Export(eng, 8)
-		So(err, ShouldBeNil)
-		vrml, err := srf.VRML()
-		So(err, ShouldBeNil)
-		f, err := os.Create("./example_car.wrl")
-		So(err, ShouldBeNil)
-		_, err = f.Write(vrml)
-		So(err, ShouldBeNil)
 
 		// Evaluate a car in the engine
 		evaluate := func(c *car) {
