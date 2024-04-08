@@ -1,11 +1,11 @@
 module github.com/sbiemont/fugologic
 
-go 1.21.0
+go 1.22.1
 
 require (
-	github.com/google/uuid v1.3.1
+	github.com/google/uuid v1.6.0
 	github.com/smartystreets/goconvey v1.8.1
-	golang.org/x/sync v0.3.0
+	golang.org/x/sync v0.6.0
 )
 
 require (
