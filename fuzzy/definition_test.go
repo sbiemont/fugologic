@@ -15,7 +15,7 @@ func TestIDSet(t *testing.T) {
 			item := IDSet{
 				uuid: "set #1",
 			}
-			So(item.ID(), ShouldEqual, "set #1")
+			So(item.ID(), ShouldEqual, id.ID("set #1"))
 		})
 
 		Convey("when evaluate()", func() {
@@ -65,24 +65,24 @@ func TestIDVal(t *testing.T) {
 			u, err := crisp.NewSet(0, 1, 0.5)
 			So(err, ShouldBeNil)
 
-			f1 := func(float64) float64 { return 1 }
-			f2 := func(float64) float64 { return 2 }
+			var f1 Set = func(float64) float64 { return 1 }
+			var f2 Set = func(float64) float64 { return 2 }
 			val, _ := NewIDVal("value", u, map[id.ID]Set{
 				"set #1": f1,
 				"set #2": f2,
 			})
 
-			So(val.uuid, ShouldEqual, "value")
+			So(val.uuid, ShouldEqual, id.ID("value"))
 			So(val.u, ShouldResemble, u)
 			So(val.idSets, ShouldHaveLength, 2)
 
 			So(val.idSets["set #1"].parent, ShouldEqual, val)
 			So(val.idSets["set #1"].set, ShouldEqual, f1)
-			So(val.idSets["set #1"].uuid, ShouldEqual, "set #1")
+			So(val.idSets["set #1"].uuid, ShouldEqual, id.ID("set #1"))
 
 			So(val.idSets["set #2"].parent, ShouldEqual, val)
 			So(val.idSets["set #2"].set, ShouldEqual, f2)
-			So(val.idSets["set #2"].uuid, ShouldEqual, "set #2")
+			So(val.idSets["set #2"].uuid, ShouldEqual, id.ID("set #2"))
 		})
 
 		Convey("when ok", func() {
@@ -104,7 +104,7 @@ func TestIDVal(t *testing.T) {
 		})
 
 		Convey("when id()", func() {
-			So(val.ID(), ShouldEqual, "value")
+			So(val.ID(), ShouldEqual, id.ID("value"))
 		})
 
 		Convey("when u()", func() {
@@ -114,8 +114,8 @@ func TestIDVal(t *testing.T) {
 		})
 
 		Convey("when get()", func() {
-			So(val.Get("set #1").uuid, ShouldEqual, "set #1")
-			So(val.Get("set #2").uuid, ShouldEqual, "set #2")
+			So(val.Get("set #1").uuid, ShouldEqual, id.ID("set #1"))
+			So(val.Get("set #2").uuid, ShouldEqual, id.ID("set #2"))
 			So(val.Get("set #3").uuid, ShouldBeEmpty)
 		})
 
@@ -125,9 +125,9 @@ func TestIDVal(t *testing.T) {
 			v3, ok3 := val.Fetch("set #3")
 
 			So(ok1, ShouldBeTrue)
-			So(v1.uuid, ShouldEqual, "set #1")
+			So(v1.uuid, ShouldEqual, id.ID("set #1"))
 			So(ok2, ShouldBeTrue)
-			So(v2.uuid, ShouldEqual, "set #2")
+			So(v2.uuid, ShouldEqual, id.ID("set #2"))
 			So(ok3, ShouldBeFalse)
 			So(v3.uuid, ShouldBeEmpty)
 		})
