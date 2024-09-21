@@ -48,7 +48,7 @@ func TestFlattenIDSets(t *testing.T) {
 	Convey("when only one set", t, func() {
 		result := flattenIDSets(nil, []Premise{fsA1})
 		So(result, ShouldHaveLength, 1)
-		So(result[0].ID(), ShouldEqual, "a1")
+		So(result[0].ID(), ShouldEqual, id.ID("a1"))
 	})
 
 	Convey("flatten id sets", t, func() {
@@ -111,7 +111,7 @@ func TestRule(t *testing.T) {
 			So(output, ShouldHaveLength, 1)
 			So(output[0].parent, ShouldEqual, fvB)
 			So(output[0].set, ShouldNotEqual, setB) // Membership function should have been replaced
-			So(output[0].uuid, ShouldEqual, "b1")
+			So(output[0].uuid, ShouldEqual, id.ID("b1"))
 		})
 	})
 
