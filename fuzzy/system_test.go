@@ -110,7 +110,7 @@ func TestSystem(t *testing.T) {
 					So(err2Bis, ShouldBeNil)
 
 					system, err := NewSystem([]Engine{eng1, eng2Bis, eng3})
-					So(err, ShouldBeError, "cycle(s) detected in directed graph")
+					So(err, ShouldBeError, "cycle detected")
 					So(system, ShouldBeNil)
 				})
 

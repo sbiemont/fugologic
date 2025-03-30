@@ -41,15 +41,18 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 	return newOutput, nil
 }
 
-// reorder builds a graph of engines, check the presence of cycles and flatten the created graph
+// reorder builds a graph of engines, check the presence of cycles and flattens the created graph
 func (sys System) reorder() (System, error) {
 	// To nodes
-	nodes := graph.NewNodes(sys)
+	nodes := make([]*Engine, len(sys))
+	for i, eng := range sys {
+		nodes[i] = &eng
+	}
 
 	// Init graph
-	edges := graph.NewDirectedEdges[Engine]()
+	dg := graph.New[*Engine]()
 	addEdge := func(i, j int) {
-		edges.Add(nodes[i], nodes[j])
+		dg.Add(nodes[i], nodes[j])
 	}
 
 	// Returns true if a common IDVal is found
@@ -97,14 +100,16 @@ func (sys System) reorder() (System, error) {
 		}
 	}
 
-	// Check an sort nodes
-	dg, err := graph.NewDirectedGraph(nodes, edges)
+	// To flat engines list (and check for cycles)
+	flat, err := dg.TopologicalSort()
 	if err != nil {
 		return nil, err
 	}
-
-	// To engines
-	return dg.Flatten().Data(), nil
+	result := make([]Engine, len(flat))
+	for i, eng := range flat {
+		result[i] = *eng
+	}
+	return result, nil
 }
 
 // outputs flatten all outputs of the system
