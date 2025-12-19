@@ -400,6 +400,9 @@ engine, err := fuzzy.NewEngine(rules, AggregationUnion, DefuzzificationCentroid)
 if err != nil {
   return err
 }
+
+// Limit number of workers
+engine.WithMaxWorkers(runtime.NumCPU())
 ```
 
 #### Engine evaluation

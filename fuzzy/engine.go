@@ -10,10 +10,11 @@ import (
 
 // Engine is responsible for evaluating all rules and defuzzing
 type Engine struct {
-	uuid   id.ID // optional
 	rules  []Rule
 	agg    Aggregation
 	defuzz Defuzzification
+
+	maxWorkers int // 0: unlimited, -1: sequential
 }
 
 // NewEngine builds a new Engine instance
@@ -34,9 +35,12 @@ func NewEngine(r []Rule, agg Aggregation, defuzz Defuzzification) (Engine, error
 }
 
 // Evalute rules (in parallel) and defuzz result
+// Use WithMaxWorkers to limit the number of go routines
 func (eng Engine) Evaluate(input DataInput) (DataOutput, error) {
 	evaluatedIDSets := make([][]IDSet, len(eng.rules)) // prepare results for go routines
 	var grp errgroup.Group
+	grp.SetLimit(eng.getWorkerLimit(len(eng.rules)))
+
 	for i, rule := range eng.rules {
 		iCpy := i
 		ruleCpy := rule
@@ -87,4 +91,25 @@ func checkIDs(idSets []IDSet) error {
 	}
 
 	return nil
+}
+
+// WithMaxWorkers sets the maximum number of workers for rule evaluation
+//   - -1:  sequential
+//   - 0:   unlimited
+//   - n>0: n workers
+func (eng *Engine) WithMaxWorkers(n int) *Engine {
+	eng.maxWorkers = n
+	return eng
+}
+
+// WithMaxWorkers sets the maximum number of workers for rule evaluation
+func (eng *Engine) getWorkerLimit(defaultLimit int) int {
+	switch {
+	case eng.maxWorkers <= -1:
+		return 1 // sequential
+	case eng.maxWorkers == 0:
+		return defaultLimit // unlimited
+	default:
+		return eng.maxWorkers
+	}
 }

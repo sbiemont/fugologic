@@ -58,7 +58,7 @@ func TestCar(t *testing.T) {
 			cc := 2*a - c
 			bb := 2*a - b
 			crispCfg, _ := crisp.NewSetN(dd, d, nb)
-			fsCfg, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+			fsCfg, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 				"---": fuzzy.StepDown{A: dd, B: cc},          // ▔\▁
 				"--":  fuzzy.Triangular{A: dd, B: cc, C: bb}, // ▁/\▁
 				"-":   fuzzy.Triangular{A: cc, B: bb, C: a},  // ▁/\▁
@@ -67,7 +67,9 @@ func TestCar(t *testing.T) {
 				"++":  fuzzy.Triangular{A: b, B: c, C: d},    // ▁/\▁
 				"+++": fuzzy.StepUp{A: c, B: d},              // ▁/▔
 			})
-			fvCfg, _ := fuzzy.NewIDVal(name, crispCfg, fsCfg)
+			So(err, ShouldBeNil)
+			fvCfg, err := fuzzy.NewIDVal(name, crispCfg, fsCfg)
+			So(err, ShouldBeNil)
 			return fvCfg
 		}
 
@@ -92,7 +94,8 @@ func TestCar(t *testing.T) {
 		)
 
 		// Engine
-		eng, _ := mx.Engine()
+		eng, err := mx.Engine()
+		So(err, ShouldBeNil)
 		var values [][]float64
 
 		// Evaluate a car in the engine

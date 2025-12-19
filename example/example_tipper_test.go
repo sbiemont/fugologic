@@ -16,30 +16,39 @@ func TestTipper(t *testing.T) {
 	Convey("tipper", t, func() {
 		k := 100
 		// Input service
-		crispSvc, _ := crisp.NewSetN(0, 10, k)
-		fsSvc, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispSvc, err := crisp.NewSetN(0, 10, k)
+		So(err, ShouldBeNil)
+		fsSvc, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"poor":      fuzzy.Gauss{Sigma: 1.5, C: 0},
 			"good":      fuzzy.Gauss{Sigma: 1.5, C: 5},
 			"excellent": fuzzy.Gauss{Sigma: 1.5, C: 10},
 		})
-		fvSvc, _ := fuzzy.NewIDVal("service", crispSvc, fsSvc)
+		So(err, ShouldBeNil)
+		fvSvc, err := fuzzy.NewIDVal("service", crispSvc, fsSvc)
+		So(err, ShouldBeNil)
 
 		// Input food
-		crispFood, _ := crisp.NewSetN(0, 10, k)
-		fsFood, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispFood, err := crisp.NewSetN(0, 10, k)
+		So(err, ShouldBeNil)
+		fsFood, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"rancid":    fuzzy.Trapezoid{A: -2, B: 0, C: 1, D: 3},
 			"delicious": fuzzy.Trapezoid{A: 7, B: 9, C: 10, D: 12},
 		})
-		fvFood, _ := fuzzy.NewIDVal("food", crispFood, fsFood)
+		So(err, ShouldBeNil)
+		fvFood, err := fuzzy.NewIDVal("food", crispFood, fsFood)
+		So(err, ShouldBeNil)
 
 		// Output tip
-		crispTip, _ := crisp.NewSetN(0, 30, 3*k)
-		fsTip, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispTip, err := crisp.NewSetN(0, 30, 3*k)
+		So(err, ShouldBeNil)
+		fsTip, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"cheap":    fuzzy.Triangular{A: 0, B: 5, C: 10},
 			"average":  fuzzy.Triangular{A: 10, B: 15, C: 20},
 			"generous": fuzzy.Triangular{A: 20, B: 25, C: 30},
 		})
-		fvTip, _ := fuzzy.NewIDVal("tip", crispTip, fsTip)
+		So(err, ShouldBeNil)
+		fvTip, err := fuzzy.NewIDVal("tip", crispTip, fsTip)
+		So(err, ShouldBeNil)
 
 		// If (service is poor) or (food is rancid), then (tip is cheap)
 		// If (service is good), then (tip is average)
