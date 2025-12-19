@@ -1,10 +1,7 @@
 package fuzzy
 
 import (
-	"sort"
 	"testing"
-
-	"github.com/sbiemont/fugologic/id"
 
 	. "github.com/smartystreets/goconvey/convey"
 )
@@ -44,12 +41,8 @@ func TestSystem(t *testing.T) {
 		eng3, err3 := NewEngine(rulesEng3, agg, defuzz)
 		So(err3, ShouldBeNil)
 
-		eng1.uuid = "Engine #A"
-		eng2.uuid = "Engine #B"
-		eng3.uuid = "Engine #C"
-
 		Convey("when ok", func() {
-			var system System = []Engine{eng1, eng2, eng3}
+			var system System = []*Engine{&eng1, &eng2, &eng3}
 			output, errOut := system.Evaluate(DataInput{
 				fvA: 1,
 				fvB: 1,
@@ -65,7 +58,7 @@ func TestSystem(t *testing.T) {
 		})
 
 		Convey("when missing input", func() {
-			var system System = []Engine{eng1, eng2, eng3}
+			var system System = []*Engine{&eng1, &eng2, &eng3}
 			output, errOut := system.Evaluate(DataInput{
 				fvA: 1,
 				fvB: 1,
@@ -84,19 +77,19 @@ func TestSystem(t *testing.T) {
 					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
-					var system System = []Engine{eng1, eng2Bis, eng3}
+					var system System = []*Engine{&eng1, &eng2Bis, &eng3}
 					So(system.checkDuplicatedOutputs(), ShouldBeError, "output `g` detected twice")
 
-					sys, errSys := NewSystem([]Engine{eng1, eng2Bis, eng3})
+					sys, errSys := NewSystem([]*Engine{&eng1, &eng2Bis, &eng3})
 					So(errSys, ShouldBeError, "output `g` detected twice")
 					So(sys, ShouldBeEmpty)
 				})
 
 				Convey("when ok", func() {
-					var system System = []Engine{eng1, eng2, eng3}
+					var system System = []*Engine{&eng1, &eng2, &eng3}
 					So(system.checkDuplicatedOutputs(), ShouldBeNil)
 
-					sys, errSys := NewSystem([]Engine{eng1, eng2, eng3})
+					sys, errSys := NewSystem([]*Engine{&eng1, &eng2, &eng3})
 					So(errSys, ShouldBeNil)
 					So(sys, ShouldNotBeEmpty)
 				})
@@ -109,29 +102,17 @@ func TestSystem(t *testing.T) {
 					eng2Bis, err2Bis := NewEngine(rulesEng2Bis, agg, defuzz)
 					So(err2Bis, ShouldBeNil)
 
-					system, err := NewSystem([]Engine{eng1, eng2Bis, eng3})
+					system, err := NewSystem([]*Engine{&eng1, &eng2Bis, &eng3})
 					So(err, ShouldBeError, "cycle detected")
 					So(system, ShouldBeNil)
 				})
 
 				Convey("when ok", func() {
-					system, err := NewSystem([]Engine{eng1, eng2, eng3})
+					system, err := NewSystem([]*Engine{&eng1, &eng2, &eng3})
 					So(err, ShouldBeNil)
-					So(enginesIDs(system), ShouldResemble, []id.ID{eng1.uuid, eng2.uuid, eng3.uuid})
+					So(system, ShouldResemble, System{&eng1, &eng2, &eng3})
 				})
 			})
 		})
 	})
-}
-
-// Helper, extracts ids
-func enginesIDs(sys System) []id.ID {
-	var ids []id.ID
-	for _, engine := range sys {
-		ids = append(ids, engine.uuid)
-	}
-	sort.Slice(ids, func(i, j int) bool {
-		return ids[i] < ids[j]
-	})
-	return ids
 }

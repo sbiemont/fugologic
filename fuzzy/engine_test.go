@@ -435,7 +435,7 @@ func BenchmarkEngineNTimes(b *testing.B) {
 	}
 
 	// Evaluate n times the system
-	for i := 0; i < evaluations; i++ {
+	for range evaluations {
 		_, _ = engine.Evaluate(map[*IDVal]float64{
 			fvDiff: -1,
 			fvDt:   -0.1,
@@ -509,6 +509,27 @@ func TestCheckIDs(t *testing.T) {
 			fv, err := NewIDVal("c", crisp.Set{}, map[id.ID]Set{"": nil})
 			So(err, ShouldBeError, "id set cannot be empty")
 			So(fv, ShouldBeNil)
+		})
+	})
+}
+
+func TestEngineWithMaxWorkers(t *testing.T) {
+	eng := Engine{}
+
+	Convey("check max workers", t, func() {
+		Convey("when negative", func() {
+			eng.WithMaxWorkers(-1)
+			So(eng.getWorkerLimit(10), ShouldEqual, 1)
+		})
+
+		Convey("when zero", func() {
+			eng.WithMaxWorkers(0)
+			So(eng.getWorkerLimit(10), ShouldEqual, 10)
+		})
+
+		Convey("when positive", func() {
+			eng.WithMaxWorkers(42)
+			So(eng.getWorkerLimit(10), ShouldEqual, 42)
 		})
 	})
 }

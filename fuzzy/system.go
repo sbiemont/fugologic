@@ -4,15 +4,14 @@ import (
 	"fmt"
 
 	"github.com/sbiemont/fugologic/graph"
-	"github.com/sbiemont/fugologic/id"
 )
 
 // System groups engines and evaluate them all
 // All engines are evaluated sequentially
-type System []Engine
+type System []*Engine
 
 // NewSystem checks for errors, reorder the engines and creates a new system
-func NewSystem(engines []Engine) (System, error) {
+func NewSystem(engines []*Engine) (System, error) {
 	tmp := System(engines)
 	if err := tmp.checkDuplicatedOutputs(); err != nil {
 		return nil, err
@@ -43,16 +42,10 @@ func (sys System) Evaluate(input DataInput) (DataOutput, error) {
 
 // reorder builds a graph of engines, check the presence of cycles and flattens the created graph
 func (sys System) reorder() (System, error) {
-	// To nodes
-	nodes := make([]*Engine, len(sys))
-	for i, eng := range sys {
-		nodes[i] = &eng
-	}
-
 	// Init graph
 	dg := graph.New[*Engine]()
 	addEdge := func(i, j int) {
-		dg.Add(nodes[i], nodes[j])
+		dg.Add(sys[i], sys[j])
 	}
 
 	// Returns true if a common IDVal is found
@@ -70,10 +63,10 @@ func (sys System) reorder() (System, error) {
 		inputs  map[*IDVal]struct{}
 		outputs map[*IDVal]struct{}
 	}
-	savedIO := make(map[id.ID]inouts)
+	savedIO := make(map[*Engine]inouts)
 	for _, eng := range sys {
 		in, out := eng.IO()
-		savedIO[eng.uuid] = inouts{
+		savedIO[eng] = inouts{
 			inputs:  IDSets(in).IDVals(),
 			outputs: IDSets(out).IDVals(),
 		}
@@ -82,7 +75,7 @@ func (sys System) reorder() (System, error) {
 	// Add edges
 	for i, iEng := range sys {
 		// Edge at the current engine
-		iIO := savedIO[iEng.uuid]
+		iIO := savedIO[iEng]
 		if hasCommon(iIO.outputs, iIO.inputs) {
 			addEdge(i, i)
 		}
@@ -90,7 +83,7 @@ func (sys System) reorder() (System, error) {
 		// Edges with the other engines
 		for j := i + 1; j < len(sys); j++ {
 			jEng := sys[j]
-			jIO := savedIO[jEng.uuid]
+			jIO := savedIO[jEng]
 			if hasCommon(iIO.outputs, jIO.inputs) {
 				addEdge(i, j)
 			}
@@ -101,15 +94,7 @@ func (sys System) reorder() (System, error) {
 	}
 
 	// To flat engines list (and check for cycles)
-	flat, err := dg.TopologicalSort()
-	if err != nil {
-		return nil, err
-	}
-	result := make([]Engine, len(flat))
-	for i, eng := range flat {
-		result[i] = *eng
-	}
-	return result, nil
+	return dg.TopologicalSort()
 }
 
 // outputs flatten all outputs of the system

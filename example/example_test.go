@@ -14,28 +14,37 @@ import (
 func TestMinimalist(t *testing.T) {
 	Convey("mini", t, func() {
 		// Input #A
-		crispA, _ := crisp.NewSetN(-2, 2, 20)
-		fsA, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispA, err := crisp.NewSetN(-2, 2, 20)
+		So(err, ShouldBeNil)
+		fsA, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"-": fuzzy.StepDown{A: -1, B: 1},
 			"+": fuzzy.StepUp{A: -1, B: 1},
 		})
-		fvA, _ := fuzzy.NewIDVal("a", crispA, fsA)
+		So(err, ShouldBeNil)
+		fvA, err := fuzzy.NewIDVal("a", crispA, fsA)
+		So(err, ShouldBeNil)
 
 		// Input #B
-		crispB, _ := crisp.NewSetN(-0.2, 0.2, 20)
-		fsB, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispB, err := crisp.NewSetN(-0.2, 0.2, 20)
+		So(err, ShouldBeNil)
+		fsB, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"N": fuzzy.Trapezoid{A: -0.2, B: -0.1, C: 0, D: 0.1},
 			"P": fuzzy.Trapezoid{A: -0.1, B: 0, C: 0.1, D: 0.2},
 		})
-		fvB, _ := fuzzy.NewIDVal("b", crispB, fsB)
+		So(err, ShouldBeNil)
+		fvB, err := fuzzy.NewIDVal("b", crispB, fsB)
+		So(err, ShouldBeNil)
 
 		// Output #C
-		crispC, _ := crisp.NewSetN(-4, 4, 40)
-		fsC, _ := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
+		crispC, err := crisp.NewSetN(-4, 4, 40)
+		So(err, ShouldBeNil)
+		fsC, err := fuzzy.NewIDSets(map[id.ID]fuzzy.SetBuilder{
 			"##": fuzzy.StepDown{A: -4, B: 2},
 			"**": fuzzy.StepUp{A: -2, B: 4},
 		})
-		fvC, _ := fuzzy.NewIDVal("c", crispC, fsC)
+		So(err, ShouldBeNil)
+		fvC, err := fuzzy.NewIDVal("c", crispC, fsC)
+		So(err, ShouldBeNil)
 
 		Convey("with builder", func() {
 			// Rules
@@ -53,11 +62,13 @@ func TestMinimalist(t *testing.T) {
 			bld.If(fvA.Get("+")).And(fvB.Get("P")).Then(fvC.Get("##"))
 
 			// Evaluate
-			eng, _ := bld.Engine()
-			out, _ := eng.Evaluate(fuzzy.DataInput{
+			eng, err := bld.Engine()
+			So(err, ShouldBeNil)
+			out, err := eng.Evaluate(fuzzy.DataInput{
 				fvA: -0.2,
 				fvB: 0.05,
 			})
+			So(err, ShouldBeNil)
 
 			So(out, ShouldResemble, fuzzy.DataOutput{
 				fvC: 0.17915132672502984,
@@ -76,11 +87,13 @@ func TestMinimalist(t *testing.T) {
 					})
 			So(err, ShouldBeNil)
 
-			eng, _ := bld.Engine()
-			out, _ := eng.Evaluate(fuzzy.DataInput{
+			eng, err := bld.Engine()
+			So(err, ShouldBeNil)
+			out, err := eng.Evaluate(fuzzy.DataInput{
 				fvA: -0.2,
 				fvB: 0.05,
 			})
+			So(err, ShouldBeNil)
 
 			So(out, ShouldResemble, fuzzy.DataOutput{
 				fvC: 0.17915132672502984,
